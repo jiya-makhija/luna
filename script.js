@@ -2912,3 +2912,342 @@ function createWASOChart() {
 
         // Export for global access
         window.DataLayeringManager = dataLayering;
+
+        class SleepJourneyManager {
+            constructor() {
+                this.currentStep = 'explore';
+                this.profileData = {};
+                this.init();
+            }
+
+            init() {
+                this.setupStepNavigation();
+                this.observeSections();
+                this.showProfileCard();
+            }
+
+            setupStepNavigation() {
+                document.querySelectorAll('.progress-step').forEach(step => {
+                    step.addEventListener('click', () => {
+                        const stepName = step.dataset.step;
+                        this.navigateToStep(stepName);
+                    });
+                });
+            }
+
+            navigateToStep(stepName) {
+                const sections = {
+                    'explore': document.querySelector('.hero-section'),
+                    'identify': document.querySelector('#quizSection'),
+                    'optimize': document.querySelector('.dashboard')
+                };
+
+                if (sections[stepName]) {
+                    sections[stepName].scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+
+            observeSections() {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            this.updateCurrentStep(entry.target);
+                        }
+                    });
+                }, { threshold: 0.3 });
+
+                // Observe key sections
+                document.querySelectorAll('.analysis-section, .quiz-section, .dashboard').forEach(section => {
+                    observer.observe(section);
+                });
+            }
+
+            updateCurrentStep(element) {
+                let newStep = 'explore';
+                
+                if (element.classList.contains('quiz-section') || element.id === 'quizSection') {
+                    newStep = 'identify';
+                } else if (element.classList.contains('dashboard')) {
+                    newStep = 'optimize';
+                }
+
+                if (newStep !== this.currentStep) {
+                    this.currentStep = newStep;
+                    this.updateStepIndicators();
+                }
+            }
+
+            updateStepIndicators() {
+                document.querySelectorAll('.progress-step').forEach(step => {
+                    const stepName = step.dataset.step;
+                    step.classList.remove('active', 'completed');
+                    
+                    if (stepName === this.currentStep) {
+                        step.classList.add('active');
+                    } else if (this.isStepCompleted(stepName)) {
+                        step.classList.add('completed');
+                    }
+                });
+            }
+
+            isStepCompleted(stepName) {
+                switch(stepName) {
+                    case 'explore':
+                        return this.currentStep !== 'explore';
+                    case 'identify':
+                        return this.profileData.sleepTwin !== undefined;
+                    case 'optimize':
+                        return false; // Always in progress
+                    default:
+                        return false;
+                }
+            }
+
+            showProfileCard() {
+                setTimeout(() => {
+                    document.getElementById('sleepProfileCard').classList.add('visible');
+                }, 1000);
+            }
+
+            updateProfile(data) {
+                this.profileData = { ...this.profileData, ...data };
+                this.renderProfile();
+            }
+
+            renderProfile() {
+                const elements = {
+                    profileDuration: document.getElementById('profileDuration'),
+                    profileStress: document.getElementById('profileStress'),
+                    profileLatency: document.getElementById('profileLatency'),
+                    profileChronotype: document.getElementById('profileChronotype'),
+                    profileTwin: document.getElementById('profileTwin')
+                };
+
+                // Update duration
+                if (this.profileData.sleepHours) {
+                    elements.profileDuration.textContent = `${this.profileData.sleepHours}h`;
+                    elements.profileDuration.classList.remove('metric-empty');
+                }
+
+                // Update stress
+                if (this.profileData.stressLevel) {
+                    const stressLabels = ['Very Low', 'Low', 'Moderate', 'High', 'Very High'];
+                    elements.profileStress.textContent = stressLabels[this.profileData.stressLevel - 1];
+                    elements.profileStress.classList.remove('metric-empty');
+                }
+
+                // Update latency
+                if (this.profileData.sleepLatency !== undefined) {
+                    elements.profileLatency.textContent = `${this.profileData.sleepLatency}m`;
+                    elements.profileLatency.classList.remove('metric-empty');
+                }
+
+                // Update chronotype
+                if (this.profileData.chronotype) {
+                    const chronoLabels = ['Evening', 'Mod. Evening', 'Neither', 'Mod. Morning', 'Morning'];
+                    elements.profileChronotype.textContent = chronoLabels[this.profileData.chronotype - 1];
+                    elements.profileChronotype.classList.remove('metric-empty');
+                }
+
+                // Update sleep twin
+                if (this.profileData.sleepTwin) {
+                    elements.profileTwin.textContent = this.profileData.sleepTwin;
+                    elements.profileTwin.classList.remove('metric-empty');
+                }
+            }
+        }
+
+        // Initialize the journey manager
+        const journeyManager = new SleepJourneyManager();
+
+        // Export for use in other scripts
+        window.SleepJourneyManager = journeyManager;
+        class NarrativeFlowManager {
+            constructor() {
+                this.currentPhase = 'explore';
+                this.userProfile = {};
+                this.init();
+            }
+
+            init() {
+                this.setupTransitionTriggers();
+                this.observeUserProgress();
+            }
+
+            setupTransitionTriggers() {
+                // Show transition after heart rate section
+                setTimeout(() => {
+                    this.showTransition('transition1');
+                }, 5000); // Show after 5 seconds on heart rate section
+
+                // Show prompt after viewing individual data
+                this.observeIndividualDataInteraction();
+            }
+
+            observeUserProgress() {
+                // Watch for quiz completion
+                const originalDisplayResults = window.displayResults;
+                if (originalDisplayResults) {
+                    window.displayResults = (userProfile, match) => {
+                        originalDisplayResults(userProfile, match);
+                        this.userProfile = userProfile;
+                        this.userProfile.sleepTwin = match.participant.id;
+                        this.showTransition('transition2');
+                        this.updateJourneySummary();
+                    };
+                }
+            }
+
+            observeIndividualDataInteraction() {
+                // Show prompt after user interacts with individual participant data
+                const participantCircles = document.querySelectorAll('.participant-circle');
+                if (participantCircles.length > 0) {
+                    let interactionCount = 0;
+                    participantCircles.forEach(circle => {
+                        circle.addEventListener('click', () => {
+                            interactionCount++;
+                            if (interactionCount >= 2) { // After viewing 2 participants
+                                this.showConnectionPrompt();
+                            }
+                        });
+                    });
+                }
+            }
+
+            showTransition(transitionId) {
+                const transition = document.getElementById(transitionId);
+                if (transition) {
+                    transition.style.display = 'block';
+                    transition.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+
+            showConnectionPrompt() {
+                const prompt = document.getElementById('individualPrompt');
+                if (prompt) {
+                    prompt.style.display = 'block';
+                    prompt.addEventListener('click', () => {
+                        this.navigateToQuiz();
+                    });
+                }
+            }
+
+            navigateToQuiz() {
+                const quizSection = document.getElementById('quizSection');
+                if (quizSection) {
+                    quizSection.scrollIntoView({ behavior: 'smooth' });
+                    // Trigger quiz to show
+                    const skipBtn = document.getElementById('skipBtn');
+                    if (skipBtn) {
+                        skipBtn.click();
+                    }
+                }
+            }
+
+            updateJourneySummary() {
+                const summary = document.getElementById('journeySummary');
+                if (summary && this.userProfile.sleepTwin) {
+                    // Update twin description
+                    const twinDesc = document.getElementById('twinDescription');
+                    if (twinDesc) {
+                        twinDesc.textContent = `Matched with ${this.userProfile.sleepTwin} based on your sleep patterns`;
+                    }
+
+                    // Generate personalized recommendations
+                    this.generatePersonalizedRecommendations();
+                    
+                    // Show summary after dashboard interaction
+                    setTimeout(() => {
+                        summary.style.display = 'block';
+                        summary.scrollIntoView({ behavior: 'smooth' });
+                    }, 10000); // Show after 10 seconds on dashboard
+                }
+            }
+
+            generatePersonalizedRecommendations() {
+                const container = document.getElementById('personalizedRecommendations');
+                if (!container || !this.userProfile) return;
+
+                const recommendations = [];
+
+                // Sleep duration recommendations
+                if (this.userProfile.sleepHours < 7) {
+                    recommendations.push({
+                        title: "Extend Your Sleep Duration",
+                        text: `You reported ${this.userProfile.sleepHours} hours of sleep. Aim for 7-9 hours by setting a consistent bedtime 30 minutes earlier each week.`
+                    });
+                }
+
+                // Stress management
+                if (this.userProfile.stressLevel >= 4) {
+                    recommendations.push({
+                        title: "Stress Reduction Techniques",
+                        text: "High stress can fragment sleep. Try meditation, deep breathing, or journaling 30 minutes before bed to activate your parasympathetic nervous system."
+                    });
+                }
+
+                // Sleep latency
+                if (this.userProfile.sleepLatency > 15) {
+                    recommendations.push({
+                        title: "Improve Sleep Onset",
+                        text: `Taking ${this.userProfile.sleepLatency} minutes to fall asleep suggests possible sleep hygiene improvements. Consider a consistent pre-sleep routine and reducing screen time before bed.`
+                    });
+                }
+
+                // Night awakenings
+                if (this.userProfile.nightAwakenings > 3) {
+                    recommendations.push({
+                        title: "Reduce Sleep Fragmentation",
+                        text: "Frequent awakenings can reduce deep sleep quality. Ensure your bedroom is cool (65-68°F), dark, and quiet. Consider blackout curtains or a white noise machine."
+                    });
+                }
+
+                // Chronotype-based recommendations
+                const chronoAdvice = [
+                    "As an evening person, try light exposure in the morning to help shift your circadian rhythm earlier.",
+                    "Your moderate evening preference suggests flexibility. Maintain consistent sleep timing even on weekends.",
+                    "Your balanced chronotype is ideal for most schedules. Focus on consistency rather than timing shifts.",
+                    "As a moderate morning person, protect your sleep by avoiding late-night activities that might delay your bedtime.",
+                    "Your strong morning preference means avoiding late evening light exposure is crucial for maintaining your natural rhythm."
+                ];
+
+                recommendations.push({
+                    title: "Chronotype Optimization",
+                    text: chronoAdvice[this.userProfile.chronotype - 1]
+                });
+
+                // Render recommendations
+                recommendations.forEach(rec => {
+                    const item = document.createElement('div');
+                    item.className = 'recommendation-item';
+                    item.innerHTML = `
+                        <h4>${rec.title}</h4>
+                        <p>${rec.text}</p>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+        }
+
+        // Helper functions for transition buttons
+        function showIndividualSection() {
+            const toggleBtn = document.getElementById('toggleUserView');
+            if (toggleBtn) {
+                toggleBtn.click();
+                document.getElementById('transition1').style.display = 'none';
+            }
+        }
+
+        function showDashboard() {
+            const dashboard = document.querySelector('.dashboard');
+            if (dashboard) {
+                dashboard.scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('transition2').style.display = 'none';
+            }
+        }
+
+        // Initialize narrative flow
+        const narrativeFlow = new NarrativeFlowManager();
+
+        // Export for use in other scripts
+        window.NarrativeFlowManager = narrativeFlow;
