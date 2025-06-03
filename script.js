@@ -4006,30 +4006,3 @@ document.addEventListener('DOMContentLoaded', function() {
         
     }, 1000);
 });
-
-// Override displayResults to update profile card with twin info
-const originalDisplayResults = window.displayResults;
-window.displayResults = function(userProfile, match) {
-    // Update profile card with twin info
-    if (window.journeyController && match.participant) {
-        const twinId = match.participant.id.replace('user_', '');
-        window.journeyController.updateProfileData('twin', `Participant ${twinId}`);
-    }
-    
-    // Call original function
-    originalDisplayResults(userProfile, match);
-};
-
-// Debug function - you can call this in browser console to test
-window.testProfileCard = function() {
-    if (window.journeyController) {
-        window.journeyController.updateProfileData('duration', '7.5');
-        window.journeyController.updateProfileData('stress', 'Moderate');
-        window.journeyController.updateProfileData('latency', '15');
-        window.journeyController.updateProfileData('chronotype', 3);
-        window.journeyController.updateProfileData('twin', 'Participant 5');
-        console.log('✅ Profile card test data applied');
-    } else {
-        console.log('❌ Journey controller not found');
-    }
-};
