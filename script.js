@@ -2026,25 +2026,28 @@ function updateEfficiencyChart(g, xScale, yScale) {
         .append("circle")
         .attr("class", "dot")
         .attr("r", 4)
-        .merge(dots)
-        .transition()
+        .attr("cx", d => xScale(d.sleepDuration))
+        .attr("cy", d => yScale(d.efficiency))
+        .attr("fill", d => stressColorScale(d.stress))
+        .on("mouseover", function(event, d) {
+            d3.select(this).attr("fill", "orange");
+            tooltip.style("opacity", 1)
+                .html(`Sleep Duration: ${d.sleepDuration}h<br>Efficiency: ${d.efficiency}%`)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mouseout", function() {
+            d3.select(this).attr("fill", stressColorScale(d3.select(this).datum().stress));
+            tooltip.style("opacity", 0);
+        });
+    
+    dots.transition()
         .duration(300)
         .attr("cx", d => xScale(d.sleepDuration))
         .attr("cy", d => yScale(d.efficiency))
         .attr("fill", d => stressColorScale(d.stress));
     
     dots.exit().remove();
-    
-    g.selectAll(".dot")
-        .on("mouseover", (event, d) => {
-            tooltip.style("opacity", 1)
-                .html(`Stress: ${Math.round(d.stress)}<br/>Avg WASO: ${d.avgWASO.toFixed(1)} min<br/>Count: ${d.count}`)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 10) + "px");
-        })
-        .on("mouseout", () => {
-            tooltip.style("opacity", 0);
-        });
 }
 
 function createLatencyChart() {
@@ -2157,13 +2160,15 @@ function createAwakeningsChart() {
         .attr("cy", d => yScale(d.awakenings))
         .attr("r", 3)
         .attr("fill", d => ageColorScale(d.age))
-        .on("mouseover", (event, d) => {
+        .on("mouseover", function(event, d) {
+            d3.select(this).attr("fill", "orange");
             tooltip.style("opacity", 1)
-                .html(`Age: ${d.age}<br/>Awakenings: ${d.awakenings}<br/>Sleep Duration: ${d.sleepDuration}h`)
+                .html(`Age: ${d.age}<br>Awakenings: ${d.awakenings}<br>Sleep Duration: ${d.sleepDuration}h`)
                 .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 10) + "px");
+                .style("top", (event.pageY - 28) + "px");
         })
-        .on("mouseout", () => {
+        .on("mouseout", function() {
+            d3.select(this).attr("fill", ageColorScale(d3.select(this).datum().age));
             tooltip.style("opacity", 0);
         });
 }
@@ -2219,13 +2224,15 @@ function createCaffeineChart() {
         .attr("cy", d => yScale(d.efficiency))
         .attr("r", 4)
         .attr("fill", "#e74c3c")
-        .on("mouseover", (event, d) => {
+        .on("mouseover", function(event, d) {
+            d3.select(this).attr("fill", "orange");
             tooltip.style("opacity", 1)
-                .html(`Caffeine: ${d.caffeineEvents} events<br/>Efficiency: ${d.efficiency}%<br/>ID: ${d.id}`)
+                .html(`Caffeine: ${d.caffeineEvents} events<br>Efficiency: ${d.efficiency}%<br>ID: ${d.id}`)
                 .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 10) + "px");
+                .style("top", (event.pageY - 28) + "px");
         })
-        .on("mouseout", () => {
+        .on("mouseout", function() {
+            d3.select(this).attr("fill", "#e74c3c");
             tooltip.style("opacity", 0);
         });
 }
@@ -2284,13 +2291,15 @@ function createMovementChart() {
         .attr("cy", d => yScale(d.latency))
         .attr("r", 4)
         .attr("fill", "#3498db")
-        .on("mouseover", (event, d) => {
+        .on("mouseover", function(event, d) {
+            d3.select(this).attr("fill", "orange");
             tooltip.style("opacity", 1)
-                .html(`${movementType} Movement: ${d[movementKey]} min<br/>Latency: ${d.latency} min<br/>ID: ${d.id}`)
+                .html(`${movementType} Movement: ${d[movementKey]} min<br>Latency: ${d.latency} min<br>ID: ${d.id}`)
                 .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 10) + "px");
+                .style("top", (event.pageY - 28) + "px");
         })
-        .on("mouseout", () => {
+        .on("mouseout", function() {
+            d3.select(this).attr("fill", "#3498db");
             tooltip.style("opacity", 0);
         });
 }
@@ -2349,13 +2358,15 @@ function createScreenChart() {
         .attr("cy", d => yScale(d.waso))
         .attr("r", 4)
         .attr("fill", "#9b59b6")
-        .on("mouseover", (event, d) => {
+        .on("mouseover", function(event, d) {
+            d3.select(this).attr("fill", "orange");
             tooltip.style("opacity", 1)
-                .html(`${screenType} Screen: ${d[screenKey]} min<br/>WASO: ${d.waso} min<br/>ID: ${d.id}`)
+                .html(`${screenType} Screen: ${d[screenKey]} min<br>WASO: ${d.waso} min<br>ID: ${d.id}`)
                 .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 10) + "px");
+                .style("top", (event.pageY - 28) + "px");
         })
-        .on("mouseout", () => {
+        .on("mouseout", function() {
+            d3.select(this).attr("fill", "#9b59b6");
             tooltip.style("opacity", 0);
         });
 }
