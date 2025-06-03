@@ -2454,15 +2454,132 @@ function createWASOChart() {
         .attr("fill", "#ff6b6b")
         .on("mouseover", (event, d) => {
             tooltip.style("opacity", 1)
-                .html(`
-                    <strong>Stress Level:</strong> ${Math.round(d.stress)}<br/>
-                    <strong>Avg WASO:</strong> ${d.avgWASO.toFixed(1)} min<br/>
-                    <strong>Participants:</strong> ${d.count}
-                `)
+                .html(`Stress: ${Math.round(d.stress)}<br/>Avg WASO: ${d.avgWASO.toFixed(1)} min<br/>Count: ${d.count}`)
                 .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 28) + "px");
+                .style("top", (event.pageY - 10) + "px");
         })
         .on("mouseout", () => {
             tooltip.style("opacity", 0);
         });
-}  
+        }
+        
+        function createLatencyChart() {
+            const svg = d3.select("#latency-chart");
+            svg.selectAll("*").remove();
+            
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+            
+            const bins = d3.histogram()
+                .value(d => d.latency)
+                .domain([0, 30])
+                .thresholds(15)(filteredData);
+            
+            const xScale = d3.scaleLinear()
+                .domain([0, 30])
+                .range([0, chartWidth]);
+            
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(bins, d => d.length)])
+                .range([chartHeight, 0]);
+            
+            // Axes
+            g.append("g")
+                .attr("class", "axis")
+                .attr("transform", `translate(0,${chartHeight})`)
+                .call(d3.axisBottom(xScale));
+            
+            g.append("g")
+                .attr("class", "axis")
+                .call(d3.axisLeft(yScale));
+            
+            // Axis labels
+            g.append("text")
+                .attr("class", "axis-label")
+                .attr("transform", `translate(${chartWidth/2}, ${chartHeight + 35})`)
+                .style("text-anchor", "middle")
+                .text("Sleep Latency (min)");
+            
+            g.append("text")
+                .attr("class", "axis-label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - margin.left)
+                .attr("x", 0 - (chartHeight / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("Frequency");
+            
+            // Bars
+            g.selectAll(".bar")
+                .data(bins)
+                .enter()
+                .append("rect")
+                .attr("class", "bar")
+                .attr("x", d => xScale(d.x0))
+                .attr("width", d => xScale(d.x1) - xScale(d.x0) - 1)
+                .attr("y", d => yScale(d.length))
+                .attr("height", d => chartHeight - yScale(d.length))
+                .attr("fill", "#4ecdc4");
+        }
+        
+        function createAwakeningsChart() {
+            const svg = d3.select("#awakenings-chart");
+            svg.selectAll("*").remove();
+            
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+            
+            const xScale = d3.scaleLinear()
+                .domain([20, 80])
+                .range([0, chartWidth]);
+            
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(filteredData, d => d.awakenings) + 1])
+                .range([chartHeight, 0]);
+            
+            // Axes
+            g.append("g")
+                .attr("class", "axis")
+                .attr("transform", `translate(0,${chartHeight})`)
+                .call(d3.axisBottom(xScale));
+            
+            g.append("g")
+                .attr("class", "axis")
+                .call(d3.axisLeft(yScale));
+            
+            // Axis labels
+            g.append("text")
+                .attr("class", "axis-label")
+                .attr("transform", `translate(${chartWidth/2}, ${chartHeight + 35})`)
+                .style("text-anchor", "middle")
+                .text("Age");
+            
+            g.append("text")
+                .attr("class", "axis-label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - margin.left)
+                .attr("x", 0 - (chartHeight / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("Number of Awakenings");
+            
+            // Dots
+            g.selectAll(".dot")
+                .data(filteredData)
+                .enter()
+                .append("circle")
+                .attr("class", "dot")
+                .attr("cx", d => xScale(d.age))
+                .attr("cy", d => yScale(d.awakenings))
+                .attr("r", 3)
+                .attr("fill", d => ageColorScale(d.age))
+                .on("mouseover", (event, d) => {
+                    tooltip.style("opacity", 1)
+                        .html(`Age: ${d.age}<br/>Awakenings: ${d.awakenings}<br/>Sleep Duration: ${d.sleepDuration}h`)
+                        .style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 10) + "px");
+                })
+                .on("mouseout", () => {
+                    tooltip.style("opacity", 0);
+                });
+        }
