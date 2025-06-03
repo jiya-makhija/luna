@@ -2388,6 +2388,7 @@ function updateMetrics() {
         <div><strong>Avg Age:</strong> ${avgAge.toFixed(1)}</div>
     `;
 }
+
 function createWASOChart() {
     const svg = d3.select("#waso-chart");
     svg.selectAll("*").remove();
@@ -2583,3 +2584,331 @@ function createWASOChart() {
                     tooltip.style("opacity", 0);
                 });
         }
+
+        class DataLayeringManager {
+            constructor() {
+                this.sleepTwin = null;
+                this.userProfile = null;
+                this.currentOptimizations = {
+                    duration: 7.5,
+                    stress: 3,
+                    hygiene: 7
+                };
+                this.init();
+            }
+
+            init() {
+                this.setupSimulatorControls();
+                this.observeDataSections();
+            }
+
+            setSleepTwin(twinId, userProfile) {
+                this.sleepTwin = twinId;
+                this.userProfile = userProfile;
+                this.highlightTwinInParticipantNav();
+                this.highlightTwinInCharts();
+                this.setupSimulator();
+                this.updateJourneyManager();
+            }
+
+            highlightTwinInParticipantNav() {
+                // Remove existing twin highlights
+                document.querySelectorAll('.participant-circle.sleep-twin').forEach(circle => {
+                    circle.classList.remove('sleep-twin');
+                });
+
+                // Find and highlight the twin
+                const twinNumber = this.sleepTwin.replace('user_', '');
+                const twinCircle = document.getElementById(`user-${twinNumber}`);
+                if (twinCircle) {
+                    twinCircle.classList.add('sleep-twin');
+                    
+                    // Auto-load twin data after highlighting
+                    setTimeout(() => {
+                        twinCircle.click();
+                        this.addTwinDataOverlay();
+                    }, 1000);
+                }
+            }
+
+            addTwinDataOverlay() {
+                // Add twin indicator to various chart containers
+                const chartContainers = [
+                    document.getElementById('sleepClockContainer'),
+                    document.getElementById('hrGraphChart')
+                ];
+
+                chartContainers.forEach(container => {
+                    if (container && !container.querySelector('.twin-data-overlay')) {
+                        const overlay = document.createElement('div');
+                        overlay.className = 'twin-data-overlay';
+                        overlay.innerHTML = `👯 Your Sleep Twin: ${this.sleepTwin}`;
+                        container.style.position = 'relative';
+                        container.appendChild(overlay);
+                    }
+                });
+            }
+
+            highlightTwinInCharts() {
+                // Highlight twin data points in dashboard charts
+                setTimeout(() => {
+                    this.highlightInDashboard();
+                }, 2000);
+            }
+
+            highlightInDashboard() {
+                // Find the twin's data in the dashboard charts
+                const twinNumber = parseInt(this.sleepTwin.replace('user_', ''));
+                
+                // Highlight in scatter plots
+                d3.selectAll('.dot').each(function(d) {
+                    if (d && d.id === this.sleepTwin) {
+                        d3.select(this).classed('highlighted-data-point', true);
+                    }
+                });
+
+                // Add revelation triggers for progressive data disclosure
+                this.addProgressiveRevelation();
+            }
+
+            addProgressiveRevelation() {
+                const dashboardSection = document.querySelector('.dashboard');
+                if (dashboardSection && !dashboardSection.querySelector('.revelation-trigger')) {
+                    const trigger = document.createElement('button');
+                    trigger.className = 'revelation-trigger';
+                    trigger.textContent = 'Reveal Advanced Sleep Correlations';
+                    trigger.onclick = () => this.revealAdvancedData();
+                    
+                    dashboardSection.insertBefore(trigger, dashboardSection.firstChild);
+                }
+            }
+
+            revealAdvancedData() {
+                // Progressive revelation of complex data layers
+                const layers = [
+                    { selector: '.activity-section', delay: 0 },
+                    { selector: '#sleepSimulator', delay: 1000 }
+                ];
+
+                layers.forEach(layer => {
+                    setTimeout(() => {
+                        const element = document.querySelector(layer.selector);
+                        if (element) {
+                            element.classList.add('data-layer', 'revealed');
+                            element.style.display = 'block';
+                        }
+                    }, layer.delay);
+                });
+
+                // Remove the trigger
+                document.querySelector('.revelation-trigger').remove();
+            }
+
+            setupSimulator() {
+                const simulator = document.getElementById('sleepSimulator');
+                if (simulator && this.userProfile) {
+                    this.populateSimulator();
+                    this.showSimulator();
+                }
+            }
+
+            populateSimulator() {
+                // Update subtitle
+                const subtitle = document.getElementById('simulatorSubtitle');
+                if (subtitle) {
+                    subtitle.textContent = `See how optimizations could improve your sleep quality (based on ${this.sleepTwin} patterns)`;
+                }
+
+                // Populate current metrics
+                this.updateCurrentMetrics();
+                this.updateOptimizedMetrics();
+            }
+
+            updateCurrentMetrics() {
+                const container = document.getElementById('currentMetrics');
+                if (!container || !this.userProfile) return;
+
+                const metrics = [
+                    {
+                        name: 'Sleep Duration',
+                        value: `${this.userProfile.sleepHours}h`,
+                        raw: this.userProfile.sleepHours
+                    },
+                    {
+                        name: 'Sleep Latency',
+                        value: `${this.userProfile.sleepLatency}m`,
+                        raw: this.userProfile.sleepLatency
+                    },
+                    {
+                        name: 'Night Awakenings',
+                        value: `${this.userProfile.nightAwakenings}`,
+                        raw: this.userProfile.nightAwakenings
+                    },
+                    {
+                        name: 'Sleep Efficiency',
+                        value: `${this.calculateEfficiency()}%`,
+                        raw: this.calculateEfficiency()
+                    }
+                ];
+
+                container.innerHTML = metrics.map(metric => `
+                    <div class="metric-comparison">
+                        <span class="metric-name">${metric.name}</span>
+                        <span class="metric-value">${metric.value}</span>
+                    </div>
+                `).join('');
+            }
+
+            updateOptimizedMetrics() {
+                const container = document.getElementById('optimizedMetrics');
+                if (!container) return;
+
+                // Calculate optimized values based on slider inputs
+                const optimized = this.calculateOptimizedValues();
+
+                container.innerHTML = optimized.map(metric => `
+                    <div class="metric-comparison">
+                        <span class="metric-name">${metric.name}</span>
+                        <span class="metric-value">
+                            ${metric.value}
+                            ${metric.improvement ? `<span class="improvement-indicator">${metric.improvement}</span>` : ''}
+                        </span>
+                    </div>
+                `).join('');
+            }
+
+            calculateOptimizedValues() {
+                const current = {
+                    duration: this.userProfile.sleepHours,
+                    latency: this.userProfile.sleepLatency,
+                    awakenings: this.userProfile.nightAwakenings,
+                    efficiency: this.calculateEfficiency()
+                };
+
+                // Optimization formulas based on sleep science
+                const durationImprovement = (this.currentOptimizations.duration - current.duration) * 0.5;
+                const latencyReduction = Math.max(0, current.latency - (10 - this.currentOptimizations.hygiene));
+                const awakeningsReduction = Math.max(1, current.awakenings - (5 - this.currentOptimizations.stress));
+                const efficiencyImprovement = current.efficiency + (durationImprovement * 2) + ((current.latency - latencyReduction) * 0.3);
+
+                return [
+                    {
+                        name: 'Sleep Duration',
+                        value: `${this.currentOptimizations.duration}h`,
+                        improvement: durationImprovement > 0 ? `+${durationImprovement.toFixed(1)}h` : null
+                    },
+                    {
+                        name: 'Sleep Latency',
+                        value: `${Math.round(latencyReduction)}m`,
+                        improvement: latencyReduction < current.latency ? `-${(current.latency - latencyReduction).toFixed(0)}m` : null
+                    },
+                    {
+                        name: 'Night Awakenings',
+                        value: `${Math.round(awakeningsReduction)}`,
+                        improvement: awakeningsReduction < current.awakenings ? `-${(current.awakenings - awakeningsReduction).toFixed(0)}` : null
+                    },
+                    {
+                        name: 'Sleep Efficiency',
+                        value: `${Math.min(95, Math.round(efficiencyImprovement))}%`,
+                        improvement: efficiencyImprovement > current.efficiency ? `+${(efficiencyImprovement - current.efficiency).toFixed(1)}%` : null
+                    }
+                ];
+            }
+
+            calculateEfficiency() {
+                // Estimate sleep efficiency based on user inputs
+                const baseEfficiency = 85;
+                const latencyPenalty = this.userProfile.sleepLatency * 0.5;
+                const awakeningsPenalty = this.userProfile.nightAwakenings * 0.3;
+                return Math.max(60, Math.round(baseEfficiency - latencyPenalty - awakeningsPenalty));
+            }
+
+            setupSimulatorControls() {
+                // Duration slider
+                const durationSlider = document.getElementById('durationSlider');
+                const durationValue = document.getElementById('durationValue');
+                if (durationSlider && durationValue) {
+                    durationSlider.addEventListener('input', (e) => {
+                        this.currentOptimizations.duration = parseFloat(e.target.value);
+                        durationValue.textContent = `${e.target.value}h`;
+                        this.updateOptimizedMetrics();
+                    });
+                }
+
+                // Stress slider
+                const stressSlider = document.getElementById('stressSlider');
+                const stressValue = document.getElementById('stressValue');
+                if (stressSlider && stressValue) {
+                    const stressLabels = ['Very Low', 'Low', 'Moderate', 'High', 'Very High'];
+                    stressSlider.addEventListener('input', (e) => {
+                        this.currentOptimizations.stress = parseInt(e.target.value);
+                        stressValue.textContent = stressLabels[e.target.value - 1];
+                        this.updateOptimizedMetrics();
+                    });
+                }
+
+                // Hygiene slider
+                const hygieneSlider = document.getElementById('hygieneSlider');
+                const hygieneValue = document.getElementById('hygieneValue');
+                if (hygieneSlider && hygieneValue) {
+                    hygieneSlider.addEventListener('input', (e) => {
+                        this.currentOptimizations.hygiene = parseInt(e.target.value);
+                        hygieneValue.textContent = `${e.target.value}/10`;
+                        this.updateOptimizedMetrics();
+                    });
+                }
+            }
+
+            showSimulator() {
+                const simulator = document.getElementById('sleepSimulator');
+                if (simulator) {
+                    simulator.style.display = 'block';
+                    setTimeout(() => {
+                        simulator.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 500);
+                }
+            }
+
+            updateJourneyManager() {
+                // Update the global journey manager with twin information
+                if (window.SleepJourneyManager) {
+                    window.SleepJourneyManager.updateProfile({
+                        sleepTwin: this.sleepTwin,
+                        ...this.userProfile
+                    });
+                }
+            }
+
+            observeDataSections() {
+                // Create intersection observer for progressive revelation
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('revealed');
+                        }
+                    });
+                }, { threshold: 0.3 });
+
+                // Observe all data layers
+                document.querySelectorAll('.data-layer').forEach(layer => {
+                    observer.observe(layer);
+                });
+            }
+        }
+
+        // Initialize data layering manager
+        const dataLayering = new DataLayeringManager();
+
+        // Hook into existing quiz completion
+        const originalDisplayResults = window.displayResults;
+        if (originalDisplayResults) {
+            window.displayResults = function(userProfile, match) {
+                originalDisplayResults(userProfile, match);
+                
+                // Set sleep twin in data layering system
+                dataLayering.setSleepTwin(match.participant.id, userProfile);
+            };
+        }
+
+        // Export for global access
+        window.DataLayeringManager = dataLayering;
