@@ -665,7 +665,7 @@ function renderDensityPlot(hrData) {
         // Add filled area for sleep
         g.append("path")
             .datum(sleepDensity)
-            .attr("fill", "#4A90E2")
+            .attr("fill", "#fbbf24")              // ← Changed from "#4A90E2" to golden yellow
             .attr("fill-opacity", 0.3)
             .attr("d", area);
         
@@ -673,7 +673,7 @@ function renderDensityPlot(hrData) {
         g.append("path")
             .datum(sleepDensity)
             .attr("fill", "none")
-            .attr("stroke", "#4A90E2")
+            .attr("stroke", "#fbbf24")            // ← Changed from "#4A90E2" to golden yellow
             .attr("stroke-width", 3)
             .attr("d", line)
             .style("cursor", "crosshair")
@@ -771,8 +771,8 @@ function renderDensityPlot(hrData) {
                 }
                 
                 // Calculate percentages
-                const sleepCount = sleepHR.filter(hr => Math.abs(hr - awakePoint[0]) <= 2).length;
-                const awakeCount = awakeHR.filter(hr => Math.abs(hr - awakePoint[0]) <= 2).length;
+                const sleepCount = sleepHR.filter(hr => Math.abs(hr - sleepPoint[0]) <= 2).length;
+                const awakeCount = awakeHR.filter(hr => Math.abs(hr - sleepPoint[0]) <= 2).length;
                 const sleepPercent = sleepHR.length > 0 ? (sleepCount / sleepHR.length * 100).toFixed(1) : 0;
                 const awakePercent = awakeHR.length > 0 ? (awakeCount / awakeHR.length * 100).toFixed(1) : 0;
                 
@@ -781,13 +781,13 @@ function renderDensityPlot(hrData) {
                     .style("opacity", .9);
                 
                 tooltip_density.html(`
-                    <strong>☀️ Awake Curve</strong><br/>
-                    <strong>Heart Rate: ${Math.round(awakePoint[0])} BPM</strong><br/>
-                    <span style="color: #4A90E2;">Sleep Density: ${sleepDensityVal.toFixed(4)}</span><br/>
-                    <span style="color: #E74C3C;">Awake Density: ${awakePoint[1].toFixed(4)}</span><br/>
+                    <strong>💤 Sleep Curve</strong><br/>
+                    <strong>Heart Rate: ${Math.round(sleepPoint[0])} BPM</strong><br/>
+                    <span style="color: #fbbf24;">Sleep Density: ${sleepPoint[1].toFixed(4)}</span><br/>
+                    <span style="color: #f59e0b;">Awake Density: ${awakeDensityVal.toFixed(4)}</span><br/>
                     <hr style="margin: 5px 0; border-color: #444;">
-                    <span style="color: #4A90E2;">Sleep: ${sleepPercent}% of readings</span><br/>
-                    <span style="color: #E74C3C;">Awake: ${awakePercent}% of readings</span>
+                    <span style="color: #fbbf24;">Sleep: ${sleepPercent}% of readings</span><br/>
+                    <span style="color: #f59e0b;">Awake: ${awakePercent}% of readings</span>
                 `)
                 .style("left", (event) => {
                     const tooltip = document.getElementById("tooltip_density");
@@ -796,7 +796,8 @@ function renderDensityPlot(hrData) {
                 })
                 .style("top", (event) => {
                     const tooltip = document.getElementById("tooltip_density");
-                    return `${Math.min(window.innerHeight - tooltip.offsetHeight - 10, event.pageY - 10)}px`;});
+                    return `${Math.min(window.innerHeight - tooltip.offsetHeight - 10, event.pageY - 10)}px`;
+                });
             })
             .on("mouseout", function() {
                 d3.select(this).attr("stroke-width", 3);
