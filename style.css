@@ -3120,3 +3120,445 @@ body {
     font-size: 0.9rem;
     margin: 0;
 }
+/* Complete Sleep Journey Integration Styles */
+
+/* Enhanced Navigation with Step Progress */
+.sleep-journey-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    backdrop-filter: blur(20px);
+    border-bottom: 2px solid rgba(139, 92, 246, 0.4);
+    padding: 12px 20px;
+    z-index: 1000;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
+}
+
+.progress-step {
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-step::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.6s;
+}
+
+.progress-step:hover::before {
+    left: 100%;
+}
+
+.progress-step.completed::after {
+    content: '✓';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 16px;
+    height: 16px;
+    background: #10b981;
+    border-radius: 50%;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+/* Sleep Profile Card with Journey Integration */
+.sleep-profile-card {
+    position: fixed;
+    top: 100px;
+    right: 30px;
+    width: 320px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 80%, #2563eb 100%);
+    border-radius: 20px;
+    padding: 25px;
+    border: 2px solid rgba(139, 92, 246, 0.4);
+    backdrop-filter: blur(20px);
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.4),
+        0 0 40px rgba(139, 92, 246, 0.2);
+    z-index: 999;
+    transform: translateX(350px);
+    transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+    opacity: 0;
+}
+
+.sleep-profile-card.visible {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.sleep-profile-card.step-explore {
+    border-color: rgba(59, 130, 246, 0.4);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 80%, #2563eb 100%);
+}
+
+.sleep-profile-card.step-identify {
+    border-color: rgba(139, 92, 246, 0.4);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 80%, #8b5cf6 100%);
+}
+
+.sleep-profile-card.step-optimize {
+    border-color: rgba(34, 197, 94, 0.4);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 80%, #10b981 100%);
+}
+
+/* Profile Metrics with Enhanced States */
+.profile-metric {
+    border-left: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.profile-metric:nth-child(1) { border-left-color: #3b82f6; }
+.profile-metric:nth-child(2) { border-left-color: #ef4444; }
+.profile-metric:nth-child(3) { border-left-color: #f59e0b; }
+.profile-metric:nth-child(4) { border-left-color: #8b5cf6; }
+.profile-metric:nth-child(5) { border-left-color: #10b981; }
+
+.metric-value:not(.metric-empty) {
+    color: #34d399 !important;
+    font-weight: 600;
+    animation: valueUpdate 0.5s ease-out;
+}
+
+@keyframes valueUpdate {
+    0% { transform: scale(1.1); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Sleep Twin Highlighting */
+.participant-circle.sleep-twin {
+    background: linear-gradient(135deg, #f59e0b, #ef4444) !important;
+    color: white !important;
+    border: 3px solid #fbbf24 !important;
+    position: relative;
+    animation: twinPulse 2s infinite;
+    transform: scale(1.1);
+}
+
+.participant-circle.sleep-twin::after {
+    content: '👯';
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    font-size: 1.2rem;
+    animation: twinFloat 3s ease-in-out infinite;
+}
+
+@keyframes twinPulse {
+    0%, 100% { 
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+    }
+    50% { 
+        box-shadow: 0 0 30px rgba(245, 158, 11, 0.6);
+    }
+}
+
+@keyframes twinFloat {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-5px) rotate(10deg); }
+}
+
+/* Twin Notification */
+.twin-notification {
+    position: fixed;
+    top: 120px;
+    right: 30px;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    border-radius: 15px;
+    padding: 15px 20px;
+    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+    z-index: 1001;
+    animation: slideInNotification 0.5s ease-out;
+    min-width: 280px;
+}
+
+@keyframes slideInNotification {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+}
+
+.notification-icon {
+    font-size: 1.2rem;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-5px); }
+    60% { transform: translateY(-3px); }
+}
+
+.notification-text {
+    flex: 1;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.notification-view {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 5px 12px;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.notification-view:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+/* Enhanced Section Transitions */
+.narrative-transition {
+    background: linear-gradient(135deg, #1e293b 0%, #2563eb 20%, #8b5cf6 100%);
+    border-radius: 20px;
+    padding: 40px;
+    margin: 60px auto;
+    max-width: 800px;
+    text-align: center;
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    box-shadow: 0 20px 60px rgba(139, 92, 246, 0.2);
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.transition-button {
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    border: none;
+    border-radius: 12px;
+    padding: 15px 40px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.transition-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s;
+}
+
+.transition-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(245, 158, 11, 0.4);
+    background: linear-gradient(135deg, #ef4444, #f59e0b);
+}
+
+.transition-button:hover::before {
+    left: 100%;
+}
+
+/* Section Connection Animations */
+.section-enter {
+    animation: sectionSlideIn 0.6s ease-out;
+}
+
+@keyframes sectionSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Enhanced User Section */
+.user-section {
+    transition: all 0.6s ease;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.user-section.active {
+    opacity: 1;
+    transform: translateY(0);
+    animation: sectionSlideIn 0.6s ease-out;
+}
+
+/* Quiz Integration Styles */
+.quiz-section.show {
+    animation: slideIn 0.5s ease-out;
+}
+
+.quiz-progress-fill {
+    transition: width 0.8s ease;
+    background: linear-gradient(90deg, #fbbf24, #f59e0b);
+}
+
+/* Dashboard Integration */
+.dashboard {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.controls {
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.6));
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.slider::-webkit-slider-thumb {
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+}
+
+/* Scroll-based Navigation Indicators */
+.progress-step.in-view {
+    animation: stepPulse 1s ease-out;
+}
+
+@keyframes stepPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Connection Lines Between Sections */
+.section-connector {
+    position: relative;
+    margin: 60px 0;
+}
+
+.section-connector::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 60px;
+    background: linear-gradient(180deg, transparent, rgba(139, 92, 246, 0.5), transparent);
+}
+
+/* Responsive Journey Design */
+@media (max-width: 1200px) {
+    .sleep-profile-card {
+        right: 20px;
+        width: 280px;
+    }
+    
+    .twin-notification {
+        right: 20px;
+        min-width: 260px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sleep-profile-card {
+        position: relative;
+        top: auto;
+        right: auto;
+        width: 100%;
+        margin: 20px auto;
+        transform: none;
+        opacity: 1;
+    }
+    
+    .sleep-profile-card.visible {
+        transform: none;
+    }
+    
+    .twin-notification {
+        position: relative;
+        top: auto;
+        right: auto;
+        margin: 20px auto;
+        max-width: 300px;
+    }
+    
+    .journey-progress {
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .progress-step {
+        min-width: 120px;
+        padding: 10px 16px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Loading States */
+.section-loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.1), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Print Styles */
+@media print {
+    .sleep-journey-nav,
+    .sleep-profile-card,
+    .twin-notification {
+        display: none !important;
+    }
+    
+    .narrative-transition,
+    .user-section,
+    .dashboard {
+        break-inside: avoid;
+    }
+}

@@ -3889,3 +3889,498 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Complete Sleep Journey Integration System
+// This connects all sections: Heart Rate → Hormones → Sleep Twin → Individual Stories → Dashboard
+
+class SleepJourneyIntegration {
+    constructor() {
+        this.currentStep = 'explore';
+        this.userProfile = {
+            duration: null,
+            stress: null,
+            latency: null,
+            chronotype: null,
+            twin: null,
+            completedSections: new Set()
+        };
+        this.journeyData = {};
+        this.init();
+    }
+
+    init() {
+        this.setupNavigationFlow();
+        this.setupProfileCard();
+        this.setupScrollBasedNavigation();
+        this.setupTransitionButtons();
+        this.setupQuizIntegration();
+        this.setupDashboardIntegration();
+        this.initializeJourney();
+    }
+
+    // Step 1: Setup navigation flow between sections
+    setupNavigationFlow() {
+        // Navigation step clicks
+        document.querySelectorAll('.progress-step').forEach(step => {
+            step.addEventListener('click', (e) => {
+                const targetStep = step.getAttribute('data-step');
+                this.navigateToStep(targetStep);
+            });
+        });
+
+        // Update navigation state
+        this.updateNavigationState();
+    }
+
+    // Step 2: Setup profile card that updates throughout journey
+    setupProfileCard() {
+        const profileCard = document.getElementById('sleepProfileCard');
+        if (profileCard) {
+            // Show profile card after short delay
+            setTimeout(() => {
+                profileCard.classList.add('visible');
+            }, 2000);
+        }
+    }
+
+    // Step 3: Setup scroll-based navigation updates
+    setupScrollBasedNavigation() {
+        const observerOptions = {
+            threshold: 0.3,
+            rootMargin: '-100px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const sectionId = entry.target.id;
+                    this.updateStepFromSection(sectionId);
+                }
+            });
+        }, observerOptions);
+
+        // Observe all key sections
+        const sections = [
+            'dualLineContainer',        // Heart Rate Analysis
+            'cortisolMelatoninChart',   // Hormone Balance
+            'interactiveInfo',          // Sleep Twin Finder
+            'quizSection',              // Quiz
+            'results',                  // Results
+            'userSpecificSection',      // Individual Stories
+            'sleepSimulator',           // Sleep Simulator
+            'efficiency-chart'          // Dashboard
+        ].map(id => document.getElementById(id)).filter(el => el);
+
+        sections.forEach(section => observer.observe(section));
+    }
+
+    // Step 4: Setup transition buttons between sections
+    setupTransitionButtons() {
+        // "Explore Individual Sleep Stories" button
+        const exploreButton = document.querySelector('button[onclick="showIndividualSection()"]');
+        if (exploreButton) {
+            exploreButton.addEventListener('click', () => {
+                this.showIndividualSection();
+            });
+        }
+
+        // "Start Quiz" and "Skip to Quiz" buttons
+        document.querySelectorAll('#skipBtn, button:contains("Start Quiz")').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.navigateToStep('identify');
+                this.scrollToElement('quizSection');
+            });
+        });
+
+        // "Optimize Your Sleep" button (after finding twin)
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('transition-button') && 
+                e.target.textContent.includes('Optimize')) {
+                this.navigateToStep('optimize');
+                this.scrollToElement('sleepSimulator');
+            }
+        });
+    }
+
+    // Step 5: Setup quiz integration with profile updates
+    setupQuizIntegration() {
+        // Enhance existing quiz to update profile card
+        const originalInitializePredictions = window.initializePredictions;
+        window.initializePredictions = () => {
+            if (originalInitializePredictions) {
+                originalInitializePredictions();
+            }
+            this.enhanceQuizWithProfileUpdates();
+        };
+
+        // Override displayResults to integrate twin finding
+        const originalDisplayResults = window.displayResults;
+        window.displayResults = (userProfile, match) => {
+            this.handleTwinFound(userProfile, match);
+            if (originalDisplayResults) {
+                originalDisplayResults(userProfile, match);
+            }
+        };
+    }
+
+    // Step 6: Setup dashboard integration
+    setupDashboardIntegration() {
+        // Connect dashboard sliders to profile card
+        setTimeout(() => {
+            this.connectDashboardToProfile();
+        }, 3000);
+    }
+
+    // Navigate to specific step
+    navigateToStep(stepName) {
+        this.currentStep = stepName;
+        this.updateNavigationState();
+        this.updateProfileCardForStep();
+        
+        // Mark step as completed
+        this.userProfile.completedSections.add(stepName);
+        
+        // Update progress in navigation
+        this.updateStepProgress();
+    }
+
+    // Update navigation visual state
+    updateNavigationState() {
+        document.querySelectorAll('.progress-step').forEach(step => {
+            const stepName = step.getAttribute('data-step');
+            step.classList.toggle('active', stepName === this.currentStep);
+            
+            // Mark completed steps
+            const stepOrder = ['explore', 'identify', 'optimize'];
+            const currentIndex = stepOrder.indexOf(this.currentStep);
+            const thisIndex = stepOrder.indexOf(stepName);
+            step.classList.toggle('completed', thisIndex < currentIndex);
+        });
+    }
+
+    // Update step from section visibility
+    updateStepFromSection(sectionId) {
+        const stepMap = {
+            'dualLineContainer': 'explore',
+            'cortisolMelatoninChart': 'explore',
+            'interactiveInfo': 'identify',
+            'quizSection': 'identify',
+            'results': 'identify',
+            'userSpecificSection': 'identify',
+            'sleepSimulator': 'optimize',
+            'efficiency-chart': 'optimize'
+        };
+
+        const newStep = stepMap[sectionId];
+        if (newStep && newStep !== this.currentStep) {
+            this.navigateToStep(newStep);
+        }
+    }
+
+    // Show individual section with smooth transition
+    showIndividualSection() {
+        const userSection = document.getElementById("userSpecificSection");
+        const button = document.getElementById("toggleUserView");
+        
+        if (userSection && button) {
+            userSection.style.display = "block";
+            userSection.classList.add('active');
+            
+            // Update button
+            button.textContent = "🔒 Hide Individual Data ";
+            button.classList.add('expanded');
+            
+            // Navigate to identify step
+            this.navigateToStep('identify');
+            
+            // Smooth scroll
+            setTimeout(() => {
+                this.scrollToElement('userSpecificSection');
+            }, 300);
+        }
+    }
+
+    // Enhanced quiz with profile card updates
+    enhanceQuizWithProfileUpdates() {
+        // Monitor slider changes
+        const sliders = [
+            { id: 'sleepHours', profileKey: 'duration', formatter: (v) => `${v}h` },
+            { id: 'sleepLatency', profileKey: 'latency', formatter: (v) => `${v}min` }
+        ];
+
+        sliders.forEach(({ id, profileKey, formatter }) => {
+            const slider = document.getElementById(id);
+            if (slider) {
+                slider.addEventListener('input', (e) => {
+                    this.updateProfileData(profileKey, formatter(e.target.value));
+                });
+            }
+        });
+
+        // Monitor radio button changes
+        const radioGroups = [
+            { name: 'stress', profileKey: 'stress', 
+              labels: ['Very Low', 'Low', 'Moderate', 'High', 'Very High'] },
+            { name: 'chronotype', profileKey: 'chronotype',
+              labels: ['Evening', 'Mod. Evening', 'Neutral', 'Mod. Morning', 'Morning'] }
+        ];
+
+        radioGroups.forEach(({ name, profileKey, labels }) => {
+            document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        const value = parseInt(e.target.value);
+                        this.updateProfileData(profileKey, labels[value - 1]);
+                    }
+                });
+            });
+        });
+    }
+
+    // Handle when sleep twin is found
+    handleTwinFound(userProfile, match) {
+        const participant = match.participant;
+        const twinId = participant.id.replace('user_', '');
+        
+        // Update profile card
+        this.updateProfileData('twin', `Participant ${twinId}`);
+        
+        // Store twin data for later use
+        this.journeyData.sleepTwin = {
+            id: twinId,
+            participant: participant,
+            similarity: match.similarity,
+            userProfile: userProfile
+        };
+        
+        // Highlight twin in individual section
+        this.highlightSleepTwin(twinId);
+        
+        // Show transition to optimization
+        setTimeout(() => {
+            this.showOptimizationTransition();
+        }, 2000);
+    }
+
+    // Highlight sleep twin in participant navigation
+    highlightSleepTwin(twinId) {
+        const participantCircle = document.getElementById(`user-${twinId}`);
+        if (participantCircle) {
+            participantCircle.classList.add('sleep-twin');
+            
+            // Add special twin notification
+            setTimeout(() => {
+                this.showTwinNotification(twinId);
+            }, 1000);
+        }
+    }
+
+    // Show twin notification
+    showTwinNotification(twinId) {
+        const notification = document.createElement('div');
+        notification.className = 'twin-notification';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <span class="notification-icon">👯</span>
+                <span class="notification-text">Found your sleep twin: Participant ${twinId}!</span>
+                <button class="notification-view" onclick="window.sleepJourney.viewTwinData(${twinId})">View Data</button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 6 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 6000);
+    }
+
+    // View twin data function
+    viewTwinData(twinId) {
+        // Load twin's individual data
+        if (window.loadParticipantData) {
+            window.loadParticipantData(parseInt(twinId));
+        }
+        
+        // Show individual section
+        this.showIndividualSection();
+        
+        // Remove notification
+        const notification = document.querySelector('.twin-notification');
+        if (notification) notification.remove();
+    }
+
+    // Show optimization transition
+    showOptimizationTransition() {
+        const transition = document.getElementById('transition2');
+        if (transition) {
+            transition.style.display = 'block';
+            setTimeout(() => {
+                this.scrollToElement('transition2');
+            }, 500);
+        }
+    }
+
+    // Connect dashboard to profile card
+    connectDashboardToProfile() {
+        const sliders = [
+            { id: 'duration-slider', profileKey: 'duration', formatter: (v) => `${v}h` },
+            { id: 'stress-slider', profileKey: 'stress', 
+              formatter: (v) => {
+                  const val = parseInt(v);
+                  if (val < 20) return 'Low';
+                  if (val < 35) return 'Moderate';
+                  if (val < 50) return 'High';
+                  return 'Very High';
+              }
+            }
+        ];
+
+        sliders.forEach(({ id, profileKey, formatter }) => {
+            const slider = document.getElementById(id);
+            if (slider) {
+                slider.addEventListener('input', (e) => {
+                    this.updateProfileData(profileKey, formatter(e.target.value));
+                });
+                
+                // Initialize with current value
+                this.updateProfileData(profileKey, formatter(slider.value));
+            }
+        });
+    }
+
+    // Update profile data and render
+    updateProfileData(key, value) {
+        this.userProfile[key] = value;
+        this.renderProfileMetrics();
+    }
+
+    // Render profile metrics
+    renderProfileMetrics() {
+        const metrics = {
+            'profileDuration': this.userProfile.duration || '--',
+            'profileStress': this.userProfile.stress || '--',
+            'profileLatency': this.userProfile.latency || '--',
+            'profileChronotype': this.getChronotypeText(this.userProfile.chronotype),
+            'profileTwin': this.userProfile.twin || '--'
+        };
+
+        Object.entries(metrics).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+                element.classList.toggle('metric-empty', value === '--');
+            }
+        });
+    }
+
+    // Get chronotype text
+    getChronotypeText(chronotype) {
+        const types = {
+            1: 'Evening', 2: 'Mod. Evening', 3: 'Neutral', 
+            4: 'Mod. Morning', 5: 'Morning'
+        };
+        return types[chronotype] || '--';
+    }
+
+    // Update profile card for current step
+    updateProfileCardForStep() {
+        const profileCard = document.getElementById('sleepProfileCard');
+        if (!profileCard) return;
+
+        const stepDescriptions = {
+            'explore': 'Exploring sleep patterns...',
+            'identify': 'Finding your sleep twin...',
+            'optimize': 'Optimizing your sleep...'
+        };
+
+        const subtitle = profileCard.querySelector('.profile-subtitle');
+        if (subtitle) {
+            subtitle.textContent = stepDescriptions[this.currentStep] || 'Building as you explore...';
+        }
+
+        // Add step-specific styling
+        profileCard.className = `sleep-profile-card visible step-${this.currentStep}`;
+    }
+
+    // Smooth scroll to element
+    scrollToElement(elementId) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            const headerOffset = 100;
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+    }
+
+    // Initialize journey
+    initializeJourney() {
+        // Set initial state
+        this.navigateToStep('explore');
+        
+        // Update profile card subtitle
+        this.updateProfileCardForStep();
+        
+        console.log('🌙 Sleep Journey Integration initialized!');
+        console.log('✨ Navigation, profile card, and section connections are active');
+    }
+
+    // Update step progress visually
+    updateStepProgress() {
+        const stepOrder = ['explore', 'identify', 'optimize'];
+        const currentIndex = stepOrder.indexOf(this.currentStep);
+        
+        stepOrder.forEach((step, index) => {
+            const stepElement = document.querySelector(`[data-step="${step}"]`);
+            if (stepElement) {
+                stepElement.classList.toggle('completed', index < currentIndex);
+                stepElement.classList.toggle('active', index === currentIndex);
+            }
+        });
+    }
+}
+
+// Global functions for backwards compatibility
+window.showIndividualSection = function() {
+    if (window.sleepJourney) {
+        window.sleepJourney.showIndividualSection();
+    }
+};
+
+window.showDashboard = function() {
+    if (window.sleepJourney) {
+        window.sleepJourney.navigateToStep('optimize');
+        window.sleepJourney.scrollToElement('sleepSimulator');
+    }
+};
+
+// Initialize the complete sleep journey system
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait for all components to load
+    setTimeout(() => {
+        window.sleepJourney = new SleepJourneyIntegration();
+        
+        // Debug functions
+        window.testJourney = function() {
+            console.log('🧪 Testing journey integration...');
+            console.log('Current step:', window.sleepJourney.currentStep);
+            console.log('User profile:', window.sleepJourney.userProfile);
+            console.log('Journey data:', window.sleepJourney.journeyData);
+        };
+        
+        window.simulateTwin = function() {
+            console.log('🎭 Simulating sleep twin discovery...');
+            window.sleepJourney.handleTwinFound(
+                { age: 27, sleepHours: 7.5, stressLevel: 3 },
+                { participant: { id: 'user_5' }, similarity: 89.5 }
+            );
+        };
+        
+    }, 1500);
+});
