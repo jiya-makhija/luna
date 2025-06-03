@@ -474,6 +474,7 @@ body::before {
     gap: 50px;
     align-items: stretch;
     margin-top: 60px;
+    background-color: #0f172a;
 }
 
 .dual-content-layout.reverse {
