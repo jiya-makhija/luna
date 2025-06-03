@@ -504,18 +504,15 @@ body::before {
 }
 
 .chart-container {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    border-radius: 25px;
-    padding: 40px;
+    background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%) !important; /* Much darker background */
+    border-radius: 25px !important;
+    padding: 40px !important;
     box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.4),
-        0 0 30px rgba(59, 130, 246, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    backdrop-filter: blur(15px);
-    transition: all 0.4s ease;
-    width: 100%;
-    position: relative;
+        0 20px 60px rgba(0, 0, 0, 0.6),
+        0 0 30px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(251, 191, 36, 0.2) !important;
+    backdrop-filter: blur(15px) !important;
 }
 
 .chart-container::before {
@@ -1218,13 +1215,18 @@ body::before {
 }
 
 /* Enhanced Chart Styles */
-.chart-title-HR, .chart-title {
+.chart-title {
     font-size: 1.5rem;
     font-weight: 600;
     fill: #f1f5f9;
     text-anchor: middle;
 }
 
+.chart-title-HR {
+    fill: #f1f5f9 !important;
+    font-weight: 600;
+    font-size: 1.5rem;
+}
 .axis-label, .axis-title {
     font-weight: 600;
     fill: #cbd5e1;
