@@ -466,7 +466,225 @@ body::before {
     font-weight: 300;
     opacity: 0.9;
 }
+/* Heart Rate Density Chart Fix */
 
+/* Main container styling */
+#dualLineContainer {
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.6) 100%) !important;
+    border-radius: 25px !important;
+    padding: 40px !important;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.4),
+        0 0 30px rgba(251, 191, 36, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(251, 191, 36, 0.2) !important;
+    backdrop-filter: blur(20px) !important;
+    transition: all 0.4s ease !important;
+    position: relative !important;
+    overflow: visible !important;
+    min-height: 500px !important;
+    width: 100% !important;
+}
+
+#dualLineContainer:hover {
+    transform: translateY(-8px) !important;
+    box-shadow: 
+        0 30px 80px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(251, 191, 36, 0.2) !important;
+}
+
+/* Chart SVG background */
+#dual-line-chart svg {
+    background: transparent !important;
+    border-radius: 15px !important;
+    width: 100% !important;
+    height: auto !important;
+}
+
+/* Chart title styling */
+#dual-line-chart .chart-title-HR,
+#dual-line-chart .chart-title {
+    fill: #f1f5f9 !important;
+    font-family: 'Playfair Display', serif !important;
+    font-weight: 600 !important;
+    font-size: 1.8rem !important;
+}
+
+/* Axis styling */
+#dual-line-chart .axis path,
+#dual-line-chart .axis line {
+    stroke: #64748b !important;
+    stroke-width: 2px !important;
+}
+
+#dual-line-chart .axis text {
+    fill: #cbd5e1 !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+}
+
+/* Axis labels */
+#dual-line-chart .axis-title {
+    fill: #f1f5f9 !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 16px !important;
+}
+
+/* Legend styling */
+#dual-line-chart text {
+    fill: #f1f5f9 !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 500 !important;
+}
+
+/* Grid lines */
+#dual-line-chart .grid line {
+    stroke: rgba(100, 116, 139, 0.3) !important;
+    stroke-dasharray: 3,3 !important;
+}
+
+#dual-line-chart .grid path {
+    stroke-width: 0 !important;
+}
+
+/* Sleep and Awake curve lines */
+#dual-line-chart path[stroke="#4A90E2"] {
+    stroke: #60a5fa !important;
+    stroke-width: 3px !important;
+    filter: drop-shadow(0 2px 4px rgba(96, 165, 250, 0.3)) !important;
+}
+
+#dual-line-chart path[stroke="#E74C3C"] {
+    stroke: #ef4444 !important;
+    stroke-width: 3px !important;
+    filter: drop-shadow(0 2px 4px rgba(239, 68, 68, 0.3)) !important;
+}
+
+/* Area fills */
+#dual-line-chart path[fill="#4A90E2"] {
+    fill: rgba(96, 165, 250, 0.2) !important;
+}
+
+#dual-line-chart path[fill="#E74C3C"] {
+    fill: rgba(239, 68, 68, 0.2) !important;
+}
+
+/* Overlap area */
+#dual-line-chart path[fill="#9B59B6"] {
+    fill: rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Mean lines */
+#dual-line-chart line[stroke="#4A90E2"] {
+    stroke: #60a5fa !important;
+    stroke-width: 2px !important;
+}
+
+#dual-line-chart line[stroke="#E74C3C"] {
+    stroke: #ef4444 !important;
+    stroke-width: 2px !important;
+}
+
+/* Loading message */
+#loadingMessage {
+    color: #cbd5e1 !important;
+    background: transparent !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* Enhanced tooltip for density chart */
+#tooltip_density {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95)) !important;
+    color: #f1f5f9 !important;
+    border-radius: 15px !important;
+    padding: 20px 25px !important;
+    font-size: 0.95rem !important;
+    z-index: 10000 !important;
+    pointer-events: none !important;
+    box-shadow: 
+        0 15px 40px rgba(0, 0, 0, 0.6),
+        0 0 25px rgba(251, 191, 36, 0.3) !important;
+    opacity: 0 !important;
+    transition: all 0.3s ease !important;
+    max-width: 350px !important;
+    backdrop-filter: blur(20px) !important;
+    border: 2px solid rgba(251, 191, 36, 0.3) !important;
+    font-weight: 500 !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* Remove any conflicting chart backgrounds */
+#dualLineContainer .chart-container,
+#dual-line-chart {
+    background: transparent !important;
+}
+
+/* Ensure title is visible */
+#dualLineTitle {
+    color: #f1f5f9 !important;
+    font-family: 'Playfair Display', serif !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    margin-bottom: 20px !important;
+    font-size: 1.8rem !important;
+}
+
+/* Animation on load */
+@keyframes heartChartFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#dual-line-chart svg {
+    animation: heartChartFadeIn 0.8s ease-out !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #dualLineContainer {
+        padding: 20px !important;
+        min-height: 400px !important;
+    }
+    
+    #dual-line-chart .chart-title-HR,
+    #dual-line-chart .chart-title,
+    #dualLineTitle {
+        font-size: 1.4rem !important;
+    }
+    
+    #dual-line-chart .axis text {
+        font-size: 12px !important;
+    }
+    
+    #dual-line-chart .axis-title {
+        font-size: 14px !important;
+    }
+}
+
+/* Print styles */
+@media print {
+    #dualLineContainer {
+        background: white !important;
+        color: black !important;
+        box-shadow: none !important;
+        border: 1px solid black !important;
+    }
+    
+    #dual-line-chart .chart-title-HR,
+    #dual-line-chart .chart-title,
+    #dual-line-chart .axis text,
+    #dual-line-chart .axis-title {
+        fill: black !important;
+    }
+}
 /* Enhanced Chart Containers */
 .dual-content-layout {
     display: grid;
