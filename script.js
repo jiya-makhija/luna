@@ -598,6 +598,111 @@ function renderCortisolMelatoninChart(avgCortisolBeforeSleep, avgCortisolWakeUp,
     setTimeout(addTooltipInteractions, 1200);
 }
 
+// Heart Rate Chart Styling Patch - Add this to your script.js
+
+// Function to apply proper styling to the heart rate chart
+function applyHeartRateChartStyling() {
+    const container = document.getElementById('dualLineContainer');
+    const chart = document.getElementById('dual-line-chart');
+    
+    if (container) {
+        // Ensure container has proper styling
+        container.style.background = 'linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.6) 100%)';
+        container.style.borderRadius = '25px';
+        container.style.padding = '40px';
+        container.style.boxShadow = '0 20px 60px rgba(0, 0, 0, 0.4), 0 0 30px rgba(251, 191, 36, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
+        container.style.border = '1px solid rgba(251, 191, 36, 0.2)';
+        container.style.backdropFilter = 'blur(20px)';
+        container.style.minHeight = '500px';
+    }
+    
+    if (chart) {
+        // Ensure chart background is transparent
+        chart.style.background = 'transparent';
+        
+        // Find and style the SVG
+        const svg = chart.querySelector('svg');
+        if (svg) {
+            svg.style.background = 'transparent';
+            svg.style.borderRadius = '15px';
+        }
+        
+        // Style all text elements
+        const textElements = chart.querySelectorAll('text');
+        textElements.forEach(text => {
+            if (!text.style.fill || text.style.fill === 'black' || text.style.fill === '#000000') {
+                text.style.fill = '#f1f5f9';
+                text.style.fontFamily = "'Inter', sans-serif";
+            }
+        });
+        
+        // Style axis elements
+        const axisLines = chart.querySelectorAll('.axis line, .axis path');
+        axisLines.forEach(line => {
+            line.style.stroke = '#64748b';
+            line.style.strokeWidth = '2px';
+        });
+        
+        // Style grid lines
+        const gridLines = chart.querySelectorAll('.grid line');
+        gridLines.forEach(line => {
+            line.style.stroke = 'rgba(100, 116, 139, 0.3)';
+            line.style.strokeDasharray = '3,3';
+        });
+    }
+}
+
+// Apply styling after chart is rendered
+const originalRenderDensityPlot = window.renderDensityPlot;
+if (originalRenderDensityPlot) {
+    window.renderDensityPlot = function(hrData) {
+        // Call original function
+        originalRenderDensityPlot(hrData);
+        
+        // Apply styling after a short delay to ensure DOM is updated
+        setTimeout(() => {
+            applyHeartRateChartStyling();
+        }, 500);
+    };
+}
+
+// Also apply styling when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Apply styling with delays to catch chart when it loads
+    setTimeout(applyHeartRateChartStyling, 2000);
+    setTimeout(applyHeartRateChartStyling, 5000);
+});
+
+// Observer to detect when chart is added to DOM
+const chartObserver = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        if (mutation.type === 'childList') {
+            mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1) { // Element node
+                    if (node.querySelector && (node.querySelector('#dual-line-chart svg') || node.id === 'dual-line-chart')) {
+                        setTimeout(applyHeartRateChartStyling, 100);
+                    }
+                }
+            });
+        }
+    });
+});
+
+// Start observing
+const dualLineContainer = document.getElementById('dualLineContainer');
+if (dualLineContainer) {
+    chartObserver.observe(dualLineContainer, {
+        childList: true,
+        subtree: true
+    });
+}
+
+// Manual trigger function for testing
+window.fixHeartRateChart = function() {
+    applyHeartRateChartStyling();
+    console.log('✅ Heart rate chart styling applied manually');
+};
+
 // Function to aggregate heart rate data across all users for density plot
 async function aggregateHeartRateData() {
     const sleepHRValues = [];
