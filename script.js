@@ -3480,3 +3480,411 @@ document.addEventListener('DOMContentLoaded', function() {
    new InfoController();
 });
 
+
+// Enhanced Navigation and Journey Controller
+class SleepJourneyController {
+    constructor() {
+        this.currentStep = 'explore';
+        this.userProfile = {
+            duration: null,
+            stress: null,
+            latency: null,
+            chronotype: null,
+            twin: null
+        };
+        this.init();
+    }
+
+    init() {
+        this.setupNavigationListeners();
+        this.setupProfileCardVisibility();
+        this.initializeStepVisibility();
+        this.updateNavigationState();
+    }
+
+    setupNavigationListeners() {
+        // Navigation step clicks
+        document.querySelectorAll('.progress-step').forEach(step => {
+            step.addEventListener('click', (e) => {
+                const targetStep = step.getAttribute('data-step');
+                this.navigateToStep(targetStep);
+            });
+        });
+
+        // Scroll-based navigation updates
+        this.setupScrollNavigation();
+        
+        // Transition button listeners
+        this.setupTransitionButtons();
+    }
+
+    setupScrollNavigation() {
+        const observerOptions = {
+            threshold: 0.3,
+            rootMargin: '-100px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const sectionId = entry.target.id;
+                    this.updateStepFromSection(sectionId);
+                }
+            });
+        }, observerOptions);
+
+        // Observe key sections
+        const sections = [
+            'dual-line-chart',
+            'cortisolMelatoninChart', 
+            'interactiveInfo',
+            'quizSection',
+            'results'
+        ].map(id => document.getElementById(id)).filter(el => el);
+
+        sections.forEach(section => observer.observe(section));
+    }
+
+    setupTransitionButtons() {
+        // Individual section show button
+        const toggleButton = document.getElementById('toggleUserView');
+        if (toggleButton) {
+            toggleButton.addEventListener('click', () => {
+                this.showIndividualSection();
+            });
+        }
+
+        // Transition buttons
+        document.querySelectorAll('.transition-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const buttonText = button.textContent.toLowerCase();
+                if (buttonText.includes('individual') || buttonText.includes('explore')) {
+                    this.showIndividualSection();
+                } else if (buttonText.includes('optimize')) {
+                    this.navigateToStep('optimize');
+                }
+            });
+        });
+    }
+
+    setupProfileCardVisibility() {
+        const profileCard = document.getElementById('sleepProfileCard');
+        if (profileCard) {
+            // Show profile card after user starts interacting
+            setTimeout(() => {
+                profileCard.classList.add('visible');
+            }, 3000);
+        }
+    }
+
+    navigateToStep(stepName) {
+        this.currentStep = stepName;
+        this.updateNavigationState();
+        this.scrollToStepSection(stepName);
+        this.updateProfileCard();
+    }
+
+    updateStepFromSection(sectionId) {
+        const stepMap = {
+            'dual-line-chart': 'explore',
+            'cortisolMelatoninChart': 'explore',
+            'interactiveInfo': 'identify',
+            'quizSection': 'identify', 
+            'results': 'identify',
+            'sleepSimulator': 'optimize',
+            'efficiency-chart': 'optimize'
+        };
+
+        const newStep = stepMap[sectionId];
+        if (newStep && newStep !== this.currentStep) {
+            this.currentStep = newStep;
+            this.updateNavigationState();
+        }
+    }
+
+    updateNavigationState() {
+        // Update active step in navigation
+        document.querySelectorAll('.progress-step').forEach(step => {
+            const stepName = step.getAttribute('data-step');
+            step.classList.toggle('active', stepName === this.currentStep);
+            
+            // Mark completed steps
+            const stepOrder = ['explore', 'identify', 'optimize'];
+            const currentIndex = stepOrder.indexOf(this.currentStep);
+            const thisIndex = stepOrder.indexOf(stepName);
+            step.classList.toggle('completed', thisIndex < currentIndex);
+        });
+
+        // Update profile card state based on step
+        this.updateProfileCardForStep();
+    }
+
+    scrollToStepSection(stepName) {
+        const sectionMap = {
+            'explore': 'dualLineContainer',
+            'identify': 'interactiveInfo', 
+            'optimize': 'sleepSimulator'
+        };
+
+        const targetId = sectionMap[stepName];
+        const targetElement = document.getElementById(targetId);
+        
+        if (targetElement) {
+            const headerOffset = 100;
+            const elementPosition = targetElement.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+    }
+
+    showIndividualSection() {
+        const userSection = document.getElementById("userSpecificSection");
+        const button = document.getElementById("toggleUserView");
+        
+        if (userSection && button) {
+            userSection.style.display = "block";
+            userSection.classList.add('active');
+            button.textContent = "🔒 Hide Individual Data ";
+            button.classList.add('expanded');
+            
+            // Update navigation to identify step
+            this.navigateToStep('identify');
+            
+            // Smooth scroll to the section
+            setTimeout(() => {
+                userSection.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }, 300);
+        }
+    }
+
+    showDashboard() {
+        const dashboard = document.querySelector('.dashboard');
+        if (dashboard) {
+            this.navigateToStep('optimize');
+            dashboard.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+    }
+
+    updateProfileCard() {
+        const profileCard = document.getElementById('sleepProfileCard');
+        if (!profileCard) return;
+
+        const stepDescriptions = {
+            'explore': 'Exploring sleep patterns...',
+            'identify': 'Finding your sleep twin...',
+            'optimize': 'Optimizing your sleep...'
+        };
+
+        const subtitle = profileCard.querySelector('.profile-subtitle');
+        if (subtitle) {
+            subtitle.textContent = stepDescriptions[this.currentStep] || 'Building as you explore...';
+        }
+    }
+
+    updateProfileCardForStep() {
+        const profileCard = document.getElementById('sleepProfileCard');
+        if (!profileCard) return;
+
+        // Add step-specific styling
+        profileCard.className = `sleep-profile-card visible step-${this.currentStep}`;
+    }
+
+    // Method to update profile data from quiz/interactions
+    updateProfileData(key, value) {
+        this.userProfile[key] = value;
+        this.renderProfileMetrics();
+    }
+
+    renderProfileMetrics() {
+        const metrics = {
+            'profileDuration': this.userProfile.duration ? `${this.userProfile.duration}h` : '--',
+            'profileStress': this.userProfile.stress || '--',
+            'profileLatency': this.userProfile.latency ? `${this.userProfile.latency}min` : '--',
+            'profileChronotype': this.getChronotypeText(this.userProfile.chronotype),
+            'profileTwin': this.userProfile.twin || '--'
+        };
+
+        Object.entries(metrics).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+                element.classList.toggle('metric-empty', value === '--');
+            }
+        });
+    }
+
+    getChronotypeText(chronotype) {
+        const types = {
+            1: 'Evening',
+            2: 'Mod. Evening', 
+            3: 'Neutral',
+            4: 'Mod. Morning',
+            5: 'Morning'
+        };
+        return types[chronotype] || '--';
+    }
+}
+
+// Enhanced Quiz Controller with Profile Updates
+class EnhancedQuizController extends QuizController {
+    constructor(journeyController) {
+        super();
+        this.journeyController = journeyController;
+    }
+
+    saveCurrentAnswer() {
+        super.saveCurrentAnswer();
+        
+        // Update profile card as user progresses
+        switch (this.currentQuestion) {
+            case 2:
+                this.journeyController.updateProfileData('duration', this.answers.sleepHours);
+                break;
+            case 3:
+                this.journeyController.updateProfileData('stress', 
+                    ['Very Low', 'Low', 'Moderate', 'High', 'Very High'][this.answers.stressLevel - 1]);
+                break;
+            case 4:
+                this.journeyController.updateProfileData('latency', this.answers.sleepLatency);
+                break;
+            case 6:
+                this.journeyController.updateProfileData('chronotype', this.answers.chronotype);
+                break;
+        }
+    }
+
+    submitQuiz() {
+        super.submitQuiz();
+        
+        // Move to identify step when quiz is submitted
+        this.journeyController.navigateToStep('identify');
+    }
+}
+
+// Enhanced Results Display with Navigation Integration
+function enhancedDisplayResults(userProfile, match, journeyController) {
+    const participant = match.participant;
+    const similarity = match.similarity.toFixed(1);
+    
+    // Update profile card with twin info
+    const twinId = participant.id.replace('user_', '');
+    journeyController.updateProfileData('twin', `Participant ${twinId}`);
+    
+    // Show transition to optimize step
+    const transition2 = document.getElementById('transition2');
+    if (transition2) {
+        transition2.style.display = 'block';
+        setTimeout(() => {
+            transition2.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 1000);
+    }
+    
+    // Highlight the matched participant in individual view
+    highlightSleepTwin(twinId);
+    
+    // Call original display function
+    displayResults(userProfile, match);
+}
+
+function highlightSleepTwin(twinId) {
+    // Add special styling to the matched participant
+    const participantCircle = document.getElementById(`user-${twinId}`);
+    if (participantCircle) {
+        participantCircle.classList.add('sleep-twin');
+        
+        // Add notification
+        setTimeout(() => {
+            createTwinNotification(twinId);
+        }, 2000);
+    }
+}
+
+function createTwinNotification(twinId) {
+    const notification = document.createElement('div');
+    notification.className = 'twin-notification';
+    notification.innerHTML = `
+        <div class="notification-content">
+            <span class="notification-icon">👯</span>
+            <span class="notification-text">Your sleep twin is Participant ${twinId}!</span>
+            <button class="notification-view" onclick="viewTwinData(${twinId})">View Data</button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+
+function viewTwinData(twinId) {
+    // Load the twin's data and scroll to individual section
+    if (window.loadParticipantData) {
+        loadParticipantData(parseInt(twinId));
+    }
+    
+    const userSection = document.getElementById("userSpecificSection");
+    if (userSection) {
+        userSection.style.display = "block";
+        userSection.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // Remove notification
+    const notification = document.querySelector('.twin-notification');
+    if (notification) notification.remove();
+}
+
+// Global functions for transition buttons
+function showIndividualSection() {
+    if (window.journeyController) {
+        window.journeyController.showIndividualSection();
+    }
+}
+
+function showDashboard() {
+    if (window.journeyController) {
+        window.journeyController.showDashboard();
+    }
+}
+
+// Initialize everything when DOM loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize journey controller
+    window.journeyController = new SleepJourneyController();
+    
+    // Override the original QuizController initialization
+    window.initializePredictions = function() {
+        new EnhancedQuizController(window.journeyController);
+    };
+    
+    // Override displayResults to use enhanced version
+    const originalDisplayResults = window.displayResults;
+    window.displayResults = function(userProfile, match) {
+        enhancedDisplayResults(userProfile, match, window.journeyController);
+    };
+    
+    // Add smooth scrolling to all internal links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+});
