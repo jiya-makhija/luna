@@ -10,6 +10,59 @@
 
 </head>
 <body>
+
+<!-- Persistent Navigation Bar -->
+<nav class="sleep-journey-nav" id="sleepJourneyNav">
+    <div class="nav-container">
+        <div class="journey-progress">
+            <div class="progress-step active" data-step="explore">
+                <span class="step-icon">🔍</span>
+                <span>Explore</span>
+            </div>
+            <div class="step-connector"></div>
+            <div class="progress-step" data-step="identify">
+                <span class="step-icon">🎯</span>
+                <span>Identify</span>
+            </div>
+            <div class="step-connector"></div>
+            <div class="progress-step" data-step="optimize">
+                <span class="step-icon">⚡</span>
+                <span>Optimize</span>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Sleep Profile Card -->
+<div class="sleep-profile-card" id="sleepProfileCard">
+    <div class="profile-header">
+        <div class="profile-title">Your Sleep Profile</div>
+        <div class="profile-subtitle">Building as you explore...</div>
+    </div>
+    
+    <div class="profile-metrics">
+        <div class="profile-metric">
+            <span class="metric-label">Sleep Duration</span>
+            <span class="metric-value metric-empty" id="profileDuration">--</span>
+        </div>
+        <div class="profile-metric">
+            <span class="metric-label">Stress Level</span>
+            <span class="metric-value metric-empty" id="profileStress">--</span>
+        </div>
+        <div class="profile-metric">
+            <span class="metric-label">Sleep Latency</span>
+            <span class="metric-value metric-empty" id="profileLatency">--</span>
+        </div>
+        <div class="profile-metric">
+            <span class="metric-label">Chronotype</span>
+            <span class="metric-value metric-empty" id="profileChronotype">--</span>
+        </div>
+        <div class="profile-metric">
+            <span class="metric-label">Sleep Twin</span>
+            <span class="metric-value metric-empty" id="profileTwin">--</span>
+        </div>
+    </div>
+</div>
     <!-- Hero Section with Enhanced Luna -->
     <header class="hero-section">
         <div class="hero-content">
@@ -100,6 +153,17 @@
                 </div>
             </div>
         </section>
+        <div class="narrative-transition" id="transition1">
+            <div class="transition-icon">🔍</div>
+            <h2 class="transition-title">Curious About Individual Patterns?</h2>
+            <p class="transition-text">
+                You've seen how heart rates vary between sleep and wake periods across all participants. 
+                Now dive deeper into personal sleep stories and discover the unique patterns of individual participants.
+            </p>
+            <button class="transition-button" onclick="showIndividualSection()">
+                Explore Individual Sleep Stories
+            </button>
+        </div>
 
         <!-- Hormone Analysis Section -->
         <section class="analysis-section hormone-section">
@@ -313,6 +377,18 @@
             <div id="matchResults" style="display: none;"></div>
         </div>
     </div>
+    <div class="narrative-transition" id="transition2" style="display: none;">
+        <div class="transition-icon">⚡</div>
+        <h2 class="transition-title">Now Let's Optimize Your Sleep</h2>
+        <p class="transition-text">
+            Great! You've found your sleep twin and learned about your patterns. 
+            Now let's explore how small changes in lifestyle factors could improve your sleep quality.
+        </p>
+        <button class="transition-button" onclick="showDashboard()">
+            Optimize Your Sleep
+        </button>
+    </div>
+    
 
     <!-- Interactive Section Toggle -->
     <section class="interactive-section">
@@ -401,6 +477,67 @@
             </section>
         </div>
     </div>
+    <div class="sleep-simulator" id="sleepSimulator" style="display: none;">
+        <div class="simulator-header">
+            <h2 class="simulator-title">Your Sleep Twin Simulation</h2>
+            <p class="simulator-subtitle" id="simulatorSubtitle">Compare your patterns with your matched participant</p>
+        </div>
+
+        <div class="simulation-container">
+            <div class="simulation-panel current">
+                <div class="panel-header">
+                    <div class="panel-icon">📊</div>
+                    <h3 class="panel-title">Current Pattern</h3>
+                </div>
+                <div id="currentMetrics">
+                    <!-- Current metrics will be populated -->
+                </div>
+            </div>
+
+            <div class="simulation-panel optimized">
+                <div class="panel-header">
+                    <div class="panel-icon">⚡</div>
+                    <h3 class="panel-title">Optimized Potential</h3>
+                </div>
+                <div id="optimizedMetrics">
+                    <!-- Optimized metrics will be populated -->
+                </div>
+            </div>
+        </div>
+
+        <div class="optimization-controls">
+            <h3 class="controls-title">Adjust Lifestyle Factors</h3>
+            
+            <div class="control-group">
+                <label class="control-label">
+                    Sleep Duration
+                    <span class="control-value" id="durationValue">7.5h</span>
+                </label>
+                <input type="range" class="control-slider" id="durationSlider" 
+                       min="6" max="9" step="0.5" value="7.5">
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">
+                    Stress Management
+                    <span class="control-value" id="stressValue">Moderate</span>
+                </label>
+                <input type="range" class="control-slider" id="stressSlider" 
+                       min="1" max="5" step="1" value="3">
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">
+                    Sleep Hygiene Score
+                    <span class="control-value" id="hygieneValue">7/10</span>
+                </label>
+                <input type="range" class="control-slider" id="hygieneSlider" 
+                       min="1" max="10" step="1" value="7">
+            </div>
+        </div>
+    </div>
+
+
 
     <div class="dashboard">
         <div class="header">
