@@ -88,28 +88,6 @@ function createLunaSparkles() {
     }
 }
 
-function toggleSleepyMoon() {
-    const leftEye = document.getElementById('left-eye');
-    const rightEye = document.getElementById('right-eye');
-    
-    // Toggle sleepy state
-    leftEye.classList.toggle('sleepy');
-    rightEye.classList.toggle('sleepy');
-    
-    // Add a little bounce effect
-    const lunaChar = document.querySelector('.luna-character');
-    lunaChar.style.animation = 'none';
-    setTimeout(() => {
-        lunaChar.style.animation = 'luna-float 8s ease-in-out infinite';
-    }, 100);
-}
-
-// Auto-toggle sleepy state occasionally
-setInterval(() => {
-    if (Math.random() < 0.3) { // 30% chance every 8 seconds
-        toggleSleepyMoon();
-    }
-}, 8000);
 
 // Mini Luna interactions
 document.addEventListener('DOMContentLoaded', function() {
