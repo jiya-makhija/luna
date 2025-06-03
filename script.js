@@ -235,240 +235,368 @@ Promise.all(
     // ✅ Render the chart AFTER data is loaded and processed
     renderCortisolMelatoninChart(avgCortisolBeforeSleep, avgCortisolWakeUp, avgMelatoninBeforeSleep, avgMelatoninWakeUp);
 });
+// Enhanced Hormone Chart Rendering - Replace your existing renderCortisolMelatoninChart function
 
 function renderCortisolMelatoninChart(avgCortisolBeforeSleep, avgCortisolWakeUp, avgMelatoninBeforeSleep, avgMelatoninWakeUp) {
+    // Clear any existing chart
     d3.select("#cortisolMelatoninChart svg").remove();
+    d3.select("#cortisolMelatoninChart").classed("loading", true);
 
-    const margin = { top: 80, right: 80, bottom: 80, left: 80 };
+    // Enhanced dimensions and margins
+    const margin = { top: 100, right: 100, bottom: 100, left: 100 };
     const width = 700;
-    const height = 500;
+    const height = 550;
     
     const svg = d3.select("#cortisolMelatoninChart")
         .append("svg")
         .attr("width", width)
-        .attr("height", height);
+        .attr("height", height)
+        .style("background", "transparent");
 
-    // Add meaningful title
+    // Remove loading class
+    setTimeout(() => {
+        d3.select("#cortisolMelatoninChart").classed("loading", false);
+    }, 500);
+
+    // Add enhanced title with better positioning
     svg.append("text")
         .attr("class", "chart-title")
         .attr("x", width / 2)
-        .attr("y", 20)
-        .attr("font-size", "24px")
-        .attr("font-weight", "bold")
+        .attr("y", 40)
+        .attr("text-anchor", "middle")
+        .style("font-size", "24px")
+        .style("font-weight", "600")
+        .style("fill", "#f1f5f9")
+        .style("font-family", "'Playfair Display', serif")
         .text("Cortisol & Melatonin Levels: Before Sleep vs Wake Up");
 
-    // Define log scales for cortisol & melatonin
-    const logScaleCortisol = d3.scaleLog()
-        .domain([Math.min(avgCortisolBeforeSleep, avgCortisolWakeUp), Math.max(avgCortisolBeforeSleep, avgCortisolWakeUp)])
-        .range([1, 100]);
+    // Add subtitle for context
+    svg.append("text")
+        .attr("class", "chart-subtitle")
+        .attr("x", width / 2)
+        .attr("y", 65)
+        .attr("text-anchor", "middle")
+        .style("font-size", "14px")
+        .style("font-weight", "400")
+        .style("fill", "#94a3b8")
+        .style("font-family", "'Inter', sans-serif")
+        .text("Hormone levels across sleep-wake cycles");
 
-    const logScaleMelatonin = d3.scaleLog()
-        .domain([Math.min(avgMelatoninBeforeSleep, avgMelatoninWakeUp), Math.max(avgMelatoninBeforeSleep, avgMelatoninWakeUp)])
-        .range([1, 100]);
-
+    // Enhanced data preparation
     const data = [
         { 
             label: "Before Sleep", 
-            cortisol: logScaleCortisol(avgCortisolBeforeSleep), 
-            melatonin: logScaleMelatonin(avgMelatoninBeforeSleep),
-            originalCortisol: avgCortisolBeforeSleep,
-            originalMelatonin: avgMelatoninBeforeSleep
+            cortisol: avgCortisolBeforeSleep,
+            melatonin: avgMelatoninBeforeSleep,
+            cortisolNormalized: (avgCortisolBeforeSleep / Math.max(avgCortisolBeforeSleep, avgCortisolWakeUp)) * 100,
+            melatoninNormalized: (avgMelatoninBeforeSleep / Math.max(avgMelatoninBeforeSleep, avgMelatoninWakeUp)) * 100
         },
         { 
             label: "Wake Up", 
-            cortisol: logScaleCortisol(avgCortisolWakeUp), 
-            melatonin: logScaleMelatonin(avgMelatoninWakeUp),
-            originalCortisol: avgCortisolWakeUp,
-            originalMelatonin: avgMelatoninWakeUp
+            cortisol: avgCortisolWakeUp,
+            melatonin: avgMelatoninWakeUp,
+            cortisolNormalized: (avgCortisolWakeUp / Math.max(avgCortisolBeforeSleep, avgCortisolWakeUp)) * 100,
+            melatoninNormalized: (avgMelatoninWakeUp / Math.max(avgMelatoninBeforeSleep, avgMelatoninWakeUp)) * 100
         }
     ];
 
+    // Enhanced scales
     const xScale = d3.scaleBand()
         .domain(data.map(d => d.label))
-        .range([60, width - 60])
-        .padding(0.3);
+        .range([margin.left, width - margin.right])
+        .padding(0.4);
 
     const yScaleCortisol = d3.scaleLinear()
-        .domain([0, d3.max(data, d => d.cortisol) * 1.1])
+        .domain([0, Math.max(avgCortisolBeforeSleep, avgCortisolWakeUp) * 1.2])
         .nice()
-        .range([height - 60, 60]);
+        .range([height - margin.bottom, margin.top]);
 
     const yScaleMelatonin = d3.scaleLinear()
-        .domain([0, d3.max(data, d => d.melatonin) * 1.1])
+        .domain([0, Math.max(avgMelatoninBeforeSleep, avgMelatoninWakeUp) * 1.2])
         .nice()
-        .range([height - 60, 60]);
+        .range([height - margin.bottom, margin.top]);
 
-    // Meaningful colors
-    const cortisolColor = "#e74c3c"; // Red for cortisol (stress hormone)
-    const melatoninColor = "#3498db"; // Blue for melatonin (sleep hormone)
+    // Enhanced colors with gradients
+    const defs = svg.append("defs");
+    
+    // Cortisol gradient
+    const cortisolGradient = defs.append("linearGradient")
+        .attr("id", "cortisolGradient")
+        .attr("x1", "0%").attr("y1", "0%")
+        .attr("x2", "0%").attr("y2", "100%");
+    
+    cortisolGradient.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", "#f87171")
+        .attr("stop-opacity", 1);
+    
+    cortisolGradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "#ef4444")
+        .attr("stop-opacity", 1);
 
+    // Melatonin gradient
+    const melatoninGradient = defs.append("linearGradient")
+        .attr("id", "melatoninGradient")
+        .attr("x1", "0%").attr("y1", "0%")
+        .attr("x2", "0%").attr("y2", "100%");
+    
+    melatoninGradient.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", "#60a5fa")
+        .attr("stop-opacity", 1);
+    
+    melatoninGradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "#3b82f6")
+        .attr("stop-opacity", 1);
+
+    // Enhanced tooltip
     const tooltip_mel = d3.select("#tooltip_mel");
 
-    // Add melatonin bars (shifted slightly for readability)
-    svg.selectAll(".bar-melatonin")
-        .data(data)
-        .enter().append("rect")
-        .attr("class", "bar-melatonin")
-        .attr("x", d => xScale(d.label) + xScale.bandwidth() / 2)
-        .attr("y", d => yScaleMelatonin(d.melatonin))
-        .attr("width", xScale.bandwidth() / 2)
-        .attr("height", d => height - 60 - yScaleMelatonin(d.melatonin))
-        .attr("fill", melatoninColor)
-        .on("mouseover", function(event, d) {
-            const mouseX = event.clientX;
-            const mouseY = event.clientY;
+    // Add grid lines for better readability
+    const xGrid = svg.append("g")
+        .attr("class", "grid x-grid")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(d3.axisBottom(xScale)
+            .tickSize(-height + margin.top + margin.bottom)
+            .tickFormat("")
+        );
 
-            // ✅ Use tooltip_mel instead of tooltip
-            tooltip_mel.transition().duration(200).style("opacity", 1);
-            tooltip_mel.html(`
-                <div class="tooltip_mel-title">Melatonin</div>
-                <div class="tooltip_mel-metric">
-                    <span class="tooltip_mel-label">${d.label}:</span>
-                    <span class="tooltip_mel-value">${d.originalMelatonin.toFixed(2)} pg/mL</span>
-                </div>
-            `)
-            .style("left", () => {
-                const tooltip = document.getElementById("tooltip_mel");
-                const left = Math.max(
-                    10, // ✅ Ensures tooltip stays at least 10px from the left edge
-                    Math.min(
-                        window.innerWidth - tooltip.offsetWidth - 10, // ✅ Prevents right-side overflow
-                        mouseX - tooltip.offsetWidth / 2 // ✅ Centers tooltip over cursor
-                    )
-                );
-                return `${left}px`;
-            })
-            .style("top", () => {
-                const tooltip = document.getElementById("tooltip_mel");
-                return `${Math.max(
-                    10, // ✅ Ensures it doesn't go off the top edge
-                    mouseY + 20 // ✅ Positions below cursor instead of above
-                )}px`;
-            })
-            
-        })
-        .on("mouseout", function() {
-            // ✅ Use tooltip_mel instead of tooltip
-            tooltip_mel.transition().duration(200).style("opacity", 0);
-        });
+    const yGridCortisol = svg.append("g")
+        .attr("class", "grid y-grid")
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(d3.axisLeft(yScaleCortisol)
+            .tickSize(-width + margin.left + margin.right)
+            .tickFormat("")
+        );
 
-        // Add cortisol bars
+    // Style grid lines
+    svg.selectAll(".grid line")
+        .style("stroke", "rgba(100, 116, 139, 0.2)")
+        .style("stroke-dasharray", "3,3");
+
+    svg.selectAll(".grid path")
+        .style("stroke-width", 0);
+
+    // Enhanced bars with animations
+    const barWidth = xScale.bandwidth() / 3;
+
+    // Cortisol bars
     svg.selectAll(".bar-cortisol")
         .data(data)
         .enter().append("rect")
         .attr("class", "bar-cortisol")
-        .attr("x", d => xScale(d.label))
+        .attr("x", d => xScale(d.label) + barWidth * 0.2)
+        .attr("y", height - margin.bottom)
+        .attr("width", barWidth)
+        .attr("height", 0)
+        .style("fill", "url(#cortisolGradient)")
+        .style("stroke", "#dc2626")
+        .style("stroke-width", 2)
+        .style("filter", "drop-shadow(0 4px 8px rgba(239, 68, 68, 0.3))")
+        .style("cursor", "pointer")
+        .transition()
+        .duration(1000)
+        .delay((d, i) => i * 200)
         .attr("y", d => yScaleCortisol(d.cortisol))
-        .attr("width", xScale.bandwidth() / 2)
-        .attr("height", d => height - 60 - yScaleCortisol(d.cortisol))
-        .attr("fill", cortisolColor)
-        .on("mouseover", function(event, d) {
-            const mouseX = event.clientX;
-            const mouseY = event.clientY;
+        .attr("height", d => height - margin.bottom - yScaleCortisol(d.cortisol));
 
-            tooltip_mel.transition().duration(200).style("opacity", 1);
-            tooltip_mel.html(`
-                <div class="tooltip_mel-title">Cortisol</div>
-                <div class="tooltip_mel-metric">
-                    <span class="tooltip_mel-label">${d.label}:</span>
-                    <span class="tooltip_mel-value">${d.originalCortisol.toFixed(2)} ng/mL</span>
-                </div>
-            `)
-            .style("left", () => {
-                const tooltip = document.getElementById("tooltip_mel");
-                const left = Math.max(
-                    10, // ✅ Ensures tooltip stays at least 10px from the left edge
-                    Math.min(
-                        window.innerWidth - tooltip.offsetWidth - 10, // ✅ Prevents right-side overflow
-                        mouseX - tooltip.offsetWidth / 2 // ✅ Centers tooltip over cursor
-                    )
-                );
-                return `${left}px`;
-            })
-            .style("top", () => {
-                const tooltip = document.getElementById("tooltip_mel");
-                return `${Math.max(
-                    10, // ✅ Ensures it doesn't go off the top edge
-                    mouseY + 20 // ✅ Positions below cursor instead of above
-                )}px`;
-            })
-        })
-        .on("mouseout", function() {
-            tooltip_mel.transition().duration(200).style("opacity", 0);
-        });
+    // Melatonin bars
+    svg.selectAll(".bar-melatonin")
+        .data(data)
+        .enter().append("rect")
+        .attr("class", "bar-melatonin")
+        .attr("x", d => xScale(d.label) + barWidth * 1.3)
+        .attr("y", height - margin.bottom)
+        .attr("width", barWidth)
+        .attr("height", 0)
+        .style("fill", "url(#melatoninGradient)")
+        .style("stroke", "#2563eb")
+        .style("stroke-width", 2)
+        .style("filter", "drop-shadow(0 4px 8px rgba(59, 130, 246, 0.3))")
+        .style("cursor", "pointer")
+        .transition()
+        .duration(1000)
+        .delay((d, i) => i * 200 + 100)
+        .attr("y", d => yScaleMelatonin(d.melatonin))
+        .attr("height", d => height - margin.bottom - yScaleMelatonin(d.melatonin));
 
-
-    // Add X-axis
-    svg.append("g")
-        .attr("transform", `translate(0,${height - 60})`)
+    // Enhanced axes
+    const xAxis = svg.append("g")
+        .attr("class", "x-axis")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
         .call(d3.axisBottom(xScale))
-        .selectAll("text")
-        .style("font-weight", "bold")
+        .style("font-family", "'Inter', sans-serif")
+        .style("font-weight", "600")
+        .style("font-size", "16px");
+
+    xAxis.selectAll("text")
+        .style("fill", "#f1f5f9")
         .attr("class", "x-axis-label");
 
-    // Add Y-axis for Cortisol (left)
-    svg.append("g")
-        .attr("transform", "translate(60,0)")
-        .call(d3.axisLeft(yScaleCortisol));
+    xAxis.selectAll("path, line")
+        .style("stroke", "#64748b")
+        .style("stroke-width", "2px");
 
-    // Add Y-axis for Melatonin (right)
-    svg.append("g")
-        .attr("transform", `translate(${width - 60},0)`)
-        .call(d3.axisRight(yScaleMelatonin));
+    // Left Y-axis for Cortisol
+    const yAxisLeft = svg.append("g")
+        .attr("class", "y-axis-left")
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(d3.axisLeft(yScaleCortisol))
+        .style("font-family", "'Inter', sans-serif")
+        .style("font-weight", "500");
 
-    // Add Y-axis labels
+    yAxisLeft.selectAll("text")
+        .style("fill", "#cbd5e1")
+        .style("font-size", "14px");
+
+    yAxisLeft.selectAll("path, line")
+        .style("stroke", "#64748b")
+        .style("stroke-width", "2px");
+
+    // Right Y-axis for Melatonin
+    const yAxisRight = svg.append("g")
+        .attr("class", "y-axis-right")
+        .attr("transform", `translate(${width - margin.right},0)`)
+        .call(d3.axisRight(yScaleMelatonin))
+        .style("font-family", "'Inter', sans-serif")
+        .style("font-weight", "500");
+
+    yAxisRight.selectAll("text")
+        .style("fill", "#cbd5e1")
+        .style("font-size", "14px");
+
+    yAxisRight.selectAll("path, line")
+        .style("stroke", "#64748b")
+        .style("stroke-width", "2px");
+
+    // Enhanced axis labels
     svg.append("text")
         .attr("class", "axis-title")
         .attr("transform", "rotate(-90)")
-        .attr("y", 20)
-        .attr("x", -height / 2)
+        .attr("y", margin.left - 60)
+        .attr("x", -(height / 2))
         .style("text-anchor", "middle")
+        .style("fill", "#f1f5f9")
+        .style("font-family", "'Inter', sans-serif")
+        .style("font-weight", "600")
+        .style("font-size", "16px")
         .text("Cortisol (ng/mL)");
 
     svg.append("text")
         .attr("class", "axis-title")
         .attr("transform", "rotate(90)")
-        .attr("y", -width + 20)
+        .attr("y", -(width - margin.right + 50))
         .attr("x", height / 2)
         .style("text-anchor", "middle")
+        .style("fill", "#f1f5f9")
+        .style("font-family", "'Inter', sans-serif")
+        .style("font-weight", "600")
+        .style("font-size", "16px")
         .text("Melatonin (pg/mL)");
 
-    // Add legend
+    // Enhanced legend with better positioning
     const legend = svg.append("g")
         .attr("class", "legend")
-        .attr("transform", `translate(${width - margin.right - 100}, 80)`);
+        .attr("transform", `translate(${width - margin.right - 150}, ${margin.top + 20})`);
 
     // Cortisol legend
     legend.append("rect")
         .attr("x", 0)
         .attr("y", 0)
-        .attr("width", 15)
-        .attr("height", 15)
-        .attr("fill", cortisolColor);
+        .attr("width", 20)
+        .attr("height", 20)
+        .attr("rx", 4)
+        .style("fill", "url(#cortisolGradient)")
+        .style("stroke", "#dc2626")
+        .style("stroke-width", 2);
 
     legend.append("text")
         .attr("class", "legend-cortisol")
-        .attr("x", 20)
-        .attr("y", 12)
-        .style("font-weight", "bold")
+        .attr("x", 30)
+        .attr("y", 15)
+        .style("font-weight", "600")
+        .style("fill", "#f1f5f9")
+        .style("font-family", "'Inter', sans-serif")
+        .style("font-size", "16px")
         .text("Cortisol");
 
     // Melatonin legend
     legend.append("rect")
         .attr("x", 0)
-        .attr("y", 25)
-        .attr("width", 15)
-        .attr("height", 15)
-        .attr("fill", melatoninColor);
+        .attr("y", 35)
+        .attr("width", 20)
+        .attr("height", 20)
+        .attr("rx", 4)
+        .style("fill", "url(#melatoninGradient)")
+        .style("stroke", "#2563eb")
+        .style("stroke-width", 2);
 
     legend.append("text")
         .attr("class", "legend-melatonin")
-        .attr("x", 20)
-        .attr("y", 37)
-        .style("font-weight", "bold")
+        .attr("x", 30)
+        .attr("y", 50)
+        .style("font-weight", "600")
+        .style("fill", "#f1f5f9")
+        .style("font-family", "'Inter', sans-serif")
+        .style("font-size", "16px")
         .text("Melatonin");
-}
 
+    // Enhanced tooltip interactions
+    function addTooltipInteractions() {
+        svg.selectAll(".bar-cortisol, .bar-melatonin")
+            .on("mouseover", function(event, d) {
+                const isCortisolBar = d3.select(this).classed("bar-cortisol");
+                const hormone = isCortisolBar ? "Cortisol" : "Melatonin";
+                const value = isCortisolBar ? d.cortisol : d.melatonin;
+                const unit = isCortisolBar ? "ng/mL" : "pg/mL";
+                
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .style("filter", "drop-shadow(0 8px 16px rgba(251, 191, 36, 0.5))")
+                    .style("transform", "translateY(-2px)");
+
+                tooltip_mel.transition().duration(200).style("opacity", 1);
+                tooltip_mel.html(`
+                    <div class="tooltip_mel-title">${hormone}</div>
+                    <div class="tooltip_mel-metric">
+                        <span class="tooltip_mel-label">${d.label}:</span>
+                        <span class="tooltip_mel-value">${value.toFixed(2)} ${unit}</span>
+                    </div>
+                `)
+                .style("left", () => {
+                    const tooltip = document.getElementById("tooltip_mel");
+                    const left = Math.max(
+                        10,
+                        Math.min(
+                            window.innerWidth - tooltip.offsetWidth - 10,
+                            event.pageX - tooltip.offsetWidth / 2
+                        )
+                    );
+                    return `${left}px`;
+                })
+                .style("top", () => {
+                    return `${Math.max(10, event.pageY - 80)}px`;
+                });
+            })
+            .on("mouseout", function() {
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .style("filter", d3.select(this).classed("bar-cortisol") ? 
+                        "drop-shadow(0 4px 8px rgba(239, 68, 68, 0.3))" : 
+                        "drop-shadow(0 4px 8px rgba(59, 130, 246, 0.3))")
+                    .style("transform", "translateY(0px)");
+
+                tooltip_mel.transition().duration(200).style("opacity", 0);
+            });
+    }
+
+    // Add interactions after bars are rendered
+    setTimeout(addTooltipInteractions, 1200);
+}
 
 // Function to aggregate heart rate data across all users for density plot
 async function aggregateHeartRateData() {
