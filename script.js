@@ -3251,3 +3251,223 @@ function createWASOChart() {
 
         // Export for use in other scripts
         window.NarrativeFlowManager = narrativeFlow;
+        // ADD THIS TO THE END OF YOUR script.js FILE
+
+// ENHANCED JOURNEY MANAGER WITH PROPER DATA INTEGRATION
+class EnhancedSleepJourneyManager {
+    constructor() {
+        this.currentStep = 'explore';
+        this.profileData = {};
+        this.init();
+    }
+
+    init() {
+        this.setupStepNavigation();
+        this.observeSections();
+        this.showProfileCard();
+        this.setupSliderTracking();
+        this.hookIntoQuizSystem();
+    }
+
+    setupStepNavigation() {
+        document.querySelectorAll('.progress-step').forEach(step => {
+            step.addEventListener('click', () => {
+                const stepName = step.dataset.step;
+                this.navigateToStep(stepName);
+            });
+        });
+    }
+
+    navigateToStep(stepName) {
+        const sections = {
+            'explore': document.querySelector('.hero-section') || document.querySelector('.analysis-section'),
+            'identify': document.querySelector('#quizSection') || document.querySelector('.container'),
+            'optimize': document.querySelector('.dashboard')
+        };
+
+        if (sections[stepName]) {
+            sections[stepName].scrollIntoView({ behavior: 'smooth' });
+            this.updateCurrentStep(stepName);
+        }
+    }
+
+    updateCurrentStep(newStep) {
+        if (newStep !== this.currentStep) {
+            this.currentStep = newStep;
+            this.updateStepIndicators();
+        }
+    }
+
+    updateStepIndicators() {
+        document.querySelectorAll('.progress-step').forEach(step => {
+            const stepName = step.dataset.step;
+            step.classList.remove('active', 'completed');
+            
+            if (stepName === this.currentStep) {
+                step.classList.add('active');
+            } else if (this.isStepCompleted(stepName)) {
+                step.classList.add('completed');
+            }
+        });
+    }
+
+    isStepCompleted(stepName) {
+        switch(stepName) {
+            case 'explore':
+                return this.currentStep !== 'explore';
+            case 'identify':
+                return this.profileData.sleepTwin !== undefined;
+            case 'optimize':
+                return false;
+            default:
+                return false;
+        }
+    }
+
+    observeSections() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    let newStep = 'explore';
+                    
+                    if (entry.target.classList.contains('container') || 
+                        entry.target.id === 'quizSection' ||
+                        entry.target.querySelector('#sleepQuiz')) {
+                        newStep = 'identify';
+                    } else if (entry.target.classList.contains('dashboard')) {
+                        newStep = 'optimize';
+                    }
+                    
+                    this.updateCurrentStep(newStep);
+                }
+            });
+        }, { threshold: 0.3 });
+
+        // Observe all major sections
+        const sectionsToObserve = [
+            '.analysis-section',
+            '.hero-section', 
+            '.container',
+            '#quizSection',
+            '.dashboard'
+        ];
+
+        sectionsToObserve.forEach(selector => {
+            const element = document.querySelector(selector);
+            if (element) {
+                observer.observe(element);
+            }
+        });
+    }
+
+    showProfileCard() {
+        setTimeout(() => {
+            const card = document.getElementById('sleepProfileCard');
+            if (card) {
+                card.classList.add('visible');
+            }
+        }, 1000);
+    }
+
+    setupSliderTracking() {
+        // Track dashboard slider changes and update profile
+        const sliders = [
+            { id: 'duration-slider', profileKey: 'sleepHours', valueId: 'duration-value', suffix: 'h' },
+            { id: 'stress-slider', profileKey: 'stress', valueId: 'stress-value', suffix: '' },
+            { id: 'age-slider', profileKey: 'age', valueId: 'age-value', suffix: '' },
+            { id: 'activity-slider', profileKey: 'activity', valueId: 'activity-value', suffix: '' }
+        ];
+
+        sliders.forEach(slider => {
+            const element = document.getElementById(slider.id);
+            const valueDisplay = document.getElementById(slider.valueId);
+            
+            if (element && valueDisplay) {
+                element.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    this.profileData[slider.profileKey] = value;
+                    valueDisplay.textContent = value + slider.suffix;
+                    this.renderProfile();
+                });
+            }
+        });
+    }
+
+    hookIntoQuizSystem() {
+        // Hook into existing quiz completion
+        const originalDisplayResults = window.displayResults;
+        if (originalDisplayResults) {
+            window.displayResults = (userProfile, match) => {
+                console.log('Displaying results for:', userProfile, match);
+                
+                // Update profile with all data
+                this.updateProfile({
+                    ...userProfile,
+                    sleepTwin: match.participant.id
+                });
+                
+                // Call original function
+                originalDisplayResults(userProfile, match);
+            };
+        }
+    }
+
+    updateProfile(data) {
+        console.log('Updating profile with:', data);
+        this.profileData = { ...this.profileData, ...data };
+        this.renderProfile();
+    }
+
+    renderProfile() {
+        const elements = {
+            profileDuration: document.getElementById('profileDuration'),
+            profileStress: document.getElementById('profileStress'),
+            profileLatency: document.getElementById('profileLatency'),
+            profileChronotype: document.getElementById('profileChronotype'),
+            profileTwin: document.getElementById('profileTwin')
+        };
+
+        // Update duration
+        if (this.profileData.sleepHours) {
+            this.updateMetricElement(elements.profileDuration, `${this.profileData.sleepHours}h`);
+        }
+
+        // Update stress
+        if (this.profileData.stressLevel) {
+            const stressLabels = ['Very Low', 'Low', 'Moderate', 'High', 'Very High'];
+            this.updateMetricElement(elements.profileStress, stressLabels[this.profileData.stressLevel - 1]);
+        }
+
+        // Update latency
+        if (this.profileData.sleepLatency !== undefined) {
+            this.updateMetricElement(elements.profileLatency, `${this.profileData.sleepLatency}m`);
+        }
+
+        // Update chronotype
+        if (this.profileData.chronotype) {
+            const chronoLabels = ['Evening', 'Mod. Evening', 'Neither', 'Mod. Morning', 'Morning'];
+            this.updateMetricElement(elements.profileChronotype, chronoLabels[this.profileData.chronotype - 1]);
+        }
+
+        // Update sleep twin
+        if (this.profileData.sleepTwin) {
+            this.updateMetricElement(elements.profileTwin, this.profileData.sleepTwin);
+        }
+    }
+
+    updateMetricElement(element, value) {
+        if (element) {
+            element.textContent = value;
+            element.classList.remove('metric-empty');
+            element.classList.add('metric-filled');
+        }
+    }
+}
+
+// Initialize the enhanced journey manager
+document.addEventListener('DOMContentLoaded', function() {
+    window.enhancedJourneyManager = new EnhancedSleepJourneyManager();
+});
+
+// Export for global access
+window.EnhancedSleepJourneyManager = EnhancedSleepJourneyManager;
