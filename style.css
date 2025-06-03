@@ -467,8 +467,9 @@ body::before {
     opacity: 0.9;
 }
 /* Heart Rate Density Chart Fix */
+/* Complete Heart Rate Density Chart Fix */
 
-/* Main container styling */
+/* Main container - force dark theme */
 #dualLineContainer {
     background: linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.6) 100%) !important;
     border-radius: 25px !important;
@@ -493,31 +494,62 @@ body::before {
         0 0 40px rgba(251, 191, 36, 0.2) !important;
 }
 
-/* Chart SVG background */
+/* Remove any conflicting backgrounds */
+#dualLineContainer * {
+    background-color: transparent !important;
+}
+
+/* Chart area specifically */
+#dual-line-chart {
+    background: transparent !important;
+    width: 100% !important;
+    height: auto !important;
+}
+
+/* SVG container */
 #dual-line-chart svg {
     background: transparent !important;
+    background-color: transparent !important;
     border-radius: 15px !important;
     width: 100% !important;
     height: auto !important;
 }
 
+/* Force all backgrounds in chart to be transparent */
+#dual-line-chart rect[fill]:not([fill="none"]):not([fill="transparent"]) {
+    fill: transparent !important;
+}
+
 /* Chart title styling */
 #dual-line-chart .chart-title-HR,
-#dual-line-chart .chart-title {
+#dual-line-chart .chart-title,
+#dualLineTitle {
     fill: #f1f5f9 !important;
     font-family: 'Playfair Display', serif !important;
     font-weight: 600 !important;
-    font-size: 1.8rem !important;
+    font-size: 24px !important;
+    color: #f1f5f9 !important;
+}
+
+/* All text elements in the chart */
+#dual-line-chart text {
+    fill: #f1f5f9 !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 500 !important;
+    color: #f1f5f9 !important;
 }
 
 /* Axis styling */
 #dual-line-chart .axis path,
-#dual-line-chart .axis line {
+#dual-line-chart .axis line,
+#dual-line-chart g[class*="axis"] path,
+#dual-line-chart g[class*="axis"] line {
     stroke: #64748b !important;
     stroke-width: 2px !important;
 }
 
-#dual-line-chart .axis text {
+#dual-line-chart .axis text,
+#dual-line-chart g[class*="axis"] text {
     fill: #cbd5e1 !important;
     font-family: 'Inter', sans-serif !important;
     font-weight: 500 !important;
@@ -525,22 +557,27 @@ body::before {
 }
 
 /* Axis labels */
+#dual-line-chart .axis-label,
 #dual-line-chart .axis-title {
     fill: #f1f5f9 !important;
     font-family: 'Inter', sans-serif !important;
     font-weight: 600 !important;
     font-size: 16px !important;
+    color: #f1f5f9 !important;
 }
 
-/* Legend styling */
-#dual-line-chart text {
+/* Legend text */
+#dual-line-chart .legend text,
+#dual-line-chart text[font-size="14px"] {
     fill: #f1f5f9 !important;
     font-family: 'Inter', sans-serif !important;
     font-weight: 500 !important;
+    color: #f1f5f9 !important;
 }
 
 /* Grid lines */
-#dual-line-chart .grid line {
+#dual-line-chart .grid line,
+#dual-line-chart line[stroke-dasharray] {
     stroke: rgba(100, 116, 139, 0.3) !important;
     stroke-dasharray: 3,3 !important;
 }
@@ -549,42 +586,63 @@ body::before {
     stroke-width: 0 !important;
 }
 
-/* Sleep and Awake curve lines */
-#dual-line-chart path[stroke="#4A90E2"] {
+/* Sleep curve (blue) */
+#dual-line-chart path[stroke="#4A90E2"],
+#dual-line-chart path[stroke="#4a90e2"] {
     stroke: #60a5fa !important;
     stroke-width: 3px !important;
     filter: drop-shadow(0 2px 4px rgba(96, 165, 250, 0.3)) !important;
 }
 
-#dual-line-chart path[stroke="#E74C3C"] {
+/* Awake curve (red) */
+#dual-line-chart path[stroke="#E74C3C"],
+#dual-line-chart path[stroke="#e74c3c"] {
     stroke: #ef4444 !important;
     stroke-width: 3px !important;
     filter: drop-shadow(0 2px 4px rgba(239, 68, 68, 0.3)) !important;
 }
 
 /* Area fills */
-#dual-line-chart path[fill="#4A90E2"] {
+#dual-line-chart path[fill="#4A90E2"],
+#dual-line-chart path[fill="#4a90e2"] {
     fill: rgba(96, 165, 250, 0.2) !important;
 }
 
-#dual-line-chart path[fill="#E74C3C"] {
+#dual-line-chart path[fill="#E74C3C"],
+#dual-line-chart path[fill="#e74c3c"] {
     fill: rgba(239, 68, 68, 0.2) !important;
 }
 
 /* Overlap area */
-#dual-line-chart path[fill="#9B59B6"] {
+#dual-line-chart path[fill="#9B59B6"],
+#dual-line-chart path[fill="#9b59b6"] {
     fill: rgba(139, 92, 246, 0.3) !important;
 }
 
 /* Mean lines */
-#dual-line-chart line[stroke="#4A90E2"] {
+#dual-line-chart line[stroke="#4A90E2"],
+#dual-line-chart line[stroke="#4a90e2"] {
     stroke: #60a5fa !important;
     stroke-width: 2px !important;
+    stroke-dasharray: 5,5 !important;
 }
 
-#dual-line-chart line[stroke="#E74C3C"] {
+#dual-line-chart line[stroke="#E74C3C"],
+#dual-line-chart line[stroke="#e74c3c"] {
     stroke: #ef4444 !important;
     stroke-width: 2px !important;
+    stroke-dasharray: 5,5 !important;
+}
+
+/* Mean labels */
+#dual-line-chart text[fill="#4A90E2"],
+#dual-line-chart text[fill="#4a90e2"] {
+    fill: #60a5fa !important;
+}
+
+#dual-line-chart text[fill="#E74C3C"],
+#dual-line-chart text[fill="#e74c3c"] {
+    fill: #ef4444 !important;
 }
 
 /* Loading message */
@@ -592,6 +650,8 @@ body::before {
     color: #cbd5e1 !important;
     background: transparent !important;
     font-family: 'Inter', sans-serif !important;
+    text-align: center !important;
+    padding: 40px !important;
 }
 
 /* Enhanced tooltip for density chart */
@@ -615,20 +675,11 @@ body::before {
     font-family: 'Inter', sans-serif !important;
 }
 
-/* Remove any conflicting chart backgrounds */
-#dualLineContainer .chart-container,
-#dual-line-chart {
-    background: transparent !important;
-}
-
-/* Ensure title is visible */
-#dualLineTitle {
-    color: #f1f5f9 !important;
-    font-family: 'Playfair Display', serif !important;
-    font-weight: 600 !important;
-    text-align: center !important;
-    margin-bottom: 20px !important;
-    font-size: 1.8rem !important;
+/* Force remove any white/light backgrounds that might be added by D3 */
+#dual-line-chart rect[fill="white"],
+#dual-line-chart rect[fill="#ffffff"],
+#dual-line-chart rect[fill="#fff"] {
+    fill: transparent !important;
 }
 
 /* Animation on load */
@@ -657,7 +708,7 @@ body::before {
     #dual-line-chart .chart-title-HR,
     #dual-line-chart .chart-title,
     #dualLineTitle {
-        font-size: 1.4rem !important;
+        font-size: 20px !important;
     }
     
     #dual-line-chart .axis text {
@@ -667,6 +718,12 @@ body::before {
     #dual-line-chart .axis-title {
         font-size: 14px !important;
     }
+}
+
+/* Accessibility */
+#dualLineContainer:focus-within {
+    outline: 2px solid #fbbf24;
+    outline-offset: 4px;
 }
 
 /* Print styles */
@@ -681,29 +738,11 @@ body::before {
     #dual-line-chart .chart-title-HR,
     #dual-line-chart .chart-title,
     #dual-line-chart .axis text,
-    #dual-line-chart .axis-title {
+    #dual-line-chart .axis-title,
+    #dual-line-chart text {
         fill: black !important;
+        color: black !important;
     }
-}
-/* Enhanced Chart Containers */
-.dual-content-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 50px;
-    align-items: stretch;
-    margin-top: 60px;
-}
-
-.dual-content-layout.reverse {
-    grid-template-columns: 1fr 1fr;
-}
-
-.dual-content-layout.reverse .chart-container {
-    order: 2;
-}
-
-.dual-content-layout.reverse .insights-panel {
-    order: 1;
 }
 /* Enhanced Cortisol & Melatonin Chart Styling */
 
