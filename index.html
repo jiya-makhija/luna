@@ -6,15 +6,1052 @@
     <title>What's Your Sleep Story - Luna's Sleep Journey</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <style>
+/* ===== UNIFIED DESIGN SYSTEM ===== */
+:root {
+    /* Primary Color Palette - Night Sky Theme */
+    --primary-bg: #0a0e1a;
+    --secondary-bg: #1a1f2e;
+    --tertiary-bg: #242a3d;
+    --surface: #2d3748;
+    
+    /* Accent Colors */
+    --accent-gold: #f7b731;
+    --accent-gold-light: #feca57;
+    --accent-purple: #a55eea;
+    --accent-blue: #3742fa;
+    --accent-green: #2ed573;
+    --accent-red: #ff4757;
+    
+    /* Text Colors */
+    --text-primary: #ffffff;
+    --text-secondary: #e2e8f0;
+    --text-muted: #a0aec0;
+    --text-accent: var(--accent-gold);
+    
+    /* Spacing System */
+    --space-xs: 0.5rem;
+    --space-sm: 1rem;
+    --space-md: 1.5rem;
+    --space-lg: 2rem;
+    --space-xl: 3rem;
+    --space-2xl: 4rem;
+    
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    
+    /* Shadows */
+    --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 8px 25px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.3);
+    --shadow-glow: 0 0 30px rgba(247, 183, 49, 0.3);
+    
+    /* Typography */
+    --font-primary: 'Inter', sans-serif;
+    --font-display: 'Playfair Display', serif;
+}
 
+/* ===== RESET & BASE STYLES ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-primary);
+    background: linear-gradient(180deg, var(--primary-bg) 0%, var(--secondary-bg) 50%, var(--primary-bg) 100%);
+    color: var(--text-secondary);
+    line-height: 1.6;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* Starry Background */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(2px 2px at 20px 30px, var(--accent-gold), transparent),
+        radial-gradient(1px 1px at 40px 70px, var(--accent-blue), transparent),
+        radial-gradient(2px 2px at 90px 40px, var(--accent-gold), transparent),
+        radial-gradient(1px 1px at 130px 80px, white, transparent),
+        radial-gradient(2px 2px at 160px 30px, var(--accent-purple), transparent);
+    background-repeat: repeat;
+    background-size: 600px 400px;
+    animation: twinkle 8s ease-in-out infinite alternate;
+    opacity: 0.6;
+    z-index: 0;
+    pointer-events: none;
+}
+
+@keyframes twinkle {
+    0% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+    100% { opacity: 0.6; }
+}
+
+/* ===== TYPOGRAPHY SYSTEM ===== */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    color: var(--text-primary);
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+h1 { font-size: clamp(2.5rem, 5vw, 4rem); }
+h2 { font-size: clamp(2rem, 4vw, 3rem); }
+h3 { font-size: clamp(1.5rem, 3vw, 2rem); }
+h4 { font-size: 1.25rem; }
+
+.text-gradient {
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light), var(--accent-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ===== COMPONENT SYSTEM ===== */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--space-md);
+}
+
+.card {
+    background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--tertiary-bg) 100%);
+    border: 1px solid rgba(247, 183, 49, 0.2);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--accent-gold);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-md) var(--space-lg);
+    border: none;
+    border-radius: var(--radius-md);
+    font-family: var(--font-primary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+    color: var(--primary-bg);
+    box-shadow: var(--shadow-glow);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 40px rgba(247, 183, 49, 0.5);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 2px solid var(--accent-gold);
+}
+
+.btn-secondary:hover {
+    background: var(--accent-gold);
+    color: var(--primary-bg);
+}
+
+/* ===== HERO SECTION ===== */
+.hero-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.hero-content {
+    max-width: 800px;
+    padding: var(--space-xl);
+}
+
+.hero-title {
+    margin-bottom: var(--space-md);
+    text-shadow: 0 0 30px rgba(247, 183, 49, 0.5);
+    animation: fadeInUp 1s ease-out;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-xl);
+    animation: fadeInUp 1s ease-out 0.3s both;
+}
+
+.hero-divider {
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+    margin: var(--space-lg) auto;
+    border-radius: 2px;
+    animation: fadeInUp 1s ease-out 0.6s both;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== LUNA CHARACTER ===== */
+.luna-container {
+    position: absolute;
+    top: 20%;
+    right: 8%;
+    z-index: 3;
+    animation: lunaFloat 8s ease-in-out infinite;
+}
+
+.luna-character {
+    width: 120px;
+    height: 120px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    filter: drop-shadow(var(--shadow-glow));
+}
+
+.luna-character:hover {
+    transform: scale(1.1);
+}
+
+.luna-body {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+    border-radius: 50%;
+    position: relative;
+    box-shadow: var(--shadow-glow), inset -10px -10px 0 rgba(0,0,0,0.1);
+}
+
+.luna-face {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 80%;
+}
+
+.luna-eyes {
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 15px;
+}
+
+.luna-eye {
+    width: 12px;
+    height: 12px;
+    background: var(--primary-bg);
+    border-radius: 50%;
+    animation: lunaBlink 4s ease-in-out infinite;
+}
+
+@keyframes lunaBlink {
+    0%, 90%, 100% { transform: scaleY(1); }
+    95% { transform: scaleY(0.1); }
+}
+
+.luna-mouth {
+    position: absolute;
+    top: 55%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 10px;
+    border: 2px solid var(--primary-bg);
+    border-top: none;
+    border-radius: 0 0 20px 20px;
+}
+
+.luna-speech {
+    position: absolute;
+    top: -60px;
+    left: -100px;
+    background: var(--surface);
+    color: var(--text-primary);
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    min-width: 180px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    border: 1px solid var(--accent-gold);
+}
+
+.luna-speech.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@keyframes lunaFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+/* ===== SECTION LAYOUTS ===== */
+.section {
+    padding: var(--space-2xl) 0;
+    position: relative;
+    z-index: 1;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+}
+
+.section-title {
+    margin-bottom: var(--space-md);
+}
+
+.section-description {
+    font-size: 1.125rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.dual-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xl);
+    align-items: stretch;
+}
+
+.chart-container {
+    background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--tertiary-bg) 100%);
+    border: 1px solid rgba(247, 183, 49, 0.2);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    position: relative;
+    min-height: 400px;
+}
+
+.insights-panel {
+    background: linear-gradient(135deg, var(--tertiary-bg) 0%, var(--surface) 100%);
+    border: 1px solid rgba(52, 211, 153, 0.2);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.insights-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.insight-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.insights-header h3 {
+    color: var(--text-primary);
+    font-size: 1.5rem;
+}
+
+.insight-content {
+    flex: 1;
+}
+
+.insight-lead {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-lg);
+    line-height: 1.7;
+}
+
+/* ===== KEY STATS ===== */
+.key-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--space-lg);
+    margin: var(--space-lg) 0;
+}
+
+.stat-item {
+    text-align: center;
+    padding: var(--space-lg);
+    background: rgba(247, 183, 49, 0.1);
+    border: 1px solid rgba(247, 183, 49, 0.2);
+    border-radius: var(--radius-md);
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-gold);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent-gold);
+    display: block;
+    margin-bottom: var(--space-xs);
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ===== INTERACTIVE ELEMENTS ===== */
+.toggle-button {
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+    border: none;
+    border-radius: var(--radius-xl);
+    padding: var(--space-lg) var(--space-2xl);
+    color: var(--primary-bg);
+    font-size: 1.125rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    box-shadow: var(--shadow-glow);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+.toggle-button:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0 50px rgba(247, 183, 49, 0.6);
+}
+
+.toggle-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s;
+}
+
+.toggle-button:hover::before {
+    left: 100%;
+}
+
+/* ===== PARTICIPANT NAVIGATION ===== */
+.user-nav-container {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+}
+
+.nav-title {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: var(--space-lg);
+}
+
+#participantNav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-md);
+}
+
+.participant-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--secondary-bg), var(--tertiary-bg));
+    border: 2px solid rgba(247, 183, 49, 0.3);
+    color: var(--text-secondary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.participant-circle:hover {
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+    color: var(--primary-bg);
+    transform: scale(1.1);
+}
+
+.participant-circle.active {
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+    color: var(--primary-bg);
+    border-color: var(--accent-gold-light);
+}
+
+/* ===== TOOLTIPS ===== */
+.tooltip {
+    position: absolute;
+    background: var(--surface);
+    color: var(--text-primary);
+    border: 1px solid var(--accent-gold);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    font-size: 0.875rem;
+    z-index: 1000;
+    pointer-events: none;
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* ===== CHARTS & DASHBOARD ===== */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: var(--space-xl);
+    margin-bottom: var(--space-xl);
+}
+
+.chart-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
+    margin-bottom: var(--space-lg);
+}
+
+.controls {
+    background: linear-gradient(135deg, var(--secondary-bg), var(--tertiary-bg));
+    border: 1px solid rgba(247, 183, 49, 0.2);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+    margin-bottom: var(--space-xl);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-lg);
+    justify-content: center;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    align-items: center;
+}
+
+.control-group label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.slider {
+    width: 150px;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--surface);
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(247, 183, 49, 0.5);
+}
+
+/* ===== QUIZ SECTION ===== */
+.quiz-section {
+    background: linear-gradient(135deg, var(--secondary-bg), var(--tertiary-bg));
+    border: 1px solid rgba(247, 183, 49, 0.2);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2xl);
+    margin: var(--space-xl) auto;
+    max-width: 800px;
+    display: none;
+}
+
+.quiz-section.show {
+    display: block;
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.quiz-progress {
+    background: var(--surface);
+    height: 8px;
+    border-radius: 4px;
+    margin-bottom: var(--space-xl);
+    overflow: hidden;
+}
+
+.quiz-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-gold), var(--accent-gold-light));
+    width: 0%;
+    transition: width 0.8s ease;
+    border-radius: 4px;
+}
+
+.question {
+    margin-bottom: var(--space-xl);
+}
+
+.question h3 {
+    color: var(--text-primary);
+    margin-bottom: var(--space-lg);
+    text-align: center;
+}
+
+.slider-container {
+    margin: var(--space-lg) 0;
+}
+
+.slider-value {
+    text-align: center;
+    margin-top: var(--space-md);
+    font-weight: 600;
+    color: var(--accent-gold);
+    font-size: 1.125rem;
+}
+
+.radio-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-md);
+}
+
+.radio-option input {
+    position: absolute;
+    opacity: 0;
+}
+
+.radio-label {
+    display: block;
+    padding: var(--space-md);
+    background: var(--surface);
+    border: 2px solid rgba(247, 183, 49, 0.3);
+    border-radius: var(--radius-md);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-secondary);
+}
+
+.radio-option input:checked + .radio-label {
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+    color: var(--primary-bg);
+    border-color: var(--accent-gold);
+    transform: scale(1.05);
+}
+
+.radio-label:hover {
+    border-color: var(--accent-gold);
+    background: rgba(247, 183, 49, 0.1);
+}
+
+/* ===== RESULTS SECTION ===== */
+.results {
+    background: linear-gradient(135deg, var(--secondary-bg), var(--tertiary-bg));
+    border: 1px solid rgba(247, 183, 49, 0.2);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2xl);
+    margin: var(--space-xl) auto;
+    max-width: 900px;
+    display: none;
+}
+
+.results.show {
+    display: block;
+    animation: slideIn 0.5s ease-out;
+}
+
+.loading {
+    text-align: center;
+    padding: var(--space-2xl);
+    color: var(--text-muted);
+}
+
+.spinner {
+    border: 3px solid rgba(247, 183, 49, 0.3);
+    border-top: 3px solid var(--accent-gold);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto var(--space-md);
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.match-header {
+    text-align: center;
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+    color: var(--primary-bg);
+    padding: var(--space-2xl);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-xl);
+}
+
+.comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xl);
+    margin-bottom: var(--space-xl);
+}
+
+.comparison-card {
+    padding: var(--space-lg);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    border: 2px solid rgba(247, 183, 49, 0.3);
+}
+
+/* ===== TRANSITION SECTIONS ===== */
+.narrative-transition {
+    background: linear-gradient(135deg, var(--tertiary-bg), var(--surface));
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2xl);
+    margin: var(--space-2xl) auto;
+    max-width: 800px;
+    text-align: center;
+}
+
+.transition-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-lg);
+    animation: float 4s ease-in-out infinite;
+}
+
+.transition-title {
+    margin-bottom: var(--space-md);
+    color: var(--text-primary);
+}
+
+.transition-text {
+    font-size: 1.125rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-xl);
+    line-height: 1.6;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+/* ===== USER SECTION ===== */
+.user-section {
+    background: transparent;
+    padding: var(--space-2xl) 0;
+    display: none;
+}
+
+.user-section.active {
+    display: block;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.sleep-overview {
+    margin-bottom: var(--space-2xl);
+}
+
+.sleep-container-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xl);
+    align-items: stretch;
+}
+
+.clock-container {
+    background: linear-gradient(135deg, var(--secondary-bg), var(--tertiary-bg));
+    border: 1px solid rgba(247, 183, 49, 0.2);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sleep-metrics {
+    background: linear-gradient(135deg, var(--secondary-bg), var(--tertiary-bg));
+    border: 1px solid rgba(247, 183, 49, 0.2);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+}
+
+.metric-box {
+    background: var(--surface);
+    border: 1px solid rgba(247, 183, 49, 0.2);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.metric-box:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-gold);
+}
+
+.metric-icon {
+    font-size: 2rem;
+    margin-bottom: var(--space-md);
+}
+
+.metric-title {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-md);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-gold);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1200px) {
+    .dual-layout {
+        grid-template-columns: 1fr;
+        gap: var(--space-lg);
+    }
+    
+    .sleep-container-wrapper {
+        grid-template-columns: 1fr;
+    }
+    
+    .luna-container {
+        top: 10%;
+        right: 5%;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .section {
+        padding: var(--space-xl) 0;
+    }
+    
+    .chart-container, .insights-panel {
+        padding: var(--space-lg);
+    }
+    
+    .key-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .toggle-button {
+        padding: var(--space-md) var(--space-lg);
+        font-size: 1rem;
+    }
+    
+    .luna-container {
+        position: relative;
+        top: auto;
+        right: auto;
+        text-align: center;
+        margin: var(--space-lg) auto;
+    }
+
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .comparison {
+        grid-template-columns: 1fr;
+    }
+    
+    .radio-group {
+        grid-template-columns: 1fr;
+    }
+
+    .controls {
+        flex-direction: column;
+        gap: var(--space-md);
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-content {
+        padding: var(--space-lg);
+    }
+    
+    .chart-container, .insights-panel {
+        padding: var(--space-md);
+    }
+    
+    .participant-circle {
+        width: 50px;
+        height: 50px;
+        font-size: 0.875rem;
+    }
+}
+
+/* ===== LOADING STATES ===== */
+.loading-message {
+    text-align: center;
+    font-size: 1rem;
+    color: var(--text-muted);
+    padding: var(--space-lg);
+    font-style: italic;
+}
+
+/* ===== UTILITY CLASSES ===== */
+.text-center { text-align: center; }
+.mb-lg { margin-bottom: var(--space-lg); }
+.mt-lg { margin-top: var(--space-lg); }
+.hidden { display: none; }
+.visible { display: block; }
+
+/* Sleep Clock Styles */
+.clock-outer-ring {
+    fill: none;
+    stroke: var(--accent-gold);
+    stroke-width: 4;
+}
+
+.clock-inner-circle {
+    fill: var(--accent-gold-light);
+}
+
+.sleep-arc {
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.hour-tick {
+    stroke: var(--surface);
+    stroke-width: 2;
+}
+
+.hour-label {
+    font-size: 12px;
+    font-weight: 600;
+    fill: var(--primary-bg);
+    font-family: var(--font-primary);
+}
+
+/* Chart styling */
+.axis {
+    stroke: var(--text-muted);
+    fill: var(--text-muted);
+}
+
+.axis text {
+    fill: var(--text-muted);
+    font-family: var(--font-primary);
+}
+
+.legend text {
+    fill: var(--text-secondary);
+    font-family: var(--font-primary);
+}
+
+/* Special Effects */
+.glow {
+    filter: drop-shadow(0 0 10px var(--accent-gold));
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+    </style>
 </head>
 <body>
 
     <!-- Hero Section with Enhanced Luna -->
     <header class="hero-section">
         <div class="hero-content">
-            <h1 class="hero-title">What's Your Sleep Story?</h1>
+            <h1 class="hero-title text-gradient">What's Your Sleep Story?</h1>
             <p class="hero-subtitle">Journey through the mysteries of sleep with Luna, your celestial guide to understanding rest and recovery</p>
             <div class="hero-divider"></div>
         </div>
@@ -29,41 +1066,31 @@
                             <div class="luna-eye" id="right-eye"></div>
                         </div>
                         <div class="luna-mouth" id="luna-mouth"></div>
-                        <div class="luna-cheek left"></div>
-                        <div class="luna-cheek right"></div>
                     </div>
                 </div>
-                <div class="luna-sparkles">
-                    <div class="sparkle sparkle-1">✨</div>
-                    <div class="sparkle sparkle-2">⭐</div>
-                    <div class="sparkle sparkle-3">💫</div>
-                    <div class="sparkle sparkle-4">🌟</div>
-                </div>
                 <div class="luna-speech" id="luna-speech">
-                    Welcome to your sleep journey! Click me to learn re! 🌙
+                    Welcome to your sleep journey! Click me to learn more! 🌙
                 </div>
             </div>
         </div>
     </header>
 
-    <div class="main-container">
+    <div class="container">
         <!-- Heart Rate Analysis Section -->
-        <section class="analysis-section">
-            <div class="luna-mini"></div>
+        <section class="section">
             <div class="section-header">
-                <h2 class="section-title">Heart Rate Analysis</h2>
+                <h2 class="section-title text-gradient">Heart Rate Analysis</h2>
                 <p class="section-description">Understanding your body's rhythm between sleep and wakefulness</p>
             </div>
             
-            <div class="dual-content-layout">
+            <div class="dual-layout">
                 <div class="chart-container" id="dualLineContainer">
-                    <div id="loadingMessage">⏳ Luna is analyzing your heart's rhythm...</div>
-                    <div id="dualLineTitle"></div>
+                    <div id="loadingMessage" class="loading-message">⏳ Luna is analyzing your heart's rhythm...</div>
                     <div id="dual-line-chart"></div>
                     <div id="tooltip_density" class="tooltip"></div>
                 </div>
                 
-                <div class="insights-panel" id="hr-density-writeup">
+                <div class="insights-panel">
                     <div class="insights-header">
                         <div class="insight-icon">❤️</div>
                         <h3>Heart Rate Insights</h3>
@@ -84,23 +1111,15 @@
                         </div>
                         
                         <div class="insights-list">
-                            <div class="insight-point">
-                                <div class="point-marker"></div>
-                                <span><strong>Natural slowdown:</strong> Your body shifts into recovery mode during sleep</span>
-                            </div>
-                            <div class="insight-point">
-                                <div class="point-marker"></div>
-                                <span><strong>Active engagement:</strong> Higher heart rates reflect daily activities and stress</span>
-                            </div>
-                            <div class="insight-point">
-                                <div class="point-marker"></div>
-                                <span><strong>Recovery window:</strong> Sleep enables cardiovascular restoration</span>
-                            </div>
+                            <p><strong>Natural slowdown:</strong> Your body shifts into recovery mode during sleep</p>
+                            <p><strong>Active engagement:</strong> Higher heart rates reflect daily activities and stress</p>
+                            <p><strong>Recovery window:</strong> Sleep enables cardiovascular restoration</p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+
         <div class="narrative-transition" id="transition1">
             <div class="transition-icon">🔍</div>
             <h2 class="transition-title">Curious About Individual Patterns?</h2>
@@ -108,21 +1127,20 @@
                 You've seen how heart rates vary between sleep and wake periods across all participants. 
                 Now dive deeper into personal sleep stories and discover the unique patterns of individual participants.
             </p>
-            <button class="transition-button" onclick="showIndividualSection()">
+            <button class="btn btn-primary" onclick="showIndividualSection()">
                 Explore Individual Sleep Stories
             </button>
         </div>
 
         <!-- Hormone Analysis Section -->
-        <section class="analysis-section hormone-section">
-            <div class="luna-mini"></div>
+        <section class="section">
             <div class="section-header">
-                <h2 class="section-title">Hormone Balance</h2>
+                <h2 class="section-title text-gradient">Hormone Balance</h2>
                 <p class="section-description">How cortisol and melatonin orchestrate your sleep-wake cycle</p>
             </div>
             
-            <div class="dual-content-layout reverse">
-                <div class="insights-panel" id="hormone-chart-writeup">
+            <div class="dual-layout">
+                <div class="insights-panel">
                     <div class="insights-header">
                         <div class="insight-icon">🧬</div>
                         <h3>Hormone Dynamics</h3>
@@ -132,23 +1150,17 @@
                         <p class="insight-lead">Two key hormones work in harmony to regulate your sleep cycle: <strong>cortisol for alertness</strong> and <strong>melatonin for rest</strong>.</p>
                         
                         <div class="hormone-explainer">
-                            <div class="hormone-item cortisol-item">
-                                <div class="hormone-dot cortisol-dot"></div>
-                                <div class="hormone-info">
-                                    <h4>Cortisol (ng/mL)</h4>
-                                    <p>The alertness hormone that peaks in the morning to kickstart your day</p>
-                                </div>
+                            <div class="card mb-lg">
+                                <h4 style="color: var(--accent-red);">Cortisol (ng/mL)</h4>
+                                <p>The alertness hormone that peaks in the morning to kickstart your day</p>
                             </div>
-                            <div class="hormone-item melatonin-item">
-                                <div class="hormone-dot melatonin-dot"></div>
-                                <div class="hormone-info">
-                                    <h4>Melatonin (pg/mL)</h4>
-                                    <p>The sleep hormone that rises before bedtime and fades upon waking</p>
-                                </div>
+                            <div class="card">
+                                <h4 style="color: var(--accent-blue);">Melatonin (pg/mL)</h4>
+                                <p>The sleep hormone that rises before bedtime and fades upon waking</p>
                             </div>
                         </div>
                         
-                        <div class="unit-note">
+                        <div class="card mt-lg">
                             <p><strong>Note:</strong> Cortisol measures in nanograms (1,000x larger than picograms), reflecting its higher concentration needed for metabolic regulation.</p>
                         </div>
                     </div>
@@ -161,26 +1173,26 @@
         </section>
     </div>
     
-    <div class="transition-section">
-        <h1>Connecting Sleep Physiology to Personalized Insights</h1>
-        <p>
-            We've explored how <strong>heart rate changes between sleep and wakefulness</strong>, providing insights into your body's recovery process.
-            But sleep quality isn't just about heart rate, it's also driven by <strong>hormonal fluctuations like cortisol and melatonin</strong>. 
-            Cortisol helps you wake up and stay alert, while melatonin signals when it's time to sleep. 
-            The delicate balance between these hormones can impact how restful your night truly is.
-        </p>
-        <p>
-            To take sleep analysis a step further, we introduce the <strong>Sleep Biometric Predictor</strong> which is a science-backed tool that predicts 
-            <strong>stress hormone levels and sleep quality</strong> based on your individual patterns. 
-            This predictor also <strong>matches you with a sleeper most similar to you</strong>, helping you compare habits and uncover 
-            personalized insights to optimize your rest.
-        </p>
-    </div>
-    
     <div class="container">
-        <div class="header">
-            <h1>Meet Your Sleep Twin 🌙</h1>
-            <p>Let Luna help you discover the sleeper most like you — and explore what their patterns reveal about yours.</p>
+        <div class="narrative-transition">
+            <h1 class="transition-title">Connecting Sleep Physiology to Personalized Insights</h1>
+            <p class="transition-text">
+                We've explored how <strong>heart rate changes between sleep and wakefulness</strong>, providing insights into your body's recovery process.
+                But sleep quality isn't just about heart rate, it's also driven by <strong>hormonal fluctuations like cortisol and melatonin</strong>. 
+                Cortisol helps you wake up and stay alert, while melatonin signals when it's time to sleep. 
+                The delicate balance between these hormones can impact how restful your night truly is.
+            </p>
+            <p class="transition-text">
+                To take sleep analysis a step further, we introduce the <strong>Sleep Biometric Predictor</strong> which is a science-backed tool that predicts 
+                <strong>stress hormone levels and sleep quality</strong> based on your individual patterns. 
+                This predictor also <strong>matches you with a sleeper most similar to you</strong>, helping you compare habits and uncover 
+                personalized insights to optimize your rest.
+            </p>
+        </div>
+        
+        <div class="section-header">
+            <h1 class="section-title text-gradient">Meet Your Sleep Twin 🌙</h1>
+            <p class="section-description">Let Luna help you discover the sleeper most like you — and explore what their patterns reveal about yours.</p>
         </div>
 
         <div class="interactive-info" id="interactiveInfo">
@@ -194,13 +1206,13 @@
             </div>
 
             <div class="navigation-controls">
-                <button class="nav-btn" id="prevBtn" disabled>Previous</button>
+                <button class="btn btn-secondary" id="prevBtn" disabled>Previous</button>
                 <div class="auto-advance">
                     <input type="checkbox" id="autoAdvance" checked>
                     <label for="autoAdvance">Auto-advance (8s)</label>
                 </div>
-                <button class="nav-btn" id="nextBtn">Next</button>
-                <button class="nav-btn skip-btn" id="skipBtn">Skip to Quiz</button>
+                <button class="btn btn-primary" id="nextBtn">Next</button>
+                <button class="btn btn-secondary" id="skipBtn">Skip to Quiz</button>
             </div>
         </div>
 
@@ -257,7 +1269,6 @@
                                 <label for="stress5" class="radio-label">Very High</label>
                             </div>
                         </div>
-                        <div class="answer-validation" id="stressValidation">Please select your stress level</div>
                     </div>
         
                     <div class="question" id="question4">
@@ -300,17 +1311,16 @@
                                 <label for="chrono5" class="radio-label">Definitely Morning</label>
                             </div>
                         </div>
-                        <div class="answer-validation" id="chronotypeValidation">Please select your chronotype</div>
                     </div>
         
                 </div>
         
                 <div class="quiz-controls">
-                    <button type="button" class="quiz-nav-btn" id="prevQuestion" disabled>
+                    <button type="button" class="btn btn-secondary" id="prevQuestion" disabled>
                         ← Previous
                     </button>
                     <div class="question-counter" id="questionCounterBottom">Question 1 of 6</div>
-                    <button type="button" class="quiz-nav-btn next" id="nextQuestion">
+                    <button type="button" class="btn btn-primary" id="nextQuestion">
                         Next →
                     </button>
                 </div>
@@ -325,6 +1335,7 @@
             <div id="matchResults" style="display: none;"></div>
         </div>
     </div>
+
     <div class="narrative-transition" id="transition2" style="display: none;">
         <div class="transition-icon">⚡</div>
         <h2 class="transition-title">Now Let's Optimize Your Sleep</h2>
@@ -332,276 +1343,277 @@
             Great! You've found your sleep twin and learned about your patterns. 
             Now let's explore how small changes in lifestyle factors could improve your sleep quality.
         </p>
-        <button class="transition-button" onclick="showDashboard()">
+        <button class="btn btn-primary" onclick="showDashboard()">
             Optimize Your Sleep
         </button>
     </div>
     
 
     <!-- Interactive Section Toggle -->
-    <section class="interactive-section">
+    <section class="section text-center">
         <div class="section-header">
-            <h1 class="section-title">Individual Sleep Stories</h1>
+            <h1 class="section-title text-gradient">Individual Sleep Stories</h1>
             <p class="section-description">Matched to your sleep twin — look at how their nights compares to yours.</p>
         </div>
         
         <div class="button-wrapper">
-            <div class="pulse-ring"></div>
             <button id="toggleUserView" class="toggle-button">
                 <span class="button-text">🔍 Explore Individual Data</span>
-                <span class="icon">▼</span>
             </button>
         </div>
     </section>
 
     <!-- User-Specific Sections: Initially Hidden -->
     <div id="userSpecificSection" class="user-section">
-        <!-- User Selection Navigation -->
-        <div class="user-nav-container">
-            <h3 class="nav-title">Select a Participant</h3>
-            <div id="participantNav"></div>
-        </div>
+        <div class="container">
+            <!-- User Selection Navigation -->
+            <div class="user-nav-container">
+                <h3 class="nav-title">Select a Participant</h3>
+                <div id="participantNav"></div>
+            </div>
 
-        <div class="user-analysis">
-            <!-- Sleep Clock and Metrics -->
-            <section class="sleep-overview">
-                <div class="sleep-container-wrapper">
-                    <div class="clock-container" id="sleepClockContainer">
-                        <div id="tooltip_sleep" class="tooltip"></div>
-                        <div class="sleep-definitions">
-                            <h3>Understanding Sleep Metrics</h3>
-                            <p><strong>🛌 Sleep Duration:</strong> The total time spent sleeping, from sleep onset to wake-up.</p>
-                            <p><strong>⏰ Wake After Sleep Onset (WASO):</strong> The total time spent awake after falling asleep. Frequent awakenings can disrupt sleep quality.</p>
-                            <p><strong>📊 Sleep Efficiency:</strong> The percentage of time spent sleeping compared to total time in bed. Higher efficiency means better rest.</p>
-                            <p><strong>🌙 Sleep Onset:</strong> The time it takes to transition from wakefulness into sleep.</p>
-                        </div>
-                </div>
-                    <div class="sleep-metrics">
-                        <h3 class="metrics-title">Sleep Summary</h3>
-                        <div class="metrics-grid">
-                            <div class="metric-box">
-                                <div class="metric-icon">🛌</div>
-                                <div class="metric-title">Sleep Duration</div>
-                                <div class="metric-value sleep-metric" id="sleepDuration">--</div>
-                            </div>
-                            <div class="metric-box">
-                                <div class="metric-icon">📊</div>
-                                <div class="metric-title">Sleep Efficiency</div>
-                                <div class="metric-value sleep-metric" id="sleepEfficiency">--</div>
-                            </div>
-                            <div class="metric-box">
-                                <div class="metric-icon">⏰</div>
-                                <div class="metric-title">Wake After Sleep Onset (WASO)</div>
-                                <div class="metric-value sleep-metric" id="wasoValue">--</div>
-                            </div>
-                            <div class="metric-box">
-                                <div class="metric-icon">🌙</div>
-                                <div class="metric-title">Sleep Onset</div>
-                                <div class="metric-value sleep-metric" id="sleepOnset">--</div>
+            <div class="user-analysis">
+                <!-- Sleep Clock and Metrics -->
+                <section class="sleep-overview">
+                    <div class="sleep-container-wrapper">
+                        <div class="clock-container" id="sleepClockContainer">
+                            <div id="tooltip_sleep" class="tooltip"></div>
+                            <div class="sleep-definitions card mt-lg">
+                                <h3>Understanding Sleep Metrics</h3>
+                                <p><strong>🛌 Sleep Duration:</strong> The total time spent sleeping, from sleep onset to wake-up.</p>
+                                <p><strong>⏰ Wake After Sleep Onset (WASO):</strong> The total time spent awake after falling asleep. Frequent awakenings can disrupt sleep quality.</p>
+                                <p><strong>📊 Sleep Efficiency:</strong> The percentage of time spent sleeping compared to total time in bed. Higher efficiency means better rest.</p>
+                                <p><strong>🌙 Sleep Onset:</strong> The time it takes to transition from wakefulness into sleep.</p>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Heart Rate Time Series -->
-            <section class="hr-timeline-section">
-                <div id="hrGraphContainer">
-                    <div id="hrGraphTitle">24-Hour Heart Rate Journey</div>
-                    <div id="hrGraphWrapper">
-                        <div id="hrGraphChart"></div>
-                        <div id="hrStatsContainer">
-                            <div id="overallStats" class="stats-panel">
-                                <h3>Overall Statistics</h3>
-                                <div id="overallStatsContent"></div>
-                            </div>
-                            <div id="sleepStats" class="stats-panel">
-                                <h3>Sleep Period</h3>
-                                <div id="sleepStatsContent"></div>
+                        <div class="sleep-metrics">
+                            <h3 class="text-center mb-lg">Sleep Summary</h3>
+                            <div class="metrics-grid">
+                                <div class="metric-box">
+                                    <div class="metric-icon">🛌</div>
+                                    <div class="metric-title">Sleep Duration</div>
+                                    <div class="metric-value" id="sleepDuration">--</div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-icon">📊</div>
+                                    <div class="metric-title">Sleep Efficiency</div>
+                                    <div class="metric-value" id="sleepEfficiency">--</div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-icon">⏰</div>
+                                    <div class="metric-title">WASO</div>
+                                    <div class="metric-value" id="wasoValue">--</div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-icon">🌙</div>
+                                    <div class="metric-title">Sleep Onset</div>
+                                    <div class="metric-value" id="sleepOnset">--</div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
-        </div>
-    </div>
-    <div class="sleep-simulator" id="sleepSimulator" style="display: none;">
-        <div class="simulator-header">
-            <h2 class="simulator-title">Your Sleep Twin Simulation</h2>
-            <p class="simulator-subtitle" id="simulatorSubtitle">Compare your patterns with your matched participant</p>
-        </div>
+                </section>
 
-        <div class="simulation-container">
-            <div class="simulation-panel current">
-                <div class="panel-header">
-                    <div class="panel-icon">📊</div>
-                    <h3 class="panel-title">Current Pattern</h3>
-                </div>
-                <div id="currentMetrics">
-                    <!-- Current metrics will be populated -->
-                </div>
-            </div>
-
-            <div class="simulation-panel optimized">
-                <div class="panel-header">
-                    <div class="panel-icon">⚡</div>
-                    <h3 class="panel-title">Optimized Potential</h3>
-                </div>
-                <div id="optimizedMetrics">
-                    <!-- Optimized metrics will be populated -->
-                </div>
-            </div>
-        </div>
-
-        <div class="optimization-controls">
-            <h3 class="controls-title">Adjust Lifestyle Factors</h3>
-            
-            <div class="control-group">
-                <label class="control-label">
-                    Sleep Duration
-                    <span class="control-value" id="durationValue">7.5h</span>
-                </label>
-                <input type="range" class="control-slider" id="durationSlider" 
-                       min="6" max="9" step="0.5" value="7.5">
-            </div>
-
-            <div class="control-group">
-                <label class="control-label">
-                    Stress Management
-                    <span class="control-value" id="stressValue">Moderate</span>
-                </label>
-                <input type="range" class="control-slider" id="stressSlider" 
-                       min="1" max="5" step="1" value="3">
-            </div>
-
-            <div class="control-group">
-                <label class="control-label">
-                    Sleep Hygiene Score
-                    <span class="control-value" id="hygieneValue">7/10</span>
-                </label>
-                <input type="range" class="control-slider" id="hygieneSlider" 
-                       min="1" max="10" step="1" value="7">
+                <!-- Heart Rate Time Series -->
+                <section class="section">
+                    <div class="card">
+                        <div id="hrGraphTitle" class="chart-title">24-Hour Heart Rate Journey</div>
+                        <div id="hrGraphWrapper">
+                            <div id="hrGraphChart"></div>
+                            <div id="hrStatsContainer">
+                                <div id="overallStats" class="card">
+                                    <h4>Overall Statistics</h4>
+                                    <div id="overallStatsContent"></div>
+                                </div>
+                                <div id="sleepStats" class="card">
+                                    <h4>Sleep Period</h4>
+                                    <div id="sleepStatsContent"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </div>
         </div>
     </div>
 
+    <div class="container">
+        <div class="section" id="sleepSimulator" style="display: none;">
+            <div class="card">
+                <div class="text-center mb-lg">
+                    <h2 class="text-gradient">Your Sleep Twin Simulation</h2>
+                    <p id="simulatorSubtitle">Compare your patterns with your matched participant</p>
+                </div>
 
+                <div class="dual-layout">
+                    <div class="card">
+                        <div class="text-center mb-lg">
+                            <div class="insight-icon">📊</div>
+                            <h3>Current Pattern</h3>
+                        </div>
+                        <div id="currentMetrics">
+                            <!-- Current metrics will be populated -->
+                        </div>
+                    </div>
 
-    <div class="dashboard">
-        <div class="header">
-            <h1 class="section-title">Sleep Quality Dashboard</h1>
-            <p>Explore relationships between lifestyle factors and sleep quality metrics</p>
-        </div>
-        
-        <div class="controls">
-            <div class="control-group">
-                <label>Sleep Duration (hours)</label>
-                <input type="range" id="duration-slider" class="slider" min="3.3" max="8.2" step="0.1" value="7.0">
-                <span id="duration-value">8.0h</span>
-            </div>
-            
-            <div class="control-group">
-                <label>Stress Level</label>
-                <input type="range" id="stress-slider" class="slider" min="10" max="74" step="1" value="30">
-                <span id="stress-value">25</span>
-            </div>
-            
-            <div class="control-group">
-                <label>Age Range</label>
-                <input type="range" id="age-slider" class="slider" min="20" max="40" step="1" value="30">
-                <span id="age-value">35</span>
-            </div>
-            
-            <div class="control-group">
-                <label>Activity Level</label>
-                <input type="range" id="activity-slider" class="slider" min="600" max="4010" step="100" value="1000">
-                <span id="activity-value">5</span>
-            </div>
-        </div>
-        
-        <div class="charts-grid">
-            <div class="chart-container">
-                <div class="chart-title">Sleep Efficiency vs Duration</div>
-                <svg id="efficiency-chart" width="400" height="300"></svg>
-            </div>
-            
-            <div class="chart-container">
-                <div class="chart-title">WASO by Stress Level</div>
-                <svg id="waso-chart" width="400" height="300"></svg>
-            </div>
-        </div>
-        
-        <div class="charts-grid">
-            <div class="chart-container">
-                <div class="chart-title">Sleep Latency Distribution</div>
-                <svg id="latency-chart" width="400" height="300"></svg>
-            </div>
-            
-            <div class="chart-container">
-                <div class="chart-title">Awakenings by Age</div>
-                <svg id="awakenings-chart" width="400" height="300"></svg>
-            </div>
-        </div>
-        
-        <div class="bottom-row">
-            <div class="metric-card">
-                <div class="metric-value avg-metric" id="avg-efficiency">--</div>
-                <div class="metric-label">Average Sleep Efficiency</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-value avg-metric" id="avg-waso">--</div>
-                <div class="metric-label">Average WASO (min)</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-value avg-metric" id="avg-latency">--</div>
-                <div class="metric-label">Average Sleep Latency (min)</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="activity-section">
-        <div class="section-title">Activity Impact Analysis</div>
-        
-        <div class="charts-grid">
-            <div class="chart-container">
-                <div class="activity-controls">
-                    <div class="control-group">
-                        <label>Caffeine Events per Day</label>
-                        <input type="range" id="caffeine-slider" class="slider" min="0" max="10" step="1" value="2">
-                        <span id="caffeine-value">2</span>
+                    <div class="card">
+                        <div class="text-center mb-lg">
+                            <div class="insight-icon">⚡</div>
+                            <h3>Optimized Potential</h3>
+                        </div>
+                        <div id="optimizedMetrics">
+                            <!-- Optimized metrics will be populated -->
+                        </div>
                     </div>
                 </div>
-                <div class="chart-title">Caffeine Events vs Sleep Efficiency</div>
-                <svg id="caffeine-chart" width="400" height="300"></svg>
-            </div>
-            
-            <div class="chart-container">
-                <div class="activity-controls">
-                    <div class="control-group">
-                        <label>Movement Type</label>
-                        <select id="movement-select">
-                            <option value="light">Light Movement</option>
-                            <option value="medium">Medium Movement</option>
-                            <option value="heavy">Heavy Movement</option>
-                        </select>
+
+                <div class="card mt-lg">
+                    <h3 class="text-center mb-lg">Adjust Lifestyle Factors</h3>
+                    
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Sleep Duration</label>
+                            <input type="range" class="slider" id="durationSlider" 
+                                   min="6" max="9" step="0.5" value="7.5">
+                            <span id="durationValue">7.5h</span>
+                        </div>
+
+                        <div class="control-group">
+                            <label>Stress Management</label>
+                            <input type="range" class="slider" id="stressSlider" 
+                                   min="1" max="5" step="1" value="3">
+                            <span id="stressValue">Moderate</span>
+                        </div>
+
+                        <div class="control-group">
+                            <label>Sleep Hygiene Score</label>
+                            <input type="range" class="slider" id="hygieneSlider" 
+                                   min="1" max="10" step="1" value="7">
+                            <span id="hygieneValue">7/10</span>
+                        </div>
                     </div>
                 </div>
-                <div class="chart-title">Movement vs Sleep Latency</div>
-                <svg id="movement-chart" width="400" height="300"></svg>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h1 class="section-title text-gradient">Sleep Quality Dashboard</h1>
+                <p class="section-description">Explore relationships between lifestyle factors and sleep quality metrics</p>
             </div>
             
-            <div class="chart-container">
-                <div class="activity-controls">
-                    <div class="control-group">
-                        <label>Screen Type</label>
-                        <select id="screen-select">
-                            <option value="small">Small Screen</option>
-                            <option value="large">Large Screen</option>
-                        </select>
-                    </div>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Sleep Duration (hours)</label>
+                    <input type="range" id="duration-slider" class="slider" min="3.3" max="8.2" step="0.1" value="7.0">
+                    <span id="duration-value">8.0h</span>
                 </div>
-                <div class="chart-title">Screen Time vs WASO</div>
-                <svg id="screen-chart" width="400" height="300"></svg>
+                
+                <div class="control-group">
+                    <label>Stress Level</label>
+                    <input type="range" id="stress-slider" class="slider" min="10" max="74" step="1" value="30">
+                    <span id="stress-value">25</span>
+                </div>
+                
+                <div class="control-group">
+                    <label>Age Range</label>
+                    <input type="range" id="age-slider" class="slider" min="20" max="40" step="1" value="30">
+                    <span id="age-value">35</span>
+                </div>
+                
+                <div class="control-group">
+                    <label>Activity Level</label>
+                    <input type="range" id="activity-slider" class="slider" min="600" max="4010" step="100" value="1000">
+                    <span id="activity-value">5</span>
+                </div>
+            </div>
+            
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">Sleep Efficiency vs Duration</div>
+                    <svg id="efficiency-chart" width="400" height="300"></svg>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">WASO by Stress Level</div>
+                    <svg id="waso-chart" width="400" height="300"></svg>
+                </div>
+            </div>
+            
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">Sleep Latency Distribution</div>
+                    <svg id="latency-chart" width="400" height="300"></svg>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">Awakenings by Age</div>
+                    <svg id="awakenings-chart" width="400" height="300"></svg>
+                </div>
+            </div>
+            
+            <div class="charts-grid">
+                <div class="metric-box text-center">
+                    <div class="metric-value" id="avg-efficiency">--</div>
+                    <div class="metric-title">Average Sleep Efficiency</div>
+                </div>
+                <div class="metric-box text-center">
+                    <div class="metric-value" id="avg-waso">--</div>
+                    <div class="metric-title">Average WASO (min)</div>
+                </div>
+                <div class="metric-box text-center">
+                    <div class="metric-value" id="avg-latency">--</div>
+                    <div class="metric-title">Average Sleep Latency (min)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title text-gradient">Activity Impact Analysis</h2>
+            </div>
+            
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="controls mb-lg">
+                        <div class="control-group">
+                            <label>Caffeine Events per Day</label>
+                            <input type="range" id="caffeine-slider" class="slider" min="0" max="10" step="1" value="2">
+                            <span id="caffeine-value">2</span>
+                        </div>
+                    </div>
+                    <div class="chart-title">Caffeine Events vs Sleep Efficiency</div>
+                    <svg id="caffeine-chart" width="400" height="300"></svg>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="controls mb-lg">
+                        <div class="control-group">
+                            <label>Movement Type</label>
+                            <select id="movement-select" style="padding: 8px; border-radius: 8px; background: var(--surface); color: var(--text-primary); border: 1px solid var(--accent-gold);">
+                                <option value="light">Light Movement</option>
+                                <option value="medium">Medium Movement</option>
+                                <option value="heavy">Heavy Movement</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-title">Movement vs Sleep Latency</div>
+                    <svg id="movement-chart" width="400" height="300"></svg>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="controls mb-lg">
+                        <div class="control-group">
+                            <label>Screen Type</label>
+                            <select id="screen-select" style="padding: 8px; border-radius: 8px; background: var(--surface); color: var(--text-primary); border: 1px solid var(--accent-gold);">
+                                <option value="small">Small Screen</option>
+                                <option value="large">Large Screen</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-title">Screen Time vs WASO</div>
+                    <svg id="screen-chart" width="400" height="300"></svg>
+                </div>
             </div>
         </div>
     </div>
