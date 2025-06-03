@@ -53,13 +53,12 @@
 }
 
 body {
-    font-family: 'Inter', sans-serif;
-    background: linear-gradient(180deg, #0a0a0f 0%, #1a1a2e 30%, #16213e 70%, #0f172a 100%);
-    min-height: 100vh;
-    color: #e2e8f0;
+    font-family: var(--font-primary);
+    background: linear-gradient(180deg, var(--primary-bg) 0%, var(--secondary-bg) 50%, var(--primary-bg) 100%);
+    color: var(--text-secondary);
     line-height: 1.6;
     overflow-x: hidden;
-    position: relative;
+    min-height: 100vh;
 }
 
 /* Enhanced Animated Starry Sky */
@@ -71,33 +70,43 @@ body::before {
     width: 100%;
     height: 100%;
     background:
-        radial-gradient(3px 3px at 20px 30px, #ffffff, transparent),
-        radial-gradient(2px 2px at 40px 70px, #a5b4fc, transparent),
-        radial-gradient(1px 1px at 90px 40px, #fbbf24, transparent),
-        radial-gradient(2px 2px at 130px 80px, #ffffff, transparent),
-        radial-gradient(1px 1px at 160px 30px, #c7d2fe, transparent),
-        radial-gradient(2px 2px at 200px 90px, #fbbf24, transparent),
-        radial-gradient(1px 1px at 240px 50px, #ffffff, transparent),
-        radial-gradient(2px 2px at 280px 10px, #a5b4fc, transparent),
-        radial-gradient(1px 1px at 320px 70px, #fbbf24, transparent),
-        radial-gradient(3px 3px at 360px 20px, #ffffff, transparent),
-        radial-gradient(2px 2px at 380px 60px, #c7d2fe, transparent),
-        radial-gradient(1px 1px at 420px 30px, #ffffff, transparent),
-        radial-gradient(2px 2px at 460px 80px, #fbbf24, transparent),
-        radial-gradient(1px 1px at 500px 40px, #a5b4fc, transparent);
+        radial-gradient(2px 2px at 20px 30px, var(--accent-gold), transparent),
+        radial-gradient(1px 1px at 40px 70px, var(--accent-blue), transparent),
+        radial-gradient(2px 2px at 90px 40px, var(--accent-gold), transparent),
+        radial-gradient(1px 1px at 130px 80px, white, transparent),
+        radial-gradient(2px 2px at 160px 30px, var(--accent-purple), transparent);
     background-repeat: repeat;
     background-size: 600px 400px;
     animation: twinkle 8s ease-in-out infinite alternate;
-    opacity: 0.8;
+    opacity: 0.6;
     z-index: 0;
     pointer-events: none;
 }
 
 
+
 @keyframes twinkle {
-    0% { opacity: 0.6; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.1); }
-    100% { opacity: 0.8; transform: scale(1); }
+    0% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+    100% { opacity: 0.6; }
+}
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    color: var(--text-primary);
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+h1 { font-size: clamp(2.5rem, 5vw, 4rem); }
+h2 { font-size: clamp(2rem, 4vw, 3rem); }
+h3 { font-size: clamp(1.5rem, 3vw, 2rem); }
+h4 { font-size: 1.25rem; }
+
+.text-gradient {
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light), var(--accent-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 /* Enhanced Hero Section with Luna */
@@ -1455,17 +1464,17 @@ body::before {
 
 .charts-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    margin-bottom: 30px;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: var(--space-xl);
+    margin-bottom: var(--space-xl);
 }
 
 .chart-title {
-    font-size: 16px;
+    font-size: 1.25rem;
     font-weight: 600;
-    margin-bottom: 15px;
-    color: #f1f5f9;
+    color: var(--text-primary);
     text-align: center;
+    margin-bottom: var(--space-lg);
 }
 
 .bottom-row {
@@ -2915,13 +2924,15 @@ body::before {
 
 /* BETTER CHART STYLING */
 .chart-container {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
-    border-radius: 20px !important;
-    padding: 30px !important;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
-    border: 1px solid rgba(139, 92, 246, 0.2) !important;
-    backdrop-filter: blur(10px) !important;
-    transition: all 0.3s ease !important;
+    background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--tertiary-bg) 100%);
+    border: 1px solid rgba(247, 183, 49, 0.2);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    position: relative;
+    min-height: 400px;
 }
 
 .chart-container:hover {
