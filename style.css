@@ -560,16 +560,17 @@ h4 { font-size: 1.25rem; }
 }
 
 .chart-container {
-    background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%) !important; /* Much darker background */
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.85), rgba(51, 65, 85, 0.85)) !important;
     border-radius: 25px !important;
     padding: 40px !important;
     box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.6),
-        0 0 30px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.02) !important;
-    border: 1px solid rgba(251, 191, 36, 0.2) !important;
-    backdrop-filter: blur(15px) !important;
-}
+      0 20px 60px rgba(0, 0, 0, 0.4),
+      0 0 30px rgba(59, 130, 246, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+    backdrop-filter: blur(20px) !important;
+    position: relative;
+  }
 
 .chart-container::before {
     content: '';
@@ -1778,8 +1779,8 @@ h4 { font-size: 1.25rem; }
 
 .radio-group {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-md);
 }
 
 .radio-option {
@@ -1793,31 +1794,29 @@ h4 { font-size: 1.25rem; }
 
 .radio-label {
     display: block;
-    padding: 15px 20px;
-    background: rgba(30, 41, 59, 0.8);
-    border: 2px solid rgba(251, 191, 36, 0.3);
-    border-radius: 12px;
+    padding: var(--space-md);
+    background: var(--surface);
+    border: 2px solid rgba(247, 183, 49, 0.3);
+    border-radius: var(--radius-md);
     text-align: center;
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-weight: 500;
-    font-size: 0.9rem;
-    color: #e2e8f0;
-    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    color: var(--text-secondary);
 }
 
 .radio-option input:checked + .radio-label {
-    background: linear-gradient(135deg, #fbbf24, #f59e0b);
-    color: #1f2937;
-    border-color: #fbbf24;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(251, 191, 36, 0.3);
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+    color: var(--primary-bg);
+    border-color: var(--accent-gold);
+    transform: scale(1.05);
 }
 
+
 .radio-label:hover {
-    border-color: #fbbf24;
-    background: rgba(251, 191, 36, 0.1);
+    border-color: var(--accent-gold);
+    background: rgba(247, 183, 49, 0.1);
 }
+
 
 .quiz-controls {
     display: flex;
@@ -1878,18 +1877,18 @@ h4 { font-size: 1.25rem; }
 
 .loading {
     text-align: center;
-    padding: 40px;
-    color: #cbd5e1;
+    padding: var(--space-2xl);
+    color: var(--text-muted);
 }
 
 .spinner {
-    border: 3px solid rgba(251, 191, 36, 0.3);
-    border-top: 3px solid #fbbf24;
+    border: 3px solid rgba(247, 183, 49, 0.3);
+    border-top: 3px solid var(--accent-gold);
     border-radius: 50%;
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     animation: spin 1s linear infinite;
-    margin: 0 auto 16px;
+    margin: 0 auto var(--space-md);
 }
 
 @keyframes spin {
@@ -1927,16 +1926,15 @@ h4 { font-size: 1.25rem; }
 .comparison {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    margin-bottom: 30px;
+    gap: var(--space-xl);
+    margin-bottom: var(--space-xl);
 }
 
 .comparison-card {
-    padding: 25px;
-    border-radius: 15px;
-    border: 2px solid rgba(251, 191, 36, 0.3);
-    background: rgba(30, 41, 59, 0.8);
-    backdrop-filter: blur(10px);
+    padding: var(--space-lg);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    border: 2px solid rgba(247, 183, 49, 0.3);
 }
 
 .comparison-card h4 {
