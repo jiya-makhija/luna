@@ -235,473 +235,240 @@ Promise.all(
     // ✅ Render the chart AFTER data is loaded and processed
     renderCortisolMelatoninChart(avgCortisolBeforeSleep, avgCortisolWakeUp, avgMelatoninBeforeSleep, avgMelatoninWakeUp);
 });
-// Enhanced Hormone Chart Rendering - Replace your existing renderCortisolMelatoninChart function
 
 function renderCortisolMelatoninChart(avgCortisolBeforeSleep, avgCortisolWakeUp, avgMelatoninBeforeSleep, avgMelatoninWakeUp) {
-    // Clear any existing chart
     d3.select("#cortisolMelatoninChart svg").remove();
-    d3.select("#cortisolMelatoninChart").classed("loading", true);
 
-    // Enhanced dimensions and margins
-    const margin = { top: 100, right: 100, bottom: 100, left: 100 };
+    const margin = { top: 80, right: 80, bottom: 80, left: 80 };
     const width = 700;
-    const height = 550;
+    const height = 500;
     
     const svg = d3.select("#cortisolMelatoninChart")
         .append("svg")
         .attr("width", width)
-        .attr("height", height)
-        .style("background", "transparent");
+        .attr("height", height);
 
-    // Remove loading class
-    setTimeout(() => {
-        d3.select("#cortisolMelatoninChart").classed("loading", false);
-    }, 500);
-
-    // Add enhanced title with better positioning
+    // Add meaningful title
     svg.append("text")
         .attr("class", "chart-title")
         .attr("x", width / 2)
-        .attr("y", 40)
-        .attr("text-anchor", "middle")
-        .style("font-size", "24px")
-        .style("font-weight", "600")
-        .style("fill", "#f1f5f9")
-        .style("font-family", "'Playfair Display', serif")
+        .attr("y", 20)
+        .attr("font-size", "24px")
+        .attr("font-weight", "bold")
         .text("Cortisol & Melatonin Levels: Before Sleep vs Wake Up");
 
-    // Add subtitle for context
-    svg.append("text")
-        .attr("class", "chart-subtitle")
-        .attr("x", width / 2)
-        .attr("y", 65)
-        .attr("text-anchor", "middle")
-        .style("font-size", "14px")
-        .style("font-weight", "400")
-        .style("fill", "#94a3b8")
-        .style("font-family", "'Inter', sans-serif")
-        .text("Hormone levels across sleep-wake cycles");
+    // Define log scales for cortisol & melatonin
+    const logScaleCortisol = d3.scaleLog()
+        .domain([Math.min(avgCortisolBeforeSleep, avgCortisolWakeUp), Math.max(avgCortisolBeforeSleep, avgCortisolWakeUp)])
+        .range([1, 100]);
 
-    // Enhanced data preparation
+    const logScaleMelatonin = d3.scaleLog()
+        .domain([Math.min(avgMelatoninBeforeSleep, avgMelatoninWakeUp), Math.max(avgMelatoninBeforeSleep, avgMelatoninWakeUp)])
+        .range([1, 100]);
+
     const data = [
         { 
             label: "Before Sleep", 
-            cortisol: avgCortisolBeforeSleep,
-            melatonin: avgMelatoninBeforeSleep,
-            cortisolNormalized: (avgCortisolBeforeSleep / Math.max(avgCortisolBeforeSleep, avgCortisolWakeUp)) * 100,
-            melatoninNormalized: (avgMelatoninBeforeSleep / Math.max(avgMelatoninBeforeSleep, avgMelatoninWakeUp)) * 100
+            cortisol: logScaleCortisol(avgCortisolBeforeSleep), 
+            melatonin: logScaleMelatonin(avgMelatoninBeforeSleep),
+            originalCortisol: avgCortisolBeforeSleep,
+            originalMelatonin: avgMelatoninBeforeSleep
         },
         { 
             label: "Wake Up", 
-            cortisol: avgCortisolWakeUp,
-            melatonin: avgMelatoninWakeUp,
-            cortisolNormalized: (avgCortisolWakeUp / Math.max(avgCortisolBeforeSleep, avgCortisolWakeUp)) * 100,
-            melatoninNormalized: (avgMelatoninWakeUp / Math.max(avgMelatoninBeforeSleep, avgMelatoninWakeUp)) * 100
+            cortisol: logScaleCortisol(avgCortisolWakeUp), 
+            melatonin: logScaleMelatonin(avgMelatoninWakeUp),
+            originalCortisol: avgCortisolWakeUp,
+            originalMelatonin: avgMelatoninWakeUp
         }
     ];
 
-    // Enhanced scales
     const xScale = d3.scaleBand()
         .domain(data.map(d => d.label))
-        .range([margin.left, width - margin.right])
-        .padding(0.4);
+        .range([60, width - 60])
+        .padding(0.3);
 
     const yScaleCortisol = d3.scaleLinear()
-        .domain([0, Math.max(avgCortisolBeforeSleep, avgCortisolWakeUp) * 1.2])
+        .domain([0, d3.max(data, d => d.cortisol) * 1.1])
         .nice()
-        .range([height - margin.bottom, margin.top]);
+        .range([height - 60, 60]);
 
     const yScaleMelatonin = d3.scaleLinear()
-        .domain([0, Math.max(avgMelatoninBeforeSleep, avgMelatoninWakeUp) * 1.2])
+        .domain([0, d3.max(data, d => d.melatonin) * 1.1])
         .nice()
-        .range([height - margin.bottom, margin.top]);
+        .range([height - 60, 60]);
 
-    // Enhanced colors with gradients
-    const defs = svg.append("defs");
-    
-    // Cortisol gradient
-    const cortisolGradient = defs.append("linearGradient")
-        .attr("id", "cortisolGradient")
-        .attr("x1", "0%").attr("y1", "0%")
-        .attr("x2", "0%").attr("y2", "100%");
-    
-    cortisolGradient.append("stop")
-        .attr("offset", "0%")
-        .attr("stop-color", "#f87171")
-        .attr("stop-opacity", 1);
-    
-    cortisolGradient.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", "#ef4444")
-        .attr("stop-opacity", 1);
+    // Meaningful colors
+    const cortisolColor = "#e74c3c"; // Red for cortisol (stress hormone)
+    const melatoninColor = "#3498db"; // Blue for melatonin (sleep hormone)
 
-    // Melatonin gradient
-    const melatoninGradient = defs.append("linearGradient")
-        .attr("id", "melatoninGradient")
-        .attr("x1", "0%").attr("y1", "0%")
-        .attr("x2", "0%").attr("y2", "100%");
-    
-    melatoninGradient.append("stop")
-        .attr("offset", "0%")
-        .attr("stop-color", "#60a5fa")
-        .attr("stop-opacity", 1);
-    
-    melatoninGradient.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", "#3b82f6")
-        .attr("stop-opacity", 1);
-
-    // Enhanced tooltip
     const tooltip_mel = d3.select("#tooltip_mel");
 
-    // Add grid lines for better readability
-    const xGrid = svg.append("g")
-        .attr("class", "grid x-grid")
-        .attr("transform", `translate(0,${height - margin.bottom})`)
-        .call(d3.axisBottom(xScale)
-            .tickSize(-height + margin.top + margin.bottom)
-            .tickFormat("")
-        );
-
-    const yGridCortisol = svg.append("g")
-        .attr("class", "grid y-grid")
-        .attr("transform", `translate(${margin.left},0)`)
-        .call(d3.axisLeft(yScaleCortisol)
-            .tickSize(-width + margin.left + margin.right)
-            .tickFormat("")
-        );
-
-    // Style grid lines
-    svg.selectAll(".grid line")
-        .style("stroke", "rgba(100, 116, 139, 0.2)")
-        .style("stroke-dasharray", "3,3");
-
-    svg.selectAll(".grid path")
-        .style("stroke-width", 0);
-
-    // Enhanced bars with animations
-    const barWidth = xScale.bandwidth() / 3;
-
-    // Cortisol bars
-    svg.selectAll(".bar-cortisol")
-        .data(data)
-        .enter().append("rect")
-        .attr("class", "bar-cortisol")
-        .attr("x", d => xScale(d.label) + barWidth * 0.2)
-        .attr("y", height - margin.bottom)
-        .attr("width", barWidth)
-        .attr("height", 0)
-        .style("fill", "url(#cortisolGradient)")
-        .style("stroke", "#dc2626")
-        .style("stroke-width", 2)
-        .style("filter", "drop-shadow(0 4px 8px rgba(239, 68, 68, 0.3))")
-        .style("cursor", "pointer")
-        .transition()
-        .duration(1000)
-        .delay((d, i) => i * 200)
-        .attr("y", d => yScaleCortisol(d.cortisol))
-        .attr("height", d => height - margin.bottom - yScaleCortisol(d.cortisol));
-
-    // Melatonin bars
+    // Add melatonin bars (shifted slightly for readability)
     svg.selectAll(".bar-melatonin")
         .data(data)
         .enter().append("rect")
         .attr("class", "bar-melatonin")
-        .attr("x", d => xScale(d.label) + barWidth * 1.3)
-        .attr("y", height - margin.bottom)
-        .attr("width", barWidth)
-        .attr("height", 0)
-        .style("fill", "url(#melatoninGradient)")
-        .style("stroke", "#2563eb")
-        .style("stroke-width", 2)
-        .style("filter", "drop-shadow(0 4px 8px rgba(59, 130, 246, 0.3))")
-        .style("cursor", "pointer")
-        .transition()
-        .duration(1000)
-        .delay((d, i) => i * 200 + 100)
+        .attr("x", d => xScale(d.label) + xScale.bandwidth() / 2)
         .attr("y", d => yScaleMelatonin(d.melatonin))
-        .attr("height", d => height - margin.bottom - yScaleMelatonin(d.melatonin));
+        .attr("width", xScale.bandwidth() / 2)
+        .attr("height", d => height - 60 - yScaleMelatonin(d.melatonin))
+        .attr("fill", melatoninColor)
+        .on("mouseover", function(event, d) {
+            const mouseX = event.clientX;
+            const mouseY = event.clientY;
 
-    // Enhanced axes
-    const xAxis = svg.append("g")
-        .attr("class", "x-axis")
-        .attr("transform", `translate(0,${height - margin.bottom})`)
+            // ✅ Use tooltip_mel instead of tooltip
+            tooltip_mel.transition().duration(200).style("opacity", 1);
+            tooltip_mel.html(`
+                <div class="tooltip_mel-title">Melatonin</div>
+                <div class="tooltip_mel-metric">
+                    <span class="tooltip_mel-label">${d.label}:</span>
+                    <span class="tooltip_mel-value">${d.originalMelatonin.toFixed(2)} pg/mL</span>
+                </div>
+            `)
+            .style("left", () => {
+                const tooltip = document.getElementById("tooltip_mel");
+                const left = Math.max(
+                    10, // ✅ Ensures tooltip stays at least 10px from the left edge
+                    Math.min(
+                        window.innerWidth - tooltip.offsetWidth - 10, // ✅ Prevents right-side overflow
+                        mouseX - tooltip.offsetWidth / 2 // ✅ Centers tooltip over cursor
+                    )
+                );
+                return `${left}px`;
+            })
+            .style("top", () => {
+                const tooltip = document.getElementById("tooltip_mel");
+                return `${Math.max(
+                    10, // ✅ Ensures it doesn't go off the top edge
+                    mouseY + 20 // ✅ Positions below cursor instead of above
+                )}px`;
+            })
+            
+        })
+        .on("mouseout", function() {
+            // ✅ Use tooltip_mel instead of tooltip
+            tooltip_mel.transition().duration(200).style("opacity", 0);
+        });
+
+        // Add cortisol bars
+    svg.selectAll(".bar-cortisol")
+        .data(data)
+        .enter().append("rect")
+        .attr("class", "bar-cortisol")
+        .attr("x", d => xScale(d.label))
+        .attr("y", d => yScaleCortisol(d.cortisol))
+        .attr("width", xScale.bandwidth() / 2)
+        .attr("height", d => height - 60 - yScaleCortisol(d.cortisol))
+        .attr("fill", cortisolColor)
+        .on("mouseover", function(event, d) {
+            const mouseX = event.clientX;
+            const mouseY = event.clientY;
+
+            tooltip_mel.transition().duration(200).style("opacity", 1);
+            tooltip_mel.html(`
+                <div class="tooltip_mel-title">Cortisol</div>
+                <div class="tooltip_mel-metric">
+                    <span class="tooltip_mel-label">${d.label}:</span>
+                    <span class="tooltip_mel-value">${d.originalCortisol.toFixed(2)} ng/mL</span>
+                </div>
+            `)
+            .style("left", () => {
+                const tooltip = document.getElementById("tooltip_mel");
+                const left = Math.max(
+                    10, // ✅ Ensures tooltip stays at least 10px from the left edge
+                    Math.min(
+                        window.innerWidth - tooltip.offsetWidth - 10, // ✅ Prevents right-side overflow
+                        mouseX - tooltip.offsetWidth / 2 // ✅ Centers tooltip over cursor
+                    )
+                );
+                return `${left}px`;
+            })
+            .style("top", () => {
+                const tooltip = document.getElementById("tooltip_mel");
+                return `${Math.max(
+                    10, // ✅ Ensures it doesn't go off the top edge
+                    mouseY + 20 // ✅ Positions below cursor instead of above
+                )}px`;
+            })
+        })
+        .on("mouseout", function() {
+            tooltip_mel.transition().duration(200).style("opacity", 0);
+        });
+
+
+    // Add X-axis
+    svg.append("g")
+        .attr("transform", `translate(0,${height - 60})`)
         .call(d3.axisBottom(xScale))
-        .style("font-family", "'Inter', sans-serif")
-        .style("font-weight", "600")
-        .style("font-size", "16px");
-
-    xAxis.selectAll("text")
-        .style("fill", "#f1f5f9")
+        .selectAll("text")
+        .style("font-weight", "bold")
         .attr("class", "x-axis-label");
 
-    xAxis.selectAll("path, line")
-        .style("stroke", "#64748b")
-        .style("stroke-width", "2px");
+    // Add Y-axis for Cortisol (left)
+    svg.append("g")
+        .attr("transform", "translate(60,0)")
+        .call(d3.axisLeft(yScaleCortisol));
 
-    // Left Y-axis for Cortisol
-    const yAxisLeft = svg.append("g")
-        .attr("class", "y-axis-left")
-        .attr("transform", `translate(${margin.left},0)`)
-        .call(d3.axisLeft(yScaleCortisol))
-        .style("font-family", "'Inter', sans-serif")
-        .style("font-weight", "500");
+    // Add Y-axis for Melatonin (right)
+    svg.append("g")
+        .attr("transform", `translate(${width - 60},0)`)
+        .call(d3.axisRight(yScaleMelatonin));
 
-    yAxisLeft.selectAll("text")
-        .style("fill", "#cbd5e1")
-        .style("font-size", "14px");
-
-    yAxisLeft.selectAll("path, line")
-        .style("stroke", "#64748b")
-        .style("stroke-width", "2px");
-
-    // Right Y-axis for Melatonin
-    const yAxisRight = svg.append("g")
-        .attr("class", "y-axis-right")
-        .attr("transform", `translate(${width - margin.right},0)`)
-        .call(d3.axisRight(yScaleMelatonin))
-        .style("font-family", "'Inter', sans-serif")
-        .style("font-weight", "500");
-
-    yAxisRight.selectAll("text")
-        .style("fill", "#cbd5e1")
-        .style("font-size", "14px");
-
-    yAxisRight.selectAll("path, line")
-        .style("stroke", "#64748b")
-        .style("stroke-width", "2px");
-
-    // Enhanced axis labels
+    // Add Y-axis labels
     svg.append("text")
         .attr("class", "axis-title")
         .attr("transform", "rotate(-90)")
-        .attr("y", margin.left - 60)
-        .attr("x", -(height / 2))
+        .attr("y", 20)
+        .attr("x", -height / 2)
         .style("text-anchor", "middle")
-        .style("fill", "#f1f5f9")
-        .style("font-family", "'Inter', sans-serif")
-        .style("font-weight", "600")
-        .style("font-size", "16px")
         .text("Cortisol (ng/mL)");
 
     svg.append("text")
         .attr("class", "axis-title")
         .attr("transform", "rotate(90)")
-        .attr("y", -(width - margin.right + 50))
+        .attr("y", -width + 20)
         .attr("x", height / 2)
         .style("text-anchor", "middle")
-        .style("fill", "#f1f5f9")
-        .style("font-family", "'Inter', sans-serif")
-        .style("font-weight", "600")
-        .style("font-size", "16px")
         .text("Melatonin (pg/mL)");
 
-    // Enhanced legend with better positioning
+    // Add legend
     const legend = svg.append("g")
         .attr("class", "legend")
-        .attr("transform", `translate(${width - margin.right - 150}, ${margin.top + 20})`);
+        .attr("transform", `translate(${width - margin.right - 100}, 80)`);
 
     // Cortisol legend
     legend.append("rect")
         .attr("x", 0)
         .attr("y", 0)
-        .attr("width", 20)
-        .attr("height", 20)
-        .attr("rx", 4)
-        .style("fill", "url(#cortisolGradient)")
-        .style("stroke", "#dc2626")
-        .style("stroke-width", 2);
+        .attr("width", 15)
+        .attr("height", 15)
+        .attr("fill", cortisolColor);
 
     legend.append("text")
         .attr("class", "legend-cortisol")
-        .attr("x", 30)
-        .attr("y", 15)
-        .style("font-weight", "600")
-        .style("fill", "#f1f5f9")
-        .style("font-family", "'Inter', sans-serif")
-        .style("font-size", "16px")
+        .attr("x", 20)
+        .attr("y", 12)
+        .style("font-weight", "bold")
         .text("Cortisol");
 
     // Melatonin legend
     legend.append("rect")
         .attr("x", 0)
-        .attr("y", 35)
-        .attr("width", 20)
-        .attr("height", 20)
-        .attr("rx", 4)
-        .style("fill", "url(#melatoninGradient)")
-        .style("stroke", "#2563eb")
-        .style("stroke-width", 2);
+        .attr("y", 25)
+        .attr("width", 15)
+        .attr("height", 15)
+        .attr("fill", melatoninColor);
 
     legend.append("text")
         .attr("class", "legend-melatonin")
-        .attr("x", 30)
-        .attr("y", 50)
-        .style("font-weight", "600")
-        .style("fill", "#f1f5f9")
-        .style("font-family", "'Inter', sans-serif")
-        .style("font-size", "16px")
+        .attr("x", 20)
+        .attr("y", 37)
+        .style("font-weight", "bold")
         .text("Melatonin");
-
-    // Enhanced tooltip interactions
-    function addTooltipInteractions() {
-        svg.selectAll(".bar-cortisol, .bar-melatonin")
-            .on("mouseover", function(event, d) {
-                const isCortisolBar = d3.select(this).classed("bar-cortisol");
-                const hormone = isCortisolBar ? "Cortisol" : "Melatonin";
-                const value = isCortisolBar ? d.cortisol : d.melatonin;
-                const unit = isCortisolBar ? "ng/mL" : "pg/mL";
-                
-                d3.select(this)
-                    .transition()
-                    .duration(200)
-                    .style("filter", "drop-shadow(0 8px 16px rgba(251, 191, 36, 0.5))")
-                    .style("transform", "translateY(-2px)");
-
-                tooltip_mel.transition().duration(200).style("opacity", 1);
-                tooltip_mel.html(`
-                    <div class="tooltip_mel-title">${hormone}</div>
-                    <div class="tooltip_mel-metric">
-                        <span class="tooltip_mel-label">${d.label}:</span>
-                        <span class="tooltip_mel-value">${value.toFixed(2)} ${unit}</span>
-                    </div>
-                `)
-                .style("left", () => {
-                    const tooltip = document.getElementById("tooltip_mel");
-                    const left = Math.max(
-                        10,
-                        Math.min(
-                            window.innerWidth - tooltip.offsetWidth - 10,
-                            event.pageX - tooltip.offsetWidth / 2
-                        )
-                    );
-                    return `${left}px`;
-                })
-                .style("top", () => {
-                    return `${Math.max(10, event.pageY - 80)}px`;
-                });
-            })
-            .on("mouseout", function() {
-                d3.select(this)
-                    .transition()
-                    .duration(200)
-                    .style("filter", d3.select(this).classed("bar-cortisol") ? 
-                        "drop-shadow(0 4px 8px rgba(239, 68, 68, 0.3))" : 
-                        "drop-shadow(0 4px 8px rgba(59, 130, 246, 0.3))")
-                    .style("transform", "translateY(0px)");
-
-                tooltip_mel.transition().duration(200).style("opacity", 0);
-            });
-    }
-
-    // Add interactions after bars are rendered
-    setTimeout(addTooltipInteractions, 1200);
 }
 
-// Heart Rate Chart Styling Patch - Add this to your script.js
-
-// Function to apply proper styling to the heart rate chart
-function applyHeartRateChartStyling() {
-    const container = document.getElementById('dualLineContainer');
-    const chart = document.getElementById('dual-line-chart');
-    
-    if (container) {
-        // Ensure container has proper styling
-        container.style.background = 'linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.6) 100%)';
-        container.style.borderRadius = '25px';
-        container.style.padding = '40px';
-        container.style.boxShadow = '0 20px 60px rgba(0, 0, 0, 0.4), 0 0 30px rgba(251, 191, 36, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
-        container.style.border = '1px solid rgba(251, 191, 36, 0.2)';
-        container.style.backdropFilter = 'blur(20px)';
-        container.style.minHeight = '500px';
-    }
-    
-    if (chart) {
-        // Ensure chart background is transparent
-        chart.style.background = 'transparent';
-        
-        // Find and style the SVG
-        const svg = chart.querySelector('svg');
-        if (svg) {
-            svg.style.background = 'transparent';
-            svg.style.borderRadius = '15px';
-        }
-        
-        // Style all text elements
-        const textElements = chart.querySelectorAll('text');
-        textElements.forEach(text => {
-            if (!text.style.fill || text.style.fill === 'black' || text.style.fill === '#000000') {
-                text.style.fill = '#f1f5f9';
-                text.style.fontFamily = "'Inter', sans-serif";
-            }
-        });
-        
-        // Style axis elements
-        const axisLines = chart.querySelectorAll('.axis line, .axis path');
-        axisLines.forEach(line => {
-            line.style.stroke = '#64748b';
-            line.style.strokeWidth = '2px';
-        });
-        
-        // Style grid lines
-        const gridLines = chart.querySelectorAll('.grid line');
-        gridLines.forEach(line => {
-            line.style.stroke = 'rgba(100, 116, 139, 0.3)';
-            line.style.strokeDasharray = '3,3';
-        });
-    }
-}
-
-// Apply styling after chart is rendered
-const originalRenderDensityPlot = window.renderDensityPlot;
-if (originalRenderDensityPlot) {
-    window.renderDensityPlot = function(hrData) {
-        // Call original function
-        originalRenderDensityPlot(hrData);
-        
-        // Apply styling after a short delay to ensure DOM is updated
-        setTimeout(() => {
-            applyHeartRateChartStyling();
-        }, 500);
-    };
-}
-
-// Also apply styling when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Apply styling with delays to catch chart when it loads
-    setTimeout(applyHeartRateChartStyling, 2000);
-    setTimeout(applyHeartRateChartStyling, 5000);
-});
-
-// Observer to detect when chart is added to DOM
-const chartObserver = new MutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
-        if (mutation.type === 'childList') {
-            mutation.addedNodes.forEach(function(node) {
-                if (node.nodeType === 1) { // Element node
-                    if (node.querySelector && (node.querySelector('#dual-line-chart svg') || node.id === 'dual-line-chart')) {
-                        setTimeout(applyHeartRateChartStyling, 100);
-                    }
-                }
-            });
-        }
-    });
-});
-
-// Start observing
-const dualLineContainer = document.getElementById('dualLineContainer');
-if (dualLineContainer) {
-    chartObserver.observe(dualLineContainer, {
-        childList: true,
-        subtree: true
-    });
-}
-
-// Manual trigger function for testing
-window.fixHeartRateChart = function() {
-    applyHeartRateChartStyling();
-    console.log('✅ Heart rate chart styling applied manually');
-};
 
 // Function to aggregate heart rate data across all users for density plot
 async function aggregateHeartRateData() {
@@ -3714,528 +3481,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-// Enhanced Navigation and Journey Controller
-class SleepJourneyController {
-    constructor() {
-        this.currentStep = 'explore';
-        this.userProfile = {
-            duration: null,
-            stress: null,
-            latency: null,
-            chronotype: null,
-            twin: null
-        };
-        this.init();
-    }
 
-    init() {
-        this.setupNavigationListeners();
-        this.setupProfileCardVisibility();
-        this.initializeStepVisibility();
-        this.updateNavigationState();
-    }
-
-    setupNavigationListeners() {
-        // Navigation step clicks
-        document.querySelectorAll('.progress-step').forEach(step => {
-            step.addEventListener('click', (e) => {
-                const targetStep = step.getAttribute('data-step');
-                this.navigateToStep(targetStep);
-            });
-        });
-
-        // Scroll-based navigation updates
-        this.setupScrollNavigation();
-        
-        // Transition button listeners
-        this.setupTransitionButtons();
-    }
-
-    setupScrollNavigation() {
-        const observerOptions = {
-            threshold: 0.3,
-            rootMargin: '-100px 0px -100px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const sectionId = entry.target.id;
-                    this.updateStepFromSection(sectionId);
-                }
-            });
-        }, observerOptions);
-
-        // Observe key sections
-        const sections = [
-            'dual-line-chart',
-            'cortisolMelatoninChart', 
-            'interactiveInfo',
-            'quizSection',
-            'results'
-        ].map(id => document.getElementById(id)).filter(el => el);
-
-        sections.forEach(section => observer.observe(section));
-    }
-
-    setupTransitionButtons() {
-        // Individual section show button
-        const toggleButton = document.getElementById('toggleUserView');
-        if (toggleButton) {
-            toggleButton.addEventListener('click', () => {
-                this.showIndividualSection();
-            });
-        }
-
-        // Transition buttons
-        document.querySelectorAll('.transition-button').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const buttonText = button.textContent.toLowerCase();
-                if (buttonText.includes('individual') || buttonText.includes('explore')) {
-                    this.showIndividualSection();
-                } else if (buttonText.includes('optimize')) {
-                    this.navigateToStep('optimize');
-                }
-            });
-        });
-    }
-
-    setupProfileCardVisibility() {
-        const profileCard = document.getElementById('sleepProfileCard');
-        if (profileCard) {
-            // Show profile card after user starts interacting
-            setTimeout(() => {
-                profileCard.classList.add('visible');
-            }, 3000);
-        }
-    }
-
-    navigateToStep(stepName) {
-        this.currentStep = stepName;
-        this.updateNavigationState();
-        this.scrollToStepSection(stepName);
-        this.updateProfileCard();
-    }
-
-    updateStepFromSection(sectionId) {
-        const stepMap = {
-            'dual-line-chart': 'explore',
-            'cortisolMelatoninChart': 'explore',
-            'interactiveInfo': 'identify',
-            'quizSection': 'identify', 
-            'results': 'identify',
-            'sleepSimulator': 'optimize',
-            'efficiency-chart': 'optimize'
-        };
-
-        const newStep = stepMap[sectionId];
-        if (newStep && newStep !== this.currentStep) {
-            this.currentStep = newStep;
-            this.updateNavigationState();
-        }
-    }
-
-    updateNavigationState() {
-        // Update active step in navigation
-        document.querySelectorAll('.progress-step').forEach(step => {
-            const stepName = step.getAttribute('data-step');
-            step.classList.toggle('active', stepName === this.currentStep);
-            
-            // Mark completed steps
-            const stepOrder = ['explore', 'identify', 'optimize'];
-            const currentIndex = stepOrder.indexOf(this.currentStep);
-            const thisIndex = stepOrder.indexOf(stepName);
-            step.classList.toggle('completed', thisIndex < currentIndex);
-        });
-
-        // Update profile card state based on step
-        this.updateProfileCardForStep();
-    }
-
-    scrollToStepSection(stepName) {
-        const sectionMap = {
-            'explore': 'dualLineContainer',
-            'identify': 'interactiveInfo', 
-            'optimize': 'sleepSimulator'
-        };
-
-        const targetId = sectionMap[stepName];
-        const targetElement = document.getElementById(targetId);
-        
-        if (targetElement) {
-            const headerOffset = 100;
-            const elementPosition = targetElement.getBoundingClientRect().top;
-            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: 'smooth'
-            });
-        }
-    }
-
-    showIndividualSection() {
-        const userSection = document.getElementById("userSpecificSection");
-        const button = document.getElementById("toggleUserView");
-        
-        if (userSection && button) {
-            userSection.style.display = "block";
-            userSection.classList.add('active');
-            button.textContent = "🔒 Hide Individual Data ";
-            button.classList.add('expanded');
-            
-            // Update navigation to identify step
-            this.navigateToStep('identify');
-            
-            // Smooth scroll to the section
-            setTimeout(() => {
-                userSection.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start' 
-                });
-            }, 300);
-        }
-    }
-
-    showDashboard() {
-        const dashboard = document.querySelector('.dashboard');
-        if (dashboard) {
-            this.navigateToStep('optimize');
-            dashboard.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'start' 
-            });
-        }
-    }
-
-    updateProfileCard() {
-        const profileCard = document.getElementById('sleepProfileCard');
-        if (!profileCard) return;
-
-        const stepDescriptions = {
-            'explore': 'Exploring sleep patterns...',
-            'identify': 'Finding your sleep twin...',
-            'optimize': 'Optimizing your sleep...'
-        };
-
-        const subtitle = profileCard.querySelector('.profile-subtitle');
-        if (subtitle) {
-            subtitle.textContent = stepDescriptions[this.currentStep] || 'Building as you explore...';
-        }
-    }
-
-    updateProfileCardForStep() {
-        const profileCard = document.getElementById('sleepProfileCard');
-        if (!profileCard) return;
-
-        // Add step-specific styling
-        profileCard.className = `sleep-profile-card visible step-${this.currentStep}`;
-    }
-
-    // Method to update profile data from quiz/interactions
-    updateProfileData(key, value) {
-        this.userProfile[key] = value;
-        this.renderProfileMetrics();
-    }
-
-    renderProfileMetrics() {
-        const metrics = {
-            'profileDuration': this.userProfile.duration ? `${this.userProfile.duration}h` : '--',
-            'profileStress': this.userProfile.stress || '--',
-            'profileLatency': this.userProfile.latency ? `${this.userProfile.latency}min` : '--',
-            'profileChronotype': this.getChronotypeText(this.userProfile.chronotype),
-            'profileTwin': this.userProfile.twin || '--'
-        };
-
-        Object.entries(metrics).forEach(([id, value]) => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value;
-                element.classList.toggle('metric-empty', value === '--');
-            }
-        });
-    }
-
-    getChronotypeText(chronotype) {
-        const types = {
-            1: 'Evening',
-            2: 'Mod. Evening', 
-            3: 'Neutral',
-            4: 'Mod. Morning',
-            5: 'Morning'
-        };
-        return types[chronotype] || '--';
-    }
-}
-
-// Enhanced Quiz Controller with Profile Updates
-class EnhancedQuizController extends QuizController {
-    constructor(journeyController) {
-        super();
-        this.journeyController = journeyController;
-    }
-
-    saveCurrentAnswer() {
-        super.saveCurrentAnswer();
-        
-        // Update profile card as user progresses
-        switch (this.currentQuestion) {
-            case 2:
-                this.journeyController.updateProfileData('duration', this.answers.sleepHours);
-                break;
-            case 3:
-                this.journeyController.updateProfileData('stress', 
-                    ['Very Low', 'Low', 'Moderate', 'High', 'Very High'][this.answers.stressLevel - 1]);
-                break;
-            case 4:
-                this.journeyController.updateProfileData('latency', this.answers.sleepLatency);
-                break;
-            case 6:
-                this.journeyController.updateProfileData('chronotype', this.answers.chronotype);
-                break;
-        }
-    }
-
-    submitQuiz() {
-        super.submitQuiz();
-        
-        // Move to identify step when quiz is submitted
-        this.journeyController.navigateToStep('identify');
-    }
-}
-
-// Enhanced Results Display with Navigation Integration
-function enhancedDisplayResults(userProfile, match, journeyController) {
-    const participant = match.participant;
-    const similarity = match.similarity.toFixed(1);
-    
-    // Update profile card with twin info
-    const twinId = participant.id.replace('user_', '');
-    journeyController.updateProfileData('twin', `Participant ${twinId}`);
-    
-    // Show transition to optimize step
-    const transition2 = document.getElementById('transition2');
-    if (transition2) {
-        transition2.style.display = 'block';
-        setTimeout(() => {
-            transition2.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 1000);
-    }
-    
-    // Highlight the matched participant in individual view
-    highlightSleepTwin(twinId);
-    
-    // Call original display function
-    displayResults(userProfile, match);
-}
-
-function highlightSleepTwin(twinId) {
-    // Add special styling to the matched participant
-    const participantCircle = document.getElementById(`user-${twinId}`);
-    if (participantCircle) {
-        participantCircle.classList.add('sleep-twin');
-        
-        // Add notification
-        setTimeout(() => {
-            createTwinNotification(twinId);
-        }, 2000);
-    }
-}
-
-function createTwinNotification(twinId) {
-    const notification = document.createElement('div');
-    notification.className = 'twin-notification';
-    notification.innerHTML = `
-        <div class="notification-content">
-            <span class="notification-icon">👯</span>
-            <span class="notification-text">Your sleep twin is Participant ${twinId}!</span>
-            <button class="notification-view" onclick="viewTwinData(${twinId})">View Data</button>
-        </div>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        notification.remove();
-    }, 5000);
-}
-
-function viewTwinData(twinId) {
-    // Load the twin's data and scroll to individual section
-    if (window.loadParticipantData) {
-        loadParticipantData(parseInt(twinId));
-    }
-    
-    const userSection = document.getElementById("userSpecificSection");
-    if (userSection) {
-        userSection.style.display = "block";
-        userSection.scrollIntoView({ behavior: 'smooth' });
-    }
-    
-    // Remove notification
-    const notification = document.querySelector('.twin-notification');
-    if (notification) notification.remove();
-}
-
-// Global functions for transition buttons
-function showIndividualSection() {
-    if (window.journeyController) {
-        window.journeyController.showIndividualSection();
-    }
-}
-
-function showDashboard() {
-    if (window.journeyController) {
-        window.journeyController.showDashboard();
-    }
-}
-
-// Initialize everything when DOM loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize journey controller
-    window.journeyController = new SleepJourneyController();
-    
-    // Override the original QuizController initialization
-    window.initializePredictions = function() {
-        new EnhancedQuizController(window.journeyController);
-    };
-    
-    // Override displayResults to use enhanced version
-    const originalDisplayResults = window.displayResults;
-    window.displayResults = function(userProfile, match) {
-        enhancedDisplayResults(userProfile, match, window.journeyController);
-    };
-    
-    // Add smooth scrolling to all internal links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
-});
-
-// QUICK FIX: Add this code to the bottom of your script.js file
-
-// Override the original QuizController's saveCurrentAnswer method
-if (window.QuizController) {
-    const originalSaveCurrentAnswer = QuizController.prototype.saveCurrentAnswer;
-    QuizController.prototype.saveCurrentAnswer = function() {
-        // Call original method
-        originalSaveCurrentAnswer.call(this);
-        
-        // Add profile card updates
-        const journeyController = window.journeyController;
-        if (journeyController) {
-            switch (this.currentQuestion) {
-                case 2:
-                    journeyController.updateProfileData('duration', this.answers.sleepHours);
-                    break;
-                case 3:
-                    const stressLabels = ['Very Low', 'Low', 'Moderate', 'High', 'Very High'];
-                    journeyController.updateProfileData('stress', stressLabels[this.answers.stressLevel - 1]);
-                    break;
-                case 4:
-                    journeyController.updateProfileData('latency', this.answers.sleepLatency);
-                    break;
-                case 6:
-                    journeyController.updateProfileData('chronotype', this.answers.chronotype);
-                    break;
-            }
-        }
-    };
-}
-
-// Add real-time updates to sliders (if they exist)
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(() => {
-        // Quiz sliders
-        const sleepHoursSlider = document.getElementById('sleepHours');
-        const sleepLatencySlider = document.getElementById('sleepLatency');
-        
-        if (sleepHoursSlider) {
-            sleepHoursSlider.addEventListener('input', function() {
-                if (window.journeyController) {
-                    window.journeyController.updateProfileData('duration', this.value);
-                }
-            });
-        }
-        
-        if (sleepLatencySlider) {
-            sleepLatencySlider.addEventListener('input', function() {
-                if (window.journeyController) {
-                    window.journeyController.updateProfileData('latency', this.value);
-                }
-            });
-        }
-        
-        // Dashboard sliders
-        const durationSlider = document.getElementById("duration-slider");
-        const stressSlider = document.getElementById("stress-slider");
-        
-        if (durationSlider) {
-            durationSlider.addEventListener("input", function() {
-                if (window.journeyController) {
-                    window.journeyController.updateProfileData('duration', this.value);
-                }
-            });
-        }
-        
-        if (stressSlider) {
-            stressSlider.addEventListener("input", function() {
-                if (window.journeyController) {
-                    let stressLabel = 'Moderate';
-                    const value = parseInt(this.value);
-                    if (value < 20) stressLabel = 'Low';
-                    else if (value < 35) stressLabel = 'Moderate';
-                    else if (value < 50) stressLabel = 'High';
-                    else stressLabel = 'Very High';
-                    
-                    window.journeyController.updateProfileData('stress', stressLabel);
-                }
-            });
-        }
-        
-        // Radio buttons for stress and chronotype
-        document.querySelectorAll('input[name="stress"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                if (this.checked && window.journeyController) {
-                    const stressLabels = ['Very Low', 'Low', 'Moderate', 'High', 'Very High'];
-                    window.journeyController.updateProfileData('stress', stressLabels[parseInt(this.value) - 1]);
-                }
-            });
-        });
-        
-        document.querySelectorAll('input[name="chronotype"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                if (this.checked && window.journeyController) {
-                    window.journeyController.updateProfileData('chronotype', parseInt(this.value));
-                }
-            });
-        });
-        
-        // Pre-populate with current dashboard values
-        if (window.journeyController) {
-            if (durationSlider) {
-                window.journeyController.updateProfileData('duration', durationSlider.value);
-            }
-            if (stressSlider) {
-                const value = parseInt(stressSlider.value);
-                let stressLabel = 'Moderate';
-                if (value < 20) stressLabel = 'Low';
-                else if (value < 35) stressLabel = 'Moderate';
-                else if (value < 50) stressLabel = 'High';
-                else stressLabel = 'Very High';
-                window.journeyController.updateProfileData('stress', stressLabel);
-            }
-        }
-        
-    }, 1000);
-});
