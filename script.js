@@ -169,7 +169,6 @@ function showMiniMessage() {
     }, 2000);
 }
 
-// Enhanced toggle button functionality
 document.getElementById("toggleUserView").addEventListener("click", function() {
     const userSection = document.getElementById("userSpecificSection");
     const button = this;
@@ -178,43 +177,35 @@ document.getElementById("toggleUserView").addEventListener("click", function() {
     if (userSection.style.display === "none" || userSection.style.display === "") {
         // Show user-specific section with animation
         userSection.style.display = "block";
-        button.innerHTML = `<span class="button-text">🔒 Hide Individual Data</span><span class="icon">▲</span>`;
+        button.textContent = "🔒 Hide Specific Users ";
+        button.appendChild(icon);
         button.classList.add('expanded');
         
-        // Add a subtle animation
-        button.style.animation = 'pulse-glow 0.6s ease-in-out';
+        // Add a subtle shake animation to draw attention
+        button.style.animation = 'shake 0.5s ease-in-out';
         setTimeout(() => {
             button.style.animation = '';
-        }, 600);
-        
-        // Show Luna's approval
-        setTimeout(() => {
-            interactWithLuna();
         }, 500);
         
     } else {
         // Hide user-specific section
         userSection.style.display = "none";
-        button.innerHTML = `<span class="button-text">🔍 Explore Individual Data</span><span class="icon">▼</span>`;
+        button.textContent = "🔍 View Specific Users ";
+        button.appendChild(icon);
         button.classList.remove('expanded');
     }
 });
 
-// Add shake keyframe animation if it doesn't exist
-if (!document.querySelector('#shake-animation')) {
-    const style = document.createElement('style');
-    style.id = 'shake-animation';
-    style.textContent = `
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-    `;
-    document.head.appendChild(style);
-}
-
-// ============= ORIGINAL FUNCTIONALITY PRESERVED BELOW =============
+// Add shake keyframe animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+`;
+document.head.appendChild(style);
 
 // Your actual data loading code
 const userIDs = Array.from({ length: 21 }, (_, i) => i + 1).filter(user => user !== 11 && user !== 21);
@@ -1089,6 +1080,7 @@ function setupSleepClock() {
                 .attr("y", ampmY)
                 .attr("text-anchor", "middle")
                 .attr("alignment-baseline", "middle");
+                /* .text(i < 12 ? "AM" : "PM"); */
         }
     }
 
@@ -1740,7 +1732,172 @@ function addSleepAnnotation(g, sleepPeriod, xScale, yScale, height, processedDat
     return sleepGroup;
 }
 
-// Calculate comprehensive statistics
+// Parse sleep period from sleepInfo - FIXED VERSION
+function parseSleepPeriod(sleepInfo) {
+    if (!sleepInfo) return null;
+    
+    try {
+        const baseDate = new Date(2024, 0, 1);
+        
+        // Parse onset time (sleep start)
+        const onsetDay = +sleepInfo["Onset Date"];
+        const onsetTime = sleepInfo["Onset Time"];
+        const [onsetHours, onsetMinutes] = onsetTime.split(':').map(Number);
+        
+        // Parse out bed time (sleep end)
+        const outBedDay = +sleepInfo["Out Bed Date"];
+        const outBedTime = sleepInfo["Out Bed Time"];
+        const [outBedHours, outBedMinutes] = outBedTime.split(':').map(Number);
+        
+        // Calculate datetime objects - FIXED to handle day transitions properly
+        const onsetSeconds = (onsetDay - 1) * 86400 + onsetHours * 3600 + onsetMinutes * 60;
+        const outBedSeconds = (outBedDay - 1) * 86400 + outBedHours * 3600 + outBedMinutes * 60;
+        
+        const sleepStart = new Date(baseDate.getTime() + onsetSeconds * 1000);
+        const sleepEnd = new Date(baseDate.getTime() + outBedSeconds * 1000);
+        
+        // VALIDATION: Ensure sleep end is after sleep start
+        if (sleepEnd <= sleepStart) {
+            console.error("Sleep end time is before or equal to start time:", {
+                start: sleepStart,
+                end: sleepEnd,
+                onsetDay: onsetDay,
+                outBedDay: outBedDay,
+                onsetTime: onsetTime,
+                outBedTime: outBedTime
+            });
+            return null;
+        }
+        
+        return {
+            start: sleepStart,
+            end: sleepEnd,
+            totalSleepTime: +sleepInfo["Total Sleep Time (TST)"], // in minutes
+            efficiency: +sleepInfo.Efficiency,
+            onsetTime: onsetTime,
+            outBedTime: outBedTime,
+            onsetDay: onsetDay,
+            outBedDay: outBedDay
+        };
+    } catch (error) {
+        console.error("Error parsing sleep period:", error);
+        return null;
+    }
+}
+
+// Add sleep annotation to the graph - FIXED VERSION
+function addSleepAnnotation(g, sleepPeriod, xScale, yScale, height, hrData) {
+    const sleepStart = xScale(sleepPeriod.start);
+    
+    // Clamp sleep end to the graph bounds if it extends beyond available data
+    const graphEnd = xScale.range()[1]; // Get the maximum x position of the graph
+    const sleepEndRaw = xScale(sleepPeriod.end);
+    const sleepEnd = Math.min(sleepEndRaw, graphEnd);
+    const sleepWidth = sleepEnd - sleepStart;
+    
+    // VALIDATION: Only draw rectangle if width is positive
+    if (sleepWidth <= 0) {
+        console.warn("Sleep period width is negative or zero, skipping rectangle:", sleepWidth);
+        
+        // Still draw the start marker
+        g.append("line")
+            .attr("class", "sleep-marker")
+            .attr("x1", sleepStart)
+            .attr("x2", sleepStart)
+            .attr("y1", 0)
+            .attr("y2", height)
+            .style("stroke", "#4a90e2")
+            .style("stroke-width", 2)
+            .style("stroke-dasharray", "3,3");
+        
+        // Add sleep start label
+        g.append("text")
+            .attr("class", "sleep-label")
+            .attr("x", sleepStart)
+            .attr("y", -5)
+            .attr("text-anchor", "middle")
+            .style("font-size", "10px")
+            .style("fill", "#4a90e2")
+            .style("font-weight", "bold")
+            .text("Sleep Onset");
+        
+        return; // Exit early if we can't draw the rectangle
+    }
+    
+    // Add sleep period background
+    const sleepRect = g.append("rect")
+        .attr("class", "sleep-period")
+        .attr("x", sleepStart)
+        .attr("y", 0)
+        .attr("width", sleepWidth)
+        .attr("height", height)
+        .style("fill", "#4a90e2")
+        .style("opacity", 0.15)
+        .style("stroke", "#4a90e2")
+        .style("stroke-width", 1)
+        .style("stroke-dasharray", "5,5");
+    
+    // Add sleep period labels
+    const labelY = -5;
+    
+    // Sleep start label
+    g.append("text")
+        .attr("class", "sleep-label")
+        .attr("x", sleepStart)
+        .attr("y", labelY)
+        .attr("text-anchor", "middle")
+        .style("font-size", "10px")
+        .style("fill", "#4a90e2")
+        .style("font-weight", "bold")
+        .text("Sleep Onset");
+    
+    // Sleep end label - only show if within graph bounds
+    if (sleepEndRaw <= graphEnd) {
+        g.append("text")
+            .attr("class", "sleep-label")
+            .attr("x", sleepEnd)
+            .attr("y", labelY)
+            .attr("text-anchor", "middle")
+            .style("font-size", "10px")
+            .style("fill", "#4a90e2")
+            .style("font-weight", "bold")
+            .text("Wake Up");
+        
+        g.append("line")
+            .attr("class", "sleep-marker")
+            .attr("x1", sleepEnd)
+            .attr("x2", sleepEnd)
+            .attr("y1", 0)
+            .attr("y2", height)
+            .style("stroke", "#4a90e2")
+            .style("stroke-width", 2)
+            .style("stroke-dasharray", "3,3");
+    } else {
+        // Add indicator that sleep extends beyond graph
+        g.append("text")
+            .attr("class", "sleep-label")
+            .attr("x", graphEnd - 5)
+            .attr("y", labelY)
+            .attr("text-anchor", "end")
+            .style("font-size", "10px")
+            .style("fill", "#4a90e2")
+            .style("font-weight", "bold")
+            .text("Sleep continues →");
+    }
+    
+    // Add vertical lines for sleep start
+    g.append("line")
+        .attr("class", "sleep-marker")
+        .attr("x1", sleepStart)
+        .attr("x2", sleepStart)
+        .attr("y1", 0)
+        .attr("y2", height)
+        .style("stroke", "#4a90e2")
+        .style("stroke-width", 2)
+        .style("stroke-dasharray", "3,3");
+}
+
+// Calculate comprehensive statistics - FIXED VERSION
 function calculateStats(processedData, sleepPeriod) {
     // Overall stats
     const avgHR = d3.mean(processedData, d => d.hr);
@@ -1796,6 +1953,154 @@ function calculateStats(processedData, sleepPeriod) {
             }
         } else {
             console.warn("No overlap between sleep period and available data");
+        }
+    }
+    
+    return {
+        overall: {
+            avgHR: avgHR,
+            maxHR: maxHR,
+            minHR: minHR,
+            duration: duration
+        },
+        sleep: sleepStats
+    };
+}
+
+
+// Add sleep annotation to the graph
+function addSleepAnnotation(g, sleepPeriod, xScale, yScale, height, hrData) {
+    const sleepStart = xScale(sleepPeriod.start);
+    
+    // Clamp sleep end to the graph bounds if it extends beyond available data
+    const graphEnd = xScale.range()[1]; // Get the maximum x position of the graph
+    const sleepEndRaw = xScale(sleepPeriod.end);
+    const sleepEnd = Math.min(sleepEndRaw, graphEnd);
+    const sleepWidth = sleepEnd - sleepStart;
+    
+    // Add sleep period background
+    const sleepRect = g.append("rect")
+        .attr("class", "sleep-period")
+        .attr("x", sleepStart)
+        .attr("y", 0)
+        .attr("width", sleepWidth)
+        .attr("height", height)
+        .style("fill", "#4a90e2")
+        .style("opacity", 0.15)
+        .style("stroke", "#4a90e2")
+        .style("stroke-width", 1)
+        .style("stroke-dasharray", "5,5");
+    
+    // Add sleep period labels
+    const labelY = -5;
+    
+    // Sleep start label
+    g.append("text")
+        .attr("class", "sleep-label")
+        .attr("x", sleepStart)
+        .attr("y", labelY)
+        .attr("text-anchor", "middle")
+        .style("font-size", "10px")
+        .style("fill", "#4a90e2")
+        .style("font-weight", "bold")
+        .text("Sleep Onset");
+    
+    // Sleep end label - only show if within graph bounds
+    if (sleepEndRaw <= graphEnd) {
+        g.append("text")
+            .attr("class", "sleep-label")
+            .attr("x", sleepEnd)
+            .attr("y", labelY)
+            .attr("text-anchor", "middle")
+            .style("font-size", "10px")
+            .style("fill", "#4a90e2")
+            .style("font-weight", "bold")
+            .text("Wake Up");
+        
+        g.append("line")
+            .attr("class", "sleep-marker")
+            .attr("x1", sleepEnd)
+            .attr("x2", sleepEnd)
+            .attr("y1", 0)
+            .attr("y2", height)
+            .style("stroke", "#4a90e2")
+            .style("stroke-width", 2)
+            .style("stroke-dasharray", "3,3");
+    } else {
+        // Add indicator that sleep extends beyond graph
+        g.append("text")
+            .attr("class", "sleep-label")
+            .attr("x", graphEnd - 5)
+            .attr("y", labelY)
+            .attr("text-anchor", "end")
+            .style("font-size", "10px")
+            .style("fill", "#4a90e2")
+            .style("font-weight", "bold")
+            .text("Sleep continues →");
+    }
+    
+    // Add vertical lines for sleep start and end
+    g.append("line")
+        .attr("class", "sleep-marker")
+        .attr("x1", sleepStart)
+        .attr("x2", sleepStart)
+        .attr("y1", 0)
+        .attr("y2", height)
+        .style("stroke", "#4a90e2")
+        .style("stroke-width", 2)
+        .style("stroke-dasharray", "3,3");
+    
+    g.append("line")
+        .attr("class", "sleep-marker")
+        .attr("x1", sleepStart)
+        .attr("x2", sleepStart)
+        .attr("y1", 0)
+        .attr("y2", height)
+        .style("stroke", "#4a90e2")
+        .style("stroke-width", 2)
+        .style("stroke-dasharray", "3,3");
+}
+
+// Calculate comprehensive statistics
+function calculateStats(processedData, sleepPeriod) {
+    // Overall stats
+    const avgHR = d3.mean(processedData, d => d.hr);
+    const maxHR = d3.max(processedData, d => d.hr);
+    const minHR = d3.min(processedData, d => d.hr);
+    const duration = processedData[processedData.length - 1].datetime - processedData[0].datetime;
+    
+    let sleepStats = null;
+    
+    // Sleep period stats - calculate even if sleep extends beyond available data
+    if (sleepPeriod) {
+        // Get data range
+        const dataStart = processedData[0].datetime;
+        const dataEnd = processedData[processedData.length - 1].datetime;
+        
+        // Determine effective sleep period within available data
+        const effectiveSleepStart = new Date(Math.max(sleepPeriod.start.getTime(), dataStart.getTime()));
+        const effectiveSleepEnd = new Date(Math.min(sleepPeriod.end.getTime(), dataEnd.getTime()));
+
+        // Only calculate stats if there's overlap between sleep period and available data
+        if (effectiveSleepStart < effectiveSleepEnd) {
+            const sleepData = processedData.filter(d => 
+                d.datetime >= effectiveSleepStart && d.datetime <= effectiveSleepEnd
+            );
+            
+            if (sleepData.length > 0) {
+                sleepStats = {
+                    avgHR: d3.mean(sleepData, d => d.hr),
+                    maxHR: d3.max(sleepData, d => d.hr),
+                    minHR: d3.min(sleepData, d => d.hr),
+                    totalSleepTime: sleepPeriod.totalSleepTime,
+                    efficiency: sleepPeriod.efficiency,
+                    dataPoints: sleepData.length,
+                    effectiveStart: effectiveSleepStart,
+                    effectiveEnd: effectiveSleepEnd,
+                    sleepExtendsBeforeData: sleepPeriod.start < dataStart,
+                    sleepExtendsBeyondData: sleepPeriod.end > dataEnd
+                };
+            }
         }
     }
     
@@ -1892,6 +2197,8 @@ function createParticipantNav() {
     const nav = d3.select("#participantNav");
     
     for (let i = 1; i <= 21; i++) {
+/*         if (i === 11) continue; // Skip User 11 as mentioned in the original code
+ */        
         nav.append("div")
             .attr("class", "participant-circle")
             .attr("id", `user-${i}`)
@@ -1905,7 +2212,6 @@ function createParticipantNav() {
 createParticipantNav();
 loadParticipantData(1);
 
-// ============= DASHBOARD FUNCTIONALITY =============
 
 let sleepData = [];
 let filteredData = [];
@@ -1951,517 +2257,189 @@ Promise.all([
     initCharts();
 });
 
-// Chart dimensions
-const margin = {top: 20, right: 30, bottom: 40, left: 50};
-const chartWidth = 400 - margin.left - margin.right;
-const chartHeight = 300 - margin.top - margin.bottom;
+        // filteredData = [...sleepData];
+        // initCharts();
+        // });
 
-// Color scales
-const stressColorScale = d3.scaleSequential(d3.interpolateReds).domain([1, 50]);
-const ageColorScale = d3.scaleSequential(d3.interpolateBlues).domain([20, 80]);
-
-// Tooltip
-const tooltip = d3.select("#tooltip");
-
-function initCharts() {
-    createEfficiencyChart();
-    createWASOChart();
-    createLatencyChart();
-    createAwakeningsChart();
-    createCaffeineChart();
-    createMovementChart();
-    createScreenChart();
-    updateMetrics();
-}
-
-function createEfficiencyChart() {
-    const svg = d3.select("#efficiency-chart");
-    svg.selectAll("*").remove();
-    
-    const g = svg.append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
-    
-    const xScale = d3.scaleLinear()
-        .domain([4, 12])
-        .range([0, chartWidth]);
-    
-    const yScale = d3.scaleLinear()
-        .domain([50, 100])
-        .range([chartHeight, 0]);
-    
-    // Axes
-    g.append("g")
-        .attr("class", "axis")
-        .attr("transform", `translate(0,${chartHeight})`)
-        .call(d3.axisBottom(xScale));
-    
-    g.append("g")
-        .attr("class", "axis")
-        .call(d3.axisLeft(yScale));
-    
-    // Axis labels
-    g.append("text")
-        .attr("class", "axis-label")
-        .attr("transform", `translate(${chartWidth/2}, ${chartHeight + 35})`)
-        .style("text-anchor", "middle")
-        .text("Sleep Duration (hours)");
-    
-    g.append("text")
-        .attr("class", "axis-label")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 0 - margin.left)
-        .attr("x", 0 - (chartHeight / 2))
-        .attr("dy", "1em")
-        .style("text-anchor", "middle")
-        .text("Sleep Efficiency (%)");
-    
-    updateEfficiencyChart(g, xScale, yScale);
-}
-
-function updateEfficiencyChart(g, xScale, yScale) {
-    const dots = g.selectAll(".dot")
-        .data(filteredData, d => d.id);
-    
-    dots.enter()
-        .append("circle")
-        .attr("class", "dot")
-        .attr("r", 4)
-        .attr("cx", d => xScale(d.sleepDuration))
-        .attr("cy", d => yScale(d.efficiency))
-        .attr("fill", d => stressColorScale(d.stress))
-        .on("mouseover", function(event, d) {
-            d3.select(this).attr("fill", "orange");
-            tooltip.style("opacity", 1)
-                .html(`Sleep Duration: ${d.sleepDuration}h<br>Efficiency: ${d.efficiency}%`)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 28) + "px");
-        })
-        .on("mouseout", function() {
-            d3.select(this).attr("fill", stressColorScale(d3.select(this).datum().stress));
-            tooltip.style("opacity", 0);
-        });
-    
-    dots.transition()
-        .duration(300)
-        .attr("cx", d => xScale(d.sleepDuration))
-        .attr("cy", d => yScale(d.efficiency))
-        .attr("fill", d => stressColorScale(d.stress));
-    
-    dots.exit().remove();
-}
-
-function createLatencyChart() {
-    const svg = d3.select("#latency-chart");
-    svg.selectAll("*").remove();
-    
-    const g = svg.append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
-    
-    const bins = d3.histogram()
-        .value(d => d.latency)
-        .domain([0, 30])
-        .thresholds(15)(filteredData);
-    
-    const xScale = d3.scaleLinear()
-        .domain([0, 30])
-        .range([0, chartWidth]);
-    
-    const yScale = d3.scaleLinear()
-        .domain([0, d3.max(bins, d => d.length)])
-        .range([chartHeight, 0]);
-    
-    // Axes
-    g.append("g")
-        .attr("class", "axis")
-        .attr("transform", `translate(0,${chartHeight})`)
-        .call(d3.axisBottom(xScale));
-    
-    g.append("g")
-        .attr("class", "axis")
-        .call(d3.axisLeft(yScale));
-    
-    // Axis labels
-    g.append("text")
-        .attr("class", "axis-label")
-        .attr("transform", `translate(${chartWidth/2}, ${chartHeight + 35})`)
-        .style("text-anchor", "middle")
-        .text("Sleep Latency (min)");
-    
-    g.append("text")
-        .attr("class", "axis-label")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 0 - margin.left)
-        .attr("x", 0 - (chartHeight / 2))
-        .attr("dy", "1em")
-        .style("text-anchor", "middle")
-        .text("Frequency");
-    
-    // Bars
-    g.selectAll(".bar")
-        .data(bins)
-        .enter()
-        .append("rect")
-        .attr("class", "bar")
-        .attr("x", d => xScale(d.x0))
-        .attr("width", d => xScale(d.x1) - xScale(d.x0) - 1)
-        .attr("y", d => yScale(d.length))
-        .attr("height", d => chartHeight - yScale(d.length))
-        .attr("fill", "#4ecdc4");
-}
-
-function createAwakeningsChart() {
-    const svg = d3.select("#awakenings-chart");
-    svg.selectAll("*").remove();
-    
-    const g = svg.append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
-    
-    const xScale = d3.scaleLinear()
-        .domain([20, 80])
-        .range([0, chartWidth]);
-    
-    const yScale = d3.scaleLinear()
-        .domain([0, d3.max(filteredData, d => d.awakenings) + 1])
-        .range([chartHeight, 0]);
-    
-    // Axes
-    g.append("g")
-        .attr("class", "axis")
-        .attr("transform", `translate(0,${chartHeight})`)
-        .call(d3.axisBottom(xScale));
-    
-    g.append("g")
-        .attr("class", "axis")
-        .call(d3.axisLeft(yScale));
-    
-    // Axis labels
-    g.append("text")
-        .attr("class", "axis-label")
-        .attr("transform", `translate(${chartWidth/2}, ${chartHeight + 35})`)
-        .style("text-anchor", "middle")
-        .text("Age");
-    
-    g.append("text")
-        .attr("class", "axis-label")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 0 - margin.left)
-        .attr("x", 0 - (chartHeight / 2))
-        .attr("dy", "1em")
-        .style("text-anchor", "middle")
-        .text("Number of Awakenings");
-    
-    // Dots
-    g.selectAll(".dot")
-        .data(filteredData)
-        .enter()
-        .append("circle")
-        .attr("class", "dot")
-        .attr("cx", d => xScale(d.age))
-        .attr("cy", d => yScale(d.awakenings))
-        .attr("r", 3)
-        .attr("fill", d => ageColorScale(d.age))
-        .on("mouseover", function(event, d) {
-            d3.select(this).attr("fill", "orange");
-            tooltip.style("opacity", 1)
-                .html(`Age: ${d.age}<br>Awakenings: ${d.awakenings}<br>Sleep Duration: ${d.sleepDuration}h`)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 28) + "px");
-        })
-        .on("mouseout", function() {
-            d3.select(this).attr("fill", ageColorScale(d3.select(this).datum().age));
-            tooltip.style("opacity", 0);
-        });
-}
-
-function createCaffeineChart() {
-    const svg = d3.select("#caffeine-chart");
-    svg.selectAll("*").remove();
-    
-    const g = svg.append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
-    
-    const xScale = d3.scaleLinear()
-        .domain([0, d3.max(filteredData, d => d.caffeineEvents) || 10])
-        .range([0, chartWidth]);
-    
-    const yScale = d3.scaleLinear()
-        .domain([d3.min(filteredData, d => d.efficiency) - 5, d3.max(filteredData, d => d.efficiency) + 5])
-        .range([chartHeight, 0]);
-    
-    // Axes
-    g.append("g")
-        .attr("class", "axis")
-        .attr("transform", `translate(0,${chartHeight})`)
-        .call(d3.axisBottom(xScale));
-    
-    g.append("g")
-        .attr("class", "axis")
-        .call(d3.axisLeft(yScale));
-    
-    // Axis labels
-    g.append("text")
-        .attr("class", "axis-label")
-        .attr("transform", `translate(${chartWidth/2}, ${chartHeight + 35})`)
-        .style("text-anchor", "middle")
-        .text("Caffeine Events per Day");
-    
-    g.append("text")
-        .attr("class", "axis-label")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 0 - margin.left)
-        .attr("x", 0 - (chartHeight / 2))
-        .attr("dy", "1em")
-        .style("text-anchor", "middle")
-        .text("Sleep Efficiency (%)");
-    
-    // Dots
-    g.selectAll(".dot")
-        .data(filteredData)
-        .enter()
-        .append("circle")
-        .attr("class", "dot")
-        .attr("cx", d => xScale(d.caffeineEvents))
-        .attr("cy", d => yScale(d.efficiency))
-        .attr("r", 4)
-        .attr("fill", "#e74c3c")
-        .on("mouseover", function(event, d) {
-            d3.select(this).attr("fill", "orange");
-            tooltip.style("opacity", 1)
-                .html(`Caffeine: ${d.caffeineEvents} events<br>Efficiency: ${d.efficiency}%<br>ID: ${d.id}`)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 28) + "px");
-        })
-        .on("mouseout", function() {
-            d3.select(this).attr("fill", "#e74c3c");
-            tooltip.style("opacity", 0);
-        });
-}
-
-function createMovementChart() {
-    const svg = d3.select("#movement-chart");
-    svg.selectAll("*").remove();
-    
-    const g = svg.append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
-    
-    const movementType = d3.select("#movement-select").property("value");
-    const movementKey = `movement${movementType.charAt(0).toUpperCase() + movementType.slice(1)}`;
-    
-    const xScale = d3.scaleLinear()
-        .domain([0, d3.max(filteredData, d => d[movementKey]) || 200])
-        .range([0, chartWidth]);
-    
-    const yScale = d3.scaleLinear()
-        .domain([0, d3.max(filteredData, d => d.latency) + 5])
-        .range([chartHeight, 0]);
-    
-    // Axes
-    g.append("g")
-        .attr("class", "axis")
-        .attr("transform", `translate(0,${chartHeight})`)
-        .call(d3.axisBottom(xScale));
-    
-    g.append("g")
-        .attr("class", "axis")
-        .call(d3.axisLeft(yScale));
-    
-    // Axis labels
-    g.append("text")
-        .attr("class", "axis-label")
-        .attr("transform", `translate(${chartWidth/2}, ${chartHeight + 35})`)
-        .style("text-anchor", "middle")
-        .text(`${movementType.charAt(0).toUpperCase() + movementType.slice(1)} Movement (min)`);
-    
-    g.append("text")
-        .attr("class", "axis-label")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 0 - margin.left)
-        .attr("x", 0 - (chartHeight / 2))
-        .attr("dy", "1em")
-        .style("text-anchor", "middle")
-        .text("Sleep Latency (min)");
-    
-    // Dots
-    g.selectAll(".dot")
-        .data(filteredData)
-        .enter()
-        .append("circle")
-        .attr("class", "dot")
-        .attr("cx", d => xScale(d[movementKey]))
-        .attr("cy", d => yScale(d.latency))
-        .attr("r", 4)
-        .attr("fill", "#3498db")
-        .on("mouseover", function(event, d) {
-            d3.select(this).attr("fill", "orange");
-            tooltip.style("opacity", 1)
-                .html(`${movementType} Movement: ${d[movementKey]} min<br>Latency: ${d.latency} min<br>ID: ${d.id}`)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 28) + "px");
-        })
-        .on("mouseout", function() {
-            d3.select(this).attr("fill", "#3498db");
-            tooltip.style("opacity", 0);
-        });
-}
-
-function createScreenChart() {
-    const svg = d3.select("#screen-chart");
-    svg.selectAll("*").remove();
-    
-    const g = svg.append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
-    
-    const screenType = d3.select("#screen-select").property("value");
-    const screenKey = `screen${screenType.charAt(0).toUpperCase() + screenType.slice(1)}`;
-    
-    const xScale = d3.scaleLinear()
-        .domain([0, d3.max(filteredData, d => d[screenKey]) || 200])
-        .range([0, chartWidth]);
-    
-    const yScale = d3.scaleLinear()
-        .domain([0, d3.max(filteredData, d => d.waso) + 10])
-        .range([chartHeight, 0]);
-    
-    // Axes
-    g.append("g")
-        .attr("class", "axis")
-        .attr("transform", `translate(0,${chartHeight})`)
-        .call(d3.axisBottom(xScale));
-    
-    g.append("g")
-        .attr("class", "axis")
-        .call(d3.axisLeft(yScale));
-    
-    // Axis labels
-    g.append("text")
-        .attr("class", "axis-label")
-        .attr("transform", `translate(${chartWidth/2}, ${chartHeight + 35})`)
-        .style("text-anchor", "middle")
-        .text(`${screenType.charAt(0).toUpperCase() + screenType.slice(1)} Screen Time (min)`);
-    
-    g.append("text")
-        .attr("class", "axis-label")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 0 - margin.left)
-        .attr("x", 0 - (chartHeight / 2))
-        .attr("dy", "1em")
-        .style("text-anchor", "middle")
-        .text("WASO (min)");
-    
-    // Dots
-    g.selectAll(".dot")
-        .data(filteredData)
-        .enter()
-        .append("circle")
-        .attr("class", "dot")
-        .attr("cx", d => xScale(d[screenKey]))
-        .attr("cy", d => yScale(d.waso))
-        .attr("r", 4)
-        .attr("fill", "#9b59b6")
-        .on("mouseover", function(event, d) {
-            d3.select(this).attr("fill", "orange");
-            tooltip.style("opacity", 1)
-                .html(`${screenType} Screen: ${d[screenKey]} min<br>WASO: ${d.waso} min<br>ID: ${d.id}`)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 28) + "px");
-        })
-        .on("mouseout", function() {
-            d3.select(this).attr("fill", "#9b59b6");
-            tooltip.style("opacity", 0);
-        });
-}
-
-function updateMetrics() {
-    // If you want to show summary metrics, you can target an element and insert HTML like this:
-    const metricsDiv = document.getElementById("metrics-summary");
-    if (!metricsDiv) return;
-
-    const avgDuration = d3.mean(filteredData, d => d.sleepDuration);
-    const avgEfficiency = d3.mean(filteredData, d => d.efficiency);
-    const avgStress = d3.mean(filteredData, d => d.stress);
-    const avgAge = d3.mean(filteredData, d => d.age);
-
-    metricsDiv.innerHTML = `
-        <div><strong>Avg Duration:</strong> ${avgDuration.toFixed(1)} h</div>
-        <div><strong>Avg Efficiency:</strong> ${avgEfficiency.toFixed(1)}%</div>
-        <div><strong>Avg Stress:</strong> ${avgStress.toFixed(1)}</div>
-        <div><strong>Avg Age:</strong> ${avgAge.toFixed(1)}</div>
-    `;
-}
-
-function createWASOChart() {
-    const svg = d3.select("#waso-chart");
-    svg.selectAll("*").remove();
-
-    const g = svg.append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
-
-    // Group data by stress ranges
-    const stressBins = d3.range(0, 51, 5);
-    const binData = stressBins.map(bin => {
-        const inBin = filteredData.filter(d => d.stress >= bin && d.stress < bin + 5);
-        return {
-            stress: bin + 2.5,
-            avgWASO: d3.mean(inBin, d => d.waso) || 0,
-            count: inBin.length
-        };
-    }).filter(d => d.count > 0);
-
-    const xScale = d3.scaleBand()
-        .domain(binData.map(d => d.stress))
-        .range([0, chartWidth])
-        .padding(0.1);
-
-    const yScale = d3.scaleLinear()
-        .domain([0, d3.max(binData, d => d.avgWASO) || 50])
-        .range([chartHeight, 0]);
-
-    // Axes
-    g.append("g")
-        .attr("class", "axis")
-        .attr("transform", `translate(0,${chartHeight})`)
-        .call(d3.axisBottom(xScale).tickFormat(d => Math.round(d)));
-
-    g.append("g")
-        .attr("class", "axis")
-        .call(d3.axisLeft(yScale));
-
-    // Axis labels
-    g.append("text")
-        .attr("class", "axis-label")
-        .attr("transform", `translate(${chartWidth/2}, ${chartHeight + 35})`)
-        .style("text-anchor", "middle")
-        .text("Stress Level");
-
-    g.append("text")
-        .attr("class", "axis-label")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 0 - margin.left)
-        .attr("x", 0 - (chartHeight / 2))
-        .attr("dy", "1em")
-        .style("text-anchor", "middle")
-        .text("Average WASO (min)");
-
-    // Bars
-    g.selectAll(".bar")
-        .data(binData)
-        .enter()
-        .append("rect")
-        .attr("class", "bar")
-        .attr("x", d => xScale(d.stress))
-        .attr("width", xScale.bandwidth())
-        .attr("y", d => yScale(d.avgWASO))
-        .attr("height", d => chartHeight - yScale(d.avgWASO))
-        .attr("fill", "#ff6b6b")
-        .on("mouseover", (event, d) => {
-            tooltip.style("opacity", 1)
-                .html(`Stress: ${Math.round(d.stress)}<br/>Avg WASO: ${d.avgWASO.toFixed(1)} min<br/>Count: ${d.count}`)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 10) + "px");
-        })
-        .on("mouseout", () => {
-            tooltip.style("opacity", 0);
-        });
+        // let filteredData = [...sleepData];
+        
+        // Chart dimensions
+        const margin = {top: 20, right: 30, bottom: 40, left: 50};
+        const chartWidth = 400 - margin.left - margin.right;
+        const chartHeight = 300 - margin.top - margin.bottom;
+        
+        // Color scales
+        const stressColorScale = d3.scaleSequential(d3.interpolateReds).domain([1, 50]);
+        const ageColorScale = d3.scaleSequential(d3.interpolateBlues).domain([20, 80]);
+        
+        // Tooltip
+        const tooltip = d3.select("#tooltip");
+        
+        // Initialize charts
+        // function initCharts() {
+        //     createEfficiencyChart();
+        //     createWASOChart();
+        //     createLatencyChart();
+        //     createAwakeningsChart();
+        //     updateMetrics();
+        // }
+        function initCharts() {
+            createEfficiencyChart();
+            createWASOChart();
+            createLatencyChart();
+            createAwakeningsChart();
+            createCaffeineChart();
+            createMovementChart();
+            createScreenChart();
+            updateMetrics();
+        }
+        
+        function createEfficiencyChart() {
+            const svg = d3.select("#efficiency-chart");
+            svg.selectAll("*").remove();
+            
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+            
+            const xScale = d3.scaleLinear()
+                .domain([4, 12])
+                .range([0, chartWidth]);
+            
+            const yScale = d3.scaleLinear()
+                .domain([50, 100])
+                .range([chartHeight, 0]);
+            
+            // Axes
+            g.append("g")
+                .attr("class", "axis")
+                .attr("transform", `translate(0,${chartHeight})`)
+                .call(d3.axisBottom(xScale));
+            
+            g.append("g")
+                .attr("class", "axis")
+                .call(d3.axisLeft(yScale));
+            
+            // Axis labels
+            g.append("text")
+                .attr("class", "axis-label")
+                .attr("transform", `translate(${chartWidth/2}, ${chartHeight + 35})`)
+                .style("text-anchor", "middle")
+                .text("Sleep Duration (hours)");
+            
+            g.append("text")
+                .attr("class", "axis-label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - margin.left)
+                .attr("x", 0 - (chartHeight / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("Sleep Efficiency (%)");
+            
+            updateEfficiencyChart(g, xScale, yScale);
+        }
+        
+        function updateEfficiencyChart(g, xScale, yScale) {
+            const dots = g.selectAll(".dot")
+                .data(filteredData, d => d.id);
+            
+            dots.enter()
+                .append("circle")
+                .attr("class", "dot")
+                .attr("r", 4)
+                .merge(dots)
+                .transition()
+                .duration(300)
+                .attr("cx", d => xScale(d.sleepDuration))
+                .attr("cy", d => yScale(d.efficiency))
+                .attr("fill", d => stressColorScale(d.stress));
+            
+            dots.exit().remove();
+            
+            g.selectAll(".dot")
+                .on("mouseover", (event, d) => {
+                    tooltip.style("opacity", 1)
+                        .html(`Duration: ${d.sleepDuration}h<br/>Efficiency: ${d.efficiency}%<br/>Stress: ${d.stress}<br/>Age: ${d.age}`)
+                        .style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 10) + "px");
+                })
+                .on("mouseout", () => {
+                    tooltip.style("opacity", 0);
+                });
+        }
+        
+        function createWASOChart() {
+            const svg = d3.select("#waso-chart");
+            svg.selectAll("*").remove();
+            
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+            
+            // Group data by stress ranges
+            const stressBins = d3.range(0, 51, 5);
+            const binData = stressBins.map(bin => {
+                const inBin = filteredData.filter(d => d.stress >= bin && d.stress < bin + 5);
+                return {
+                    stress: bin + 2.5,
+                    avgWASO: d3.mean(inBin, d => d.waso) || 0,
+                    count: inBin.length
+                };
+            }).filter(d => d.count > 0);
+            
+            const xScale = d3.scaleBand()
+                .domain(binData.map(d => d.stress))
+                .range([0, chartWidth])
+                .padding(0.1);
+            
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(binData, d => d.avgWASO) || 50])
+                .range([chartHeight, 0]);
+            
+            // Axes
+            g.append("g")
+                .attr("class", "axis")
+                .attr("transform", `translate(0,${chartHeight})`)
+                .call(d3.axisBottom(xScale).tickFormat(d => Math.round(d)));
+            
+            g.append("g")
+                .attr("class", "axis")
+                .call(d3.axisLeft(yScale));
+            
+            // Axis labels
+            g.append("text")
+                .attr("class", "axis-label")
+                .attr("transform", `translate(${chartWidth/2}, ${chartHeight + 35})`)
+                .style("text-anchor", "middle")
+                .text("Stress Level");
+            
+            g.append("text")
+                .attr("class", "axis-label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - margin.left)
+                .attr("x", 0 - (chartHeight / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("Average WASO (min)");
+            
+            // Bars
+            g.selectAll(".bar")
+                .data(binData)
+                .enter()
+                .append("rect")
+                .attr("class", "bar")
+                .attr("x", d => xScale(d.stress))
+                .attr("width", xScale.bandwidth())
+                .attr("y", d => yScale(d.avgWASO))
+                .attr("height", d => chartHeight - yScale(d.avgWASO))
+                .attr("fill", "#ff6b6b")
+                .on("mouseover", (event, d) => {
+                    tooltip.style("opacity", 1)
+                        .html(`Stress: ${Math.round(d.stress)}<br/>Avg WASO: ${d.avgWASO.toFixed(1)} min<br/>Count: ${d.count}`)
+                        .style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 10) + "px");
+                })
+                .on("mouseout", () => {
+                    tooltip.style("opacity", 0);
+                });
         }
         
         function createLatencyChart() {
@@ -2585,889 +2563,920 @@ function createWASOChart() {
                 });
         }
 
-        class DataLayeringManager {
-            constructor() {
-                this.sleepTwin = null;
-                this.userProfile = null;
-                this.currentOptimizations = {
-                    duration: 7.5,
-                    stress: 3,
-                    hygiene: 7
-                };
-                this.init();
-            }
-
-            init() {
-                this.setupSimulatorControls();
-                this.observeDataSections();
-            }
-
-            setSleepTwin(twinId, userProfile) {
-                this.sleepTwin = twinId;
-                this.userProfile = userProfile;
-                this.highlightTwinInParticipantNav();
-                this.highlightTwinInCharts();
-                this.setupSimulator();
-                this.updateJourneyManager();
-            }
-
-            highlightTwinInParticipantNav() {
-                // Remove existing twin highlights
-                document.querySelectorAll('.participant-circle.sleep-twin').forEach(circle => {
-                    circle.classList.remove('sleep-twin');
+        function createCaffeineChart() {
+            const svg = d3.select("#caffeine-chart");
+            svg.selectAll("*").remove();
+            
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+            
+            const xScale = d3.scaleLinear()
+                .domain([0, d3.max(filteredData, d => d.caffeineEvents) || 10])
+                .range([0, chartWidth]);
+            
+            const yScale = d3.scaleLinear()
+                .domain([d3.min(filteredData, d => d.efficiency) - 5, d3.max(filteredData, d => d.efficiency) + 5])
+                .range([chartHeight, 0]);
+            
+            // Axes
+            g.append("g")
+                .attr("class", "axis")
+                .attr("transform", `translate(0,${chartHeight})`)
+                .call(d3.axisBottom(xScale));
+            
+            g.append("g")
+                .attr("class", "axis")
+                .call(d3.axisLeft(yScale));
+            
+            // Axis labels
+            g.append("text")
+                .attr("class", "axis-label")
+                .attr("transform", `translate(${chartWidth/2}, ${chartHeight + 35})`)
+                .style("text-anchor", "middle")
+                .text("Caffeine Events per Day");
+            
+            g.append("text")
+                .attr("class", "axis-label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - margin.left)
+                .attr("x", 0 - (chartHeight / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("Sleep Efficiency (%)");
+            
+            // Dots
+            g.selectAll(".dot")
+                .data(filteredData)
+                .enter()
+                .append("circle")
+                .attr("class", "dot")
+                .attr("cx", d => xScale(d.caffeineEvents))
+                .attr("cy", d => yScale(d.efficiency))
+                .attr("r", 4)
+                .attr("fill", "#e74c3c")
+                .on("mouseover", (event, d) => {
+                    tooltip.style("opacity", 1)
+                        .html(`Caffeine: ${d.caffeineEvents} events<br/>Efficiency: ${d.efficiency}%<br/>ID: ${d.id}`)
+                        .style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 10) + "px");
+                })
+                .on("mouseout", () => {
+                    tooltip.style("opacity", 0);
                 });
-
-                // Find and highlight the twin
-                const twinNumber = this.sleepTwin.replace('user_', '');
-                const twinCircle = document.getElementById(`user-${twinNumber}`);
-                if (twinCircle) {
-                    twinCircle.classList.add('sleep-twin');
-                    
-                    // Auto-load twin data after highlighting
-                    setTimeout(() => {
-                        twinCircle.click();
-                        this.addTwinDataOverlay();
-                    }, 1000);
-                }
-            }
-
-            addTwinDataOverlay() {
-                // Add twin indicator to various chart containers
-                const chartContainers = [
-                    document.getElementById('sleepClockContainer'),
-                    document.getElementById('hrGraphChart')
-                ];
-
-                chartContainers.forEach(container => {
-                    if (container && !container.querySelector('.twin-data-overlay')) {
-                        const overlay = document.createElement('div');
-                        overlay.className = 'twin-data-overlay';
-                        overlay.innerHTML = `👯 Your Sleep Twin: ${this.sleepTwin}`;
-                        container.style.position = 'relative';
-                        container.appendChild(overlay);
-                    }
-                });
-            }
-
-            highlightTwinInCharts() {
-                // Highlight twin data points in dashboard charts
-                setTimeout(() => {
-                    this.highlightInDashboard();
-                }, 2000);
-            }
-
-            highlightInDashboard() {
-                // Find the twin's data in the dashboard charts
-                const twinNumber = parseInt(this.sleepTwin.replace('user_', ''));
-                
-                // Highlight in scatter plots
-                d3.selectAll('.dot').each(function(d) {
-                    if (d && d.id === this.sleepTwin) {
-                        d3.select(this).classed('highlighted-data-point', true);
-                    }
-                });
-
-                // Add revelation triggers for progressive data disclosure
-                this.addProgressiveRevelation();
-            }
-
-            addProgressiveRevelation() {
-                const dashboardSection = document.querySelector('.dashboard');
-                if (dashboardSection && !dashboardSection.querySelector('.revelation-trigger')) {
-                    const trigger = document.createElement('button');
-                    trigger.className = 'revelation-trigger';
-                    trigger.textContent = 'Reveal Advanced Sleep Correlations';
-                    trigger.onclick = () => this.revealAdvancedData();
-                    
-                    dashboardSection.insertBefore(trigger, dashboardSection.firstChild);
-                }
-            }
-
-            revealAdvancedData() {
-                // Progressive revelation of complex data layers
-                const layers = [
-                    { selector: '.activity-section', delay: 0 },
-                    { selector: '#sleepSimulator', delay: 1000 }
-                ];
-
-                layers.forEach(layer => {
-                    setTimeout(() => {
-                        const element = document.querySelector(layer.selector);
-                        if (element) {
-                            element.classList.add('data-layer', 'revealed');
-                            element.style.display = 'block';
-                        }
-                    }, layer.delay);
-                });
-
-                // Remove the trigger
-                document.querySelector('.revelation-trigger').remove();
-            }
-
-            setupSimulator() {
-                const simulator = document.getElementById('sleepSimulator');
-                if (simulator && this.userProfile) {
-                    this.populateSimulator();
-                    this.showSimulator();
-                }
-            }
-
-            populateSimulator() {
-                // Update subtitle
-                const subtitle = document.getElementById('simulatorSubtitle');
-                if (subtitle) {
-                    subtitle.textContent = `See how optimizations could improve your sleep quality (based on ${this.sleepTwin} patterns)`;
-                }
-
-                // Populate current metrics
-                this.updateCurrentMetrics();
-                this.updateOptimizedMetrics();
-            }
-
-            updateCurrentMetrics() {
-                const container = document.getElementById('currentMetrics');
-                if (!container || !this.userProfile) return;
-
-                const metrics = [
-                    {
-                        name: 'Sleep Duration',
-                        value: `${this.userProfile.sleepHours}h`,
-                        raw: this.userProfile.sleepHours
-                    },
-                    {
-                        name: 'Sleep Latency',
-                        value: `${this.userProfile.sleepLatency}m`,
-                        raw: this.userProfile.sleepLatency
-                    },
-                    {
-                        name: 'Night Awakenings',
-                        value: `${this.userProfile.nightAwakenings}`,
-                        raw: this.userProfile.nightAwakenings
-                    },
-                    {
-                        name: 'Sleep Efficiency',
-                        value: `${this.calculateEfficiency()}%`,
-                        raw: this.calculateEfficiency()
-                    }
-                ];
-
-                container.innerHTML = metrics.map(metric => `
-                    <div class="metric-comparison">
-                        <span class="metric-name">${metric.name}</span>
-                        <span class="metric-value">${metric.value}</span>
-                    </div>
-                `).join('');
-            }
-
-            updateOptimizedMetrics() {
-                const container = document.getElementById('optimizedMetrics');
-                if (!container) return;
-
-                // Calculate optimized values based on slider inputs
-                const optimized = this.calculateOptimizedValues();
-
-                container.innerHTML = optimized.map(metric => `
-                    <div class="metric-comparison">
-                        <span class="metric-name">${metric.name}</span>
-                        <span class="metric-value">
-                            ${metric.value}
-                            ${metric.improvement ? `<span class="improvement-indicator">${metric.improvement}</span>` : ''}
-                        </span>
-                    </div>
-                `).join('');
-            }
-
-            calculateOptimizedValues() {
-                const current = {
-                    duration: this.userProfile.sleepHours,
-                    latency: this.userProfile.sleepLatency,
-                    awakenings: this.userProfile.nightAwakenings,
-                    efficiency: this.calculateEfficiency()
-                };
-
-                // Optimization formulas based on sleep science
-                const durationImprovement = (this.currentOptimizations.duration - current.duration) * 0.5;
-                const latencyReduction = Math.max(0, current.latency - (10 - this.currentOptimizations.hygiene));
-                const awakeningsReduction = Math.max(1, current.awakenings - (5 - this.currentOptimizations.stress));
-                const efficiencyImprovement = current.efficiency + (durationImprovement * 2) + ((current.latency - latencyReduction) * 0.3);
-
-                return [
-                    {
-                        name: 'Sleep Duration',
-                        value: `${this.currentOptimizations.duration}h`,
-                        improvement: durationImprovement > 0 ? `+${durationImprovement.toFixed(1)}h` : null
-                    },
-                    {
-                        name: 'Sleep Latency',
-                        value: `${Math.round(latencyReduction)}m`,
-                        improvement: latencyReduction < current.latency ? `-${(current.latency - latencyReduction).toFixed(0)}m` : null
-                    },
-                    {
-                        name: 'Night Awakenings',
-                        value: `${Math.round(awakeningsReduction)}`,
-                        improvement: awakeningsReduction < current.awakenings ? `-${(current.awakenings - awakeningsReduction).toFixed(0)}` : null
-                    },
-                    {
-                        name: 'Sleep Efficiency',
-                        value: `${Math.min(95, Math.round(efficiencyImprovement))}%`,
-                        improvement: efficiencyImprovement > current.efficiency ? `+${(efficiencyImprovement - current.efficiency).toFixed(1)}%` : null
-                    }
-                ];
-            }
-
-            calculateEfficiency() {
-                // Estimate sleep efficiency based on user inputs
-                const baseEfficiency = 85;
-                const latencyPenalty = this.userProfile.sleepLatency * 0.5;
-                const awakeningsPenalty = this.userProfile.nightAwakenings * 0.3;
-                return Math.max(60, Math.round(baseEfficiency - latencyPenalty - awakeningsPenalty));
-            }
-
-            setupSimulatorControls() {
-                // Duration slider
-                const durationSlider = document.getElementById('durationSlider');
-                const durationValue = document.getElementById('durationValue');
-                if (durationSlider && durationValue) {
-                    durationSlider.addEventListener('input', (e) => {
-                        this.currentOptimizations.duration = parseFloat(e.target.value);
-                        durationValue.textContent = `${e.target.value}h`;
-                        this.updateOptimizedMetrics();
-                    });
-                }
-
-                // Stress slider
-                const stressSlider = document.getElementById('stressSlider');
-                const stressValue = document.getElementById('stressValue');
-                if (stressSlider && stressValue) {
-                    const stressLabels = ['Very Low', 'Low', 'Moderate', 'High', 'Very High'];
-                    stressSlider.addEventListener('input', (e) => {
-                        this.currentOptimizations.stress = parseInt(e.target.value);
-                        stressValue.textContent = stressLabels[e.target.value - 1];
-                        this.updateOptimizedMetrics();
-                    });
-                }
-
-                // Hygiene slider
-                const hygieneSlider = document.getElementById('hygieneSlider');
-                const hygieneValue = document.getElementById('hygieneValue');
-                if (hygieneSlider && hygieneValue) {
-                    hygieneSlider.addEventListener('input', (e) => {
-                        this.currentOptimizations.hygiene = parseInt(e.target.value);
-                        hygieneValue.textContent = `${e.target.value}/10`;
-                        this.updateOptimizedMetrics();
-                    });
-                }
-            }
-
-            showSimulator() {
-                const simulator = document.getElementById('sleepSimulator');
-                if (simulator) {
-                    simulator.style.display = 'block';
-                    setTimeout(() => {
-                        simulator.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 500);
-                }
-            }
-
-            updateJourneyManager() {
-                // Update the global journey manager with twin information
-                if (window.SleepJourneyManager) {
-                    window.SleepJourneyManager.updateProfile({
-                        sleepTwin: this.sleepTwin,
-                        ...this.userProfile
-                    });
-                }
-            }
-
-            observeDataSections() {
-                // Create intersection observer for progressive revelation
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            entry.target.classList.add('revealed');
-                        }
-                    });
-                }, { threshold: 0.3 });
-
-                // Observe all data layers
-                document.querySelectorAll('.data-layer').forEach(layer => {
-                    observer.observe(layer);
-                });
-            }
         }
-
-        // Initialize data layering manager
-        const dataLayering = new DataLayeringManager();
-
-        // Hook into existing quiz completion
-        const originalDisplayResults = window.displayResults;
-        if (originalDisplayResults) {
-            window.displayResults = function(userProfile, match) {
-                originalDisplayResults(userProfile, match);
-                
-                // Set sleep twin in data layering system
-                dataLayering.setSleepTwin(match.participant.id, userProfile);
-            };
-        }
-
-        // Export for global access
-        window.DataLayeringManager = dataLayering;
-
-        class SleepJourneyManager {
-            constructor() {
-                this.currentStep = 'explore';
-                this.profileData = {};
-                this.init();
-            }
-
-            init() {
-                this.setupStepNavigation();
-                this.observeSections();
-                this.showProfileCard();
-            }
-
-            setupStepNavigation() {
-                document.querySelectorAll('.progress-step').forEach(step => {
-                    step.addEventListener('click', () => {
-                        const stepName = step.dataset.step;
-                        this.navigateToStep(stepName);
-                    });
+        
+        function createMovementChart() {
+            const svg = d3.select("#movement-chart");
+            svg.selectAll("*").remove();
+            
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+            
+            const movementType = d3.select("#movement-select").property("value");
+            const movementKey = `movement${movementType.charAt(0).toUpperCase() + movementType.slice(1)}`;
+            
+            const xScale = d3.scaleLinear()
+                .domain([0, d3.max(filteredData, d => d[movementKey]) || 200])
+                .range([0, chartWidth]);
+            
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(filteredData, d => d.latency) + 5])
+                .range([chartHeight, 0]);
+            
+            // Axes
+            g.append("g")
+                .attr("class", "axis")
+                .attr("transform", `translate(0,${chartHeight})`)
+                .call(d3.axisBottom(xScale));
+            
+            g.append("g")
+                .attr("class", "axis")
+                .call(d3.axisLeft(yScale));
+            
+            // Axis labels
+            g.append("text")
+                .attr("class", "axis-label")
+                .attr("transform", `translate(${chartWidth/2}, ${chartHeight + 35})`)
+                .style("text-anchor", "middle")
+                .text(`${movementType.charAt(0).toUpperCase() + movementType.slice(1)} Movement (min)`);
+            
+            g.append("text")
+                .attr("class", "axis-label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - margin.left)
+                .attr("x", 0 - (chartHeight / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("Sleep Latency (min)");
+            
+            // Dots
+            g.selectAll(".dot")
+                .data(filteredData)
+                .enter()
+                .append("circle")
+                .attr("class", "dot")
+                .attr("cx", d => xScale(d[movementKey]))
+                .attr("cy", d => yScale(d.latency))
+                .attr("r", 4)
+                .attr("fill", "#3498db")
+                .on("mouseover", (event, d) => {
+                    tooltip.style("opacity", 1)
+                        .html(`${movementType} Movement: ${d[movementKey]} min<br/>Latency: ${d.latency} min<br/>ID: ${d.id}`)
+                        .style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 10) + "px");
+                })
+                .on("mouseout", () => {
+                    tooltip.style("opacity", 0);
                 });
-            }
-
-            navigateToStep(stepName) {
-                const sections = {
-                    'explore': document.querySelector('.hero-section'),
-                    'identify': document.querySelector('#quizSection'),
-                    'optimize': document.querySelector('.dashboard')
-                };
-
-                if (sections[stepName]) {
-                    sections[stepName].scrollIntoView({ behavior: 'smooth' });
-                }
-            }
-
-            observeSections() {
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            this.updateCurrentStep(entry.target);
-                        }
-                    });
-                }, { threshold: 0.3 });
-
-                // Observe key sections
-                document.querySelectorAll('.analysis-section, .quiz-section, .dashboard').forEach(section => {
-                    observer.observe(section);
-                });
-            }
-
-            updateCurrentStep(element) {
-                let newStep = 'explore';
-                
-                if (element.classList.contains('quiz-section') || element.id === 'quizSection') {
-                    newStep = 'identify';
-                } else if (element.classList.contains('dashboard')) {
-                    newStep = 'optimize';
-                }
-
-                if (newStep !== this.currentStep) {
-                    this.currentStep = newStep;
-                    this.updateStepIndicators();
-                }
-            }
-
-            updateStepIndicators() {
-                document.querySelectorAll('.progress-step').forEach(step => {
-                    const stepName = step.dataset.step;
-                    step.classList.remove('active', 'completed');
-                    
-                    if (stepName === this.currentStep) {
-                        step.classList.add('active');
-                    } else if (this.isStepCompleted(stepName)) {
-                        step.classList.add('completed');
-                    }
-                });
-            }
-
-            isStepCompleted(stepName) {
-                switch(stepName) {
-                    case 'explore':
-                        return this.currentStep !== 'explore';
-                    case 'identify':
-                        return this.profileData.sleepTwin !== undefined;
-                    case 'optimize':
-                        return false; // Always in progress
-                    default:
-                        return false;
-                }
-            }
-
-            showProfileCard() {
-                setTimeout(() => {
-                    document.getElementById('sleepProfileCard').classList.add('visible');
-                }, 1000);
-            }
-
-            updateProfile(data) {
-                this.profileData = { ...this.profileData, ...data };
-                this.renderProfile();
-            }
-
-            renderProfile() {
-                const elements = {
-                    profileDuration: document.getElementById('profileDuration'),
-                    profileStress: document.getElementById('profileStress'),
-                    profileLatency: document.getElementById('profileLatency'),
-                    profileChronotype: document.getElementById('profileChronotype'),
-                    profileTwin: document.getElementById('profileTwin')
-                };
-
-                // Update duration
-                if (this.profileData.sleepHours) {
-                    elements.profileDuration.textContent = `${this.profileData.sleepHours}h`;
-                    elements.profileDuration.classList.remove('metric-empty');
-                }
-
-                // Update stress
-                if (this.profileData.stressLevel) {
-                    const stressLabels = ['Very Low', 'Low', 'Moderate', 'High', 'Very High'];
-                    elements.profileStress.textContent = stressLabels[this.profileData.stressLevel - 1];
-                    elements.profileStress.classList.remove('metric-empty');
-                }
-
-                // Update latency
-                if (this.profileData.sleepLatency !== undefined) {
-                    elements.profileLatency.textContent = `${this.profileData.sleepLatency}m`;
-                    elements.profileLatency.classList.remove('metric-empty');
-                }
-
-                // Update chronotype
-                if (this.profileData.chronotype) {
-                    const chronoLabels = ['Evening', 'Mod. Evening', 'Neither', 'Mod. Morning', 'Morning'];
-                    elements.profileChronotype.textContent = chronoLabels[this.profileData.chronotype - 1];
-                    elements.profileChronotype.classList.remove('metric-empty');
-                }
-
-                // Update sleep twin
-                if (this.profileData.sleepTwin) {
-                    elements.profileTwin.textContent = this.profileData.sleepTwin;
-                    elements.profileTwin.classList.remove('metric-empty');
-                }
-            }
         }
-
-        // Initialize the journey manager
-        const journeyManager = new SleepJourneyManager();
-
-        // Export for use in other scripts
-        window.SleepJourneyManager = journeyManager;
-        class NarrativeFlowManager {
-            constructor() {
-                this.currentPhase = 'explore';
-                this.userProfile = {};
-                this.init();
-            }
-
-            init() {
-                this.setupTransitionTriggers();
-                this.observeUserProgress();
-            }
-
-            setupTransitionTriggers() {
-                // Show transition after heart rate section
-                setTimeout(() => {
-                    this.showTransition('transition1');
-                }, 5000); // Show after 5 seconds on heart rate section
-
-                // Show prompt after viewing individual data
-                this.observeIndividualDataInteraction();
-            }
-
-            observeUserProgress() {
-                // Watch for quiz completion
-                const originalDisplayResults = window.displayResults;
-                if (originalDisplayResults) {
-                    window.displayResults = (userProfile, match) => {
-                        originalDisplayResults(userProfile, match);
-                        this.userProfile = userProfile;
-                        this.userProfile.sleepTwin = match.participant.id;
-                        this.showTransition('transition2');
-                        this.updateJourneySummary();
-                    };
-                }
-            }
-
-            observeIndividualDataInteraction() {
-                // Show prompt after user interacts with individual participant data
-                const participantCircles = document.querySelectorAll('.participant-circle');
-                if (participantCircles.length > 0) {
-                    let interactionCount = 0;
-                    participantCircles.forEach(circle => {
-                        circle.addEventListener('click', () => {
-                            interactionCount++;
-                            if (interactionCount >= 2) { // After viewing 2 participants
-                                this.showConnectionPrompt();
-                            }
-                        });
-                    });
-                }
-            }
-
-            showTransition(transitionId) {
-                const transition = document.getElementById(transitionId);
-                if (transition) {
-                    transition.style.display = 'block';
-                    transition.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
-
-            showConnectionPrompt() {
-                const prompt = document.getElementById('individualPrompt');
-                if (prompt) {
-                    prompt.style.display = 'block';
-                    prompt.addEventListener('click', () => {
-                        this.navigateToQuiz();
-                    });
-                }
-            }
-
-            navigateToQuiz() {
-                const quizSection = document.getElementById('quizSection');
-                if (quizSection) {
-                    quizSection.scrollIntoView({ behavior: 'smooth' });
-                    // Trigger quiz to show
-                    const skipBtn = document.getElementById('skipBtn');
-                    if (skipBtn) {
-                        skipBtn.click();
-                    }
-                }
-            }
-
-            updateJourneySummary() {
-                const summary = document.getElementById('journeySummary');
-                if (summary && this.userProfile.sleepTwin) {
-                    // Update twin description
-                    const twinDesc = document.getElementById('twinDescription');
-                    if (twinDesc) {
-                        twinDesc.textContent = `Matched with ${this.userProfile.sleepTwin} based on your sleep patterns`;
-                    }
-
-                    // Generate personalized recommendations
-                    this.generatePersonalizedRecommendations();
-                    
-                    // Show summary after dashboard interaction
-                    setTimeout(() => {
-                        summary.style.display = 'block';
-                        summary.scrollIntoView({ behavior: 'smooth' });
-                    }, 10000); // Show after 10 seconds on dashboard
-                }
-            }
-
-            generatePersonalizedRecommendations() {
-                const container = document.getElementById('personalizedRecommendations');
-                if (!container || !this.userProfile) return;
-
-                const recommendations = [];
-
-                // Sleep duration recommendations
-                if (this.userProfile.sleepHours < 7) {
-                    recommendations.push({
-                        title: "Extend Your Sleep Duration",
-                        text: `You reported ${this.userProfile.sleepHours} hours of sleep. Aim for 7-9 hours by setting a consistent bedtime 30 minutes earlier each week.`
-                    });
-                }
-
-                // Stress management
-                if (this.userProfile.stressLevel >= 4) {
-                    recommendations.push({
-                        title: "Stress Reduction Techniques",
-                        text: "High stress can fragment sleep. Try meditation, deep breathing, or journaling 30 minutes before bed to activate your parasympathetic nervous system."
-                    });
-                }
-
-                // Sleep latency
-                if (this.userProfile.sleepLatency > 15) {
-                    recommendations.push({
-                        title: "Improve Sleep Onset",
-                        text: `Taking ${this.userProfile.sleepLatency} minutes to fall asleep suggests possible sleep hygiene improvements. Consider a consistent pre-sleep routine and reducing screen time before bed.`
-                    });
-                }
-
-                // Night awakenings
-                if (this.userProfile.nightAwakenings > 3) {
-                    recommendations.push({
-                        title: "Reduce Sleep Fragmentation",
-                        text: "Frequent awakenings can reduce deep sleep quality. Ensure your bedroom is cool (65-68°F), dark, and quiet. Consider blackout curtains or a white noise machine."
-                    });
-                }
-
-                // Chronotype-based recommendations
-                const chronoAdvice = [
-                    "As an evening person, try light exposure in the morning to help shift your circadian rhythm earlier.",
-                    "Your moderate evening preference suggests flexibility. Maintain consistent sleep timing even on weekends.",
-                    "Your balanced chronotype is ideal for most schedules. Focus on consistency rather than timing shifts.",
-                    "As a moderate morning person, protect your sleep by avoiding late-night activities that might delay your bedtime.",
-                    "Your strong morning preference means avoiding late evening light exposure is crucial for maintaining your natural rhythm."
-                ];
-
-                recommendations.push({
-                    title: "Chronotype Optimization",
-                    text: chronoAdvice[this.userProfile.chronotype - 1]
+        
+        function createScreenChart() {
+            const svg = d3.select("#screen-chart");
+            svg.selectAll("*").remove();
+            
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+            
+            const screenType = d3.select("#screen-select").property("value");
+            const screenKey = `screen${screenType.charAt(0).toUpperCase() + screenType.slice(1)}`;
+            
+            const xScale = d3.scaleLinear()
+                .domain([0, d3.max(filteredData, d => d[screenKey]) || 200])
+                .range([0, chartWidth]);
+            
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(filteredData, d => d.waso) + 10])
+                .range([chartHeight, 0]);
+            
+            // Axes
+            g.append("g")
+                .attr("class", "axis")
+                .attr("transform", `translate(0,${chartHeight})`)
+                .call(d3.axisBottom(xScale));
+            
+            g.append("g")
+                .attr("class", "axis")
+                .call(d3.axisLeft(yScale));
+            
+            // Axis labels
+            g.append("text")
+                .attr("class", "axis-label")
+                .attr("transform", `translate(${chartWidth/2}, ${chartHeight + 35})`)
+                .style("text-anchor", "middle")
+                .text(`${screenType.charAt(0).toUpperCase() + screenType.slice(1)} Screen Time (min)`);
+            
+            g.append("text")
+                .attr("class", "axis-label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - margin.left)
+                .attr("x", 0 - (chartHeight / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("WASO (min)");
+            
+            // Dots
+            g.selectAll(".dot")
+                .data(filteredData)
+                .enter()
+                .append("circle")
+                .attr("class", "dot")
+                .attr("cx", d => xScale(d[screenKey]))
+                .attr("cy", d => yScale(d.waso))
+                .attr("r", 4)
+                .attr("fill", "#9b59b6")
+                .on("mouseover", (event, d) => {
+                    tooltip.style("opacity", 1)
+                        .html(`${screenType} Screen: ${d[screenKey]} min<br/>WASO: ${d.waso} min<br/>ID: ${d.id}`)
+                        .style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 10) + "px");
+                })
+                .on("mouseout", () => {
+                    tooltip.style("opacity", 0);
                 });
-
-                // Render recommendations
-                recommendations.forEach(rec => {
-                    const item = document.createElement('div');
-                    item.className = 'recommendation-item';
-                    item.innerHTML = `
-                        <h4>${rec.title}</h4>
-                        <p>${rec.text}</p>
-                    `;
-                    container.appendChild(item);
-                });
-            }
         }
-
-        // Helper functions for transition buttons
-        function showIndividualSection() {
-            const toggleBtn = document.getElementById('toggleUserView');
-            if (toggleBtn) {
-                toggleBtn.click();
-                document.getElementById('transition1').style.display = 'none';
-            }
+        
+        function updateMetrics() {
+            const avgEfficiency = d3.mean(filteredData, d => d.efficiency);
+            const avgWASO = d3.mean(filteredData, d => d.waso);
+            const avgLatency = d3.mean(filteredData, d => d.latency);
+            
+            d3.select("#avg-efficiency").text(avgEfficiency ? avgEfficiency.toFixed(1) + "%" : "--");
+            d3.select("#avg-waso").text(avgWASO ? avgWASO.toFixed(1) : "--");
+            d3.select("#avg-latency").text(avgLatency ? avgLatency.toFixed(1) : "--");
         }
+        
+        function filterData() {
+            const durationValue = +d3.select("#duration-slider").property("value");
+            const stressValue = +d3.select("#stress-slider").property("value");
+            const ageValue = +d3.select("#age-slider").property("value");
+            const activityValue = +d3.select("#activity-slider").property("value");
 
-        function showDashboard() {
-            const dashboard = document.querySelector('.dashboard');
-            if (dashboard) {
-                dashboard.scrollIntoView({ behavior: 'smooth' });
-                document.getElementById('transition2').style.display = 'none';
+            // Initial filtering with moderate thresholds
+            filteredData = sleepData.filter(d => {
+            return Math.abs(d.age - ageValue) <= 15 &&
+               Math.abs(d.activityLevel - activityValue) <= 500;
+             });
+
+            // If too few points, expand criteria
+            if (filteredData.length < 20) {
+                 filteredData = sleepData.filter(d => {
+            return Math.abs(d.sleepDuration - durationValue) <= 2 &&
+                   Math.abs(d.stress - stressValue) <= 20 &&
+                   Math.abs(d.age - ageValue) <= 15 &&
+                   Math.abs(d.activityLevel - activityValue) <= 1000; // based on your CSV
+             });
             }
+        
+            
+            // Update metrics
+            updateMetrics();
+            
+            // Update all charts with filtered data
+            updateAllCharts();
+
         }
+        
+        function updateAllCharts() {
+            // Recreate charts with filtered data
+            createWASOChart();
+            createLatencyChart();
+            createAwakeningsChart();
+            createCaffeineChart();
+            createMovementChart();
+            createScreenChart();
+            
+            // Update efficiency chart dots
+            const svg = d3.select("#efficiency-chart");
+            const g = svg.select("g");
+            const xScale = d3.scaleLinear().domain([4, 12]).range([0, chartWidth]);
+            const yScale = d3.scaleLinear().domain([50, 100]).range([chartHeight, 0]);
+            updateEfficiencyChart(g, xScale, yScale);
+        }
+        
+        // Event listeners
+        d3.select("#duration-slider").on("input", function() {
+            d3.select("#duration-value").text(this.value + "h");
+            filterData();
+        });
+        
+        d3.select("#stress-slider").on("input", function() {
+            d3.select("#stress-value").text(this.value);
+            filterData();
+        });
+        
+        d3.select("#age-slider").on("input", function() {
+            d3.select("#age-value").text(this.value);
+            filterData();
+        });
+        
+        d3.select("#activity-slider").on("input", function() {
+            d3.select("#activity-value").text(this.value);
+            filterData();
+        });
 
-        // Initialize narrative flow
-        const narrativeFlow = new NarrativeFlowManager();
+        // Activity section event listeners
+        d3.select("#caffeine-slider").on("input", function() {
+            d3.select("#caffeine-value").text(this.value);
+            createCaffeineChart();
+        });
 
-        // Export for use in other scripts
-        window.NarrativeFlowManager = narrativeFlow;
-        // ADD THIS TO THE END OF YOUR script.js FILE
+        d3.select("#movement-select").on("change", function() {
+            createMovementChart();
+        });
 
-// ENHANCED JOURNEY MANAGER WITH PROPER DATA INTEGRATION
-class EnhancedSleepJourneyManager {
+        d3.select("#screen-select").on("change", function() {
+            createScreenChart();
+        });
+        
+        // Initialize
+        initCharts();
+
+const infoSections = [
+    {
+        title: "How This Works & Why It Matters",
+        type: "overview",
+        content: {
+        features: [
+          
+            {
+                title: "Real Science",
+                description: "Based on actual data from 21 participants aged 20-40 who underwent comprehensive 24-hour sleep monitoring. Understand your sleep latency, fragmentation, and quality using validated scientific instruments."
+            }
+        ]
+    }
+    },
+    {
+        title: "The Science Behind Sleep Research",
+        type: "science",
+        content: {
+            intro: "The MMASH study measured real sleep parameters that most people never get to see:",
+            biomarkers: [
+                {
+                    title: "Sleep Latency",
+                    description: "How long it takes to fall asleep. Research shows latency >30 minutes indicates potential sleep disorders or poor sleep hygiene."
+                },
+                {
+                    title: "Sleep Fragmentation",
+                    description: "Number of awakenings per night. Frequent awakenings reduce deep sleep phases critical for recovery and memory consolidation."
+                },
+                {
+                    title: "Sleep Efficiency",
+                    description: "Percentage of time actually sleeping while in bed. Healthy adults typically achieve 85%+ efficiency."
+                }
+            ]
+        }
+    },
+    {
+        title: "The MMASH Study",
+        type: "study",
+        content: {
+            intro: "This tool uses data from a comprehensive sleep study that collected:",
+            features: [
+                {
+                    title: "Sleep Monitoring",
+                    description: "24-hour actigraphy data measuring sleep duration, efficiency, and fragmentation patterns"
+                },
+                {
+                    title: "Stress Assessment",
+                    description: "Daily Stress Inventory (DSI) scores measuring perceived stress and life events"
+                },
+                {
+                    title: "Sleep Quality",
+                    description: "Pittsburgh Sleep Quality Index (PSQI) - the clinical standard for sleep assessment"
+                },
+                {
+                    title: "Chronotype Analysis",
+                    description: "Morningness-Eveningness Questionnaire (MEQ) determining natural sleep timing preferences"
+                }
+            ],
+            conclusion: "Result: You get matched with participants who have similar sleep patterns and validated scientific measurements."
+        }
+    }
+];
+
+// Real MMASH participant data
+const participants = [
+    {id: "user_1", age: 29, gender: "M", sleepHours: 3.3, stressScore: 23, sleepLatency: 0, nightAwakenings: 9, meqScore: 47, psqi: 5, efficiency: 92.0},
+    {id: "user_2", age: 27, gender: "M", sleepHours: 4.1, stressScore: 26, sleepLatency: 4, nightAwakenings: 18, meqScore: 52, psqi: 7, efficiency: 73.5},
+    {id: "user_3", age: 34, gender: "M", sleepHours: 5.8, stressScore: 11, sleepLatency: 3, nightAwakenings: 16, meqScore: 59, psqi: 8, efficiency: 79.2},
+    {id: "user_4", age: 27, gender: "M", sleepHours: 5.3, stressScore: 10, sleepLatency: 4, nightAwakenings: 28, meqScore: 60, psqi: 4, efficiency: 85.5},
+    {id: "user_5", age: 25, gender: "M", sleepHours: 5.8, stressScore: 41, sleepLatency: 0, nightAwakenings: 21, meqScore: 52, psqi: 8, efficiency: 85.7},
+    {id: "user_6", age: 26, gender: "M", sleepHours: 7.1, stressScore: 74, sleepLatency: 4, nightAwakenings: 20, meqScore: 38, psqi: 9, efficiency: 88.8},
+    {id: "user_7", age: 23, gender: "M", sleepHours: 4.5, stressScore: 28, sleepLatency: 2, nightAwakenings: 17, meqScore: 44, psqi: 6, efficiency: 81.8},
+    {id: "user_8", age: 26, gender: "M", sleepHours: 4.5, stressScore: 23, sleepLatency: 1, nightAwakenings: 11, meqScore: 50, psqi: 4, efficiency: 81.8},
+    {id: "user_9", age: 23, gender: "M", sleepHours: 6.8, stressScore: 42, sleepLatency: 2, nightAwakenings: 19, meqScore: 64, psqi: 4, efficiency: 91.9},
+    {id: "user_10", age: 24, gender: "M", sleepHours: 4.7, stressScore: 35, sleepLatency: 2, nightAwakenings: 16, meqScore: 48, psqi: 6, efficiency: 85.5},
+    {id: "user_12", age: 25, gender: "M", sleepHours: 4.4, stressScore: 35, sleepLatency: 1, nightAwakenings: 24, meqScore: 46, psqi: 6, efficiency: 78.6},
+    {id: "user_13", age: 30, gender: "M", sleepHours: 6.4, stressScore: 37, sleepLatency: 2, nightAwakenings: 12, meqScore: 60, psqi: 3, efficiency: 91.4},
+    {id: "user_14", age: 26, gender: "M", sleepHours: 7.4, stressScore: 49, sleepLatency: 2, nightAwakenings: 4, meqScore: 44, psqi: 2, efficiency: 92.5},
+    {id: "user_15", age: 24, gender: "M", sleepHours: 6.2, stressScore: 56, sleepLatency: 3, nightAwakenings: 13, meqScore: 42, psqi: 5, efficiency: 88.6},
+    {id: "user_16", age: 26, gender: "M", sleepHours: 9.6, stressScore: 32, sleepLatency: 1, nightAwakenings: 44, meqScore: 46, psqi: 6, efficiency: 85.7},
+    {id: "user_17", age: 40, gender: "M", sleepHours: 5.3, stressScore: 29, sleepLatency: 2, nightAwakenings: 21, meqScore: 53, psqi: 3, efficiency: 88.3},
+    {id: "user_18", age: 27, gender: "M", sleepHours: 5.5, stressScore: 21, sleepLatency: 1, nightAwakenings: 19, meqScore: 52, psqi: 4, efficiency: 91.7},
+    {id: "user_19", age: 25, gender: "M", sleepHours: 4.7, stressScore: 34, sleepLatency: 1, nightAwakenings: 18, meqScore: 58, psqi: 7, efficiency: 78.3},
+    {id: "user_20", age: 26, gender: "M", sleepHours: 6.0, stressScore: 31, sleepLatency: 0, nightAwakenings: 18, meqScore: 53, psqi: 4, efficiency: 92.3},
+    {id: "user_21", age: 26, gender: "M", sleepHours: 5.7, stressScore: 43, sleepLatency: 1, nightAwakenings: 22, meqScore: 49, psqi: 6, efficiency: 87.7},
+    {id: "user_22", age: 26, gender: "M", sleepHours: 4.9, stressScore: 21, sleepLatency: 2, nightAwakenings: 12, meqScore: 49, psqi: 6, efficiency: 81.7}
+];
+
+class InfoController {
     constructor() {
-        this.currentStep = 'explore';
-        this.profileData = {};
+        this.currentSection = 0;
+        this.autoAdvanceEnabled = true;
+        this.autoAdvanceTimer = null;
         this.init();
     }
 
     init() {
-        this.setupStepNavigation();
-        this.observeSections();
-        this.showProfileCard();
-        this.setupSliderTracking();
-        this.hookIntoQuizSystem();
+        this.renderCurrentSection();
+        this.setupEventListeners();
+        this.startAutoAdvance();
     }
 
-    setupStepNavigation() {
-        document.querySelectorAll('.progress-step').forEach(step => {
-            step.addEventListener('click', () => {
-                const stepName = step.dataset.step;
-                this.navigateToStep(stepName);
-            });
-        });
-    }
-
-    navigateToStep(stepName) {
-        const sections = {
-            'explore': document.querySelector('.hero-section') || document.querySelector('.analysis-section'),
-            'identify': document.querySelector('#quizSection') || document.querySelector('.container'),
-            'optimize': document.querySelector('.dashboard')
-        };
-
-        if (sections[stepName]) {
-            sections[stepName].scrollIntoView({ behavior: 'smooth' });
-            this.updateCurrentStep(stepName);
-        }
-    }
-
-    updateCurrentStep(newStep) {
-        if (newStep !== this.currentStep) {
-            this.currentStep = newStep;
-            this.updateStepIndicators();
-        }
-    }
-
-    updateStepIndicators() {
-        document.querySelectorAll('.progress-step').forEach(step => {
-            const stepName = step.dataset.step;
-            step.classList.remove('active', 'completed');
-            
-            if (stepName === this.currentStep) {
-                step.classList.add('active');
-            } else if (this.isStepCompleted(stepName)) {
-                step.classList.add('completed');
+    setupEventListeners() {
+        document.getElementById('prevBtn').addEventListener('click', () => this.goToPrevious());
+        document.getElementById('nextBtn').addEventListener('click', () => this.goToNext());
+        document.getElementById('skipBtn').addEventListener('click', () => this.skipToQuiz());
+        
+        const autoAdvanceCheckbox = document.getElementById('autoAdvance');
+        autoAdvanceCheckbox.addEventListener('change', (e) => {
+            this.autoAdvanceEnabled = e.target.checked;
+            if (this.autoAdvanceEnabled) {
+                this.startAutoAdvance();
+            } else {
+                this.stopAutoAdvance();
             }
         });
     }
 
-    isStepCompleted(stepName) {
-        switch(stepName) {
-            case 'explore':
-                return this.currentStep !== 'explore';
-            case 'identify':
-                return this.profileData.sleepTwin !== undefined;
-            case 'optimize':
-                return false;
-            default:
-                return false;
+    renderCurrentSection() {
+        const section = infoSections[this.currentSection];
+        const content = document.getElementById('infoContent');
+        
+        content.innerHTML = '';
+        
+        const title = document.createElement('h2');
+        title.className = 'info-title';
+        title.textContent = section.title;
+        content.appendChild(title);
+
+        switch (section.type) {
+            case 'overview':
+                this.renderOverview(content, section.content);
+                break;
+            case 'science':
+                this.renderScience(content, section.content);
+                break;
+            case 'study':
+                this.renderStudy(content, section.content);
+                break;
+            case 'benefits':
+                this.renderBenefits(content, section.content);
+                break;
         }
+
+        this.updateProgressDots();
+        this.updateNavigationButtons();
+        this.animateContent();
     }
 
-    observeSections() {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    let newStep = 'explore';
-                    
-                    if (entry.target.classList.contains('container') || 
-                        entry.target.id === 'quizSection' ||
-                        entry.target.querySelector('#sleepQuiz')) {
-                        newStep = 'identify';
-                    } else if (entry.target.classList.contains('dashboard')) {
-                        newStep = 'optimize';
-                    }
-                    
-                    this.updateCurrentStep(newStep);
-                }
-            });
-        }, { threshold: 0.3 });
+    renderOverview(container, content) {
+        const grid = document.createElement('div');
+        grid.className = 'feature-grid';
+        
+        content.features.forEach((feature) => {
+            const card = document.createElement('div');
+            card.className = 'feature-card';
+            card.innerHTML = `
+                <h4>${feature.title}</h4>
+                <p>${feature.description}</p>
+            `;
+            grid.appendChild(card);
+        });
+        
+        container.appendChild(grid);
+    }
 
-        // Observe all major sections
-        const sectionsToObserve = [
-            '.analysis-section',
-            '.hero-section', 
-            '.container',
-            '#quizSection',
-            '.dashboard'
-        ];
+    renderScience(container, content) {
+        const intro = document.createElement('p');
+        intro.style.marginBottom = '20px';
+        intro.innerHTML = `<strong>${content.intro}</strong>`;
+        container.appendChild(intro);
 
-        sectionsToObserve.forEach(selector => {
-            const element = document.querySelector(selector);
-            if (element) {
-                observer.observe(element);
-            }
+        const section = document.createElement('div');
+        section.className = 'science-section';
+        
+        content.biomarkers.forEach((biomarker) => {
+            const item = document.createElement('div');
+            item.className = 'biomarker-item';
+            item.innerHTML = `
+                <h5>${biomarker.title}</h5>
+                <p>${biomarker.description}</p>
+            `;
+            section.appendChild(item);
+        });
+        
+        container.appendChild(section);
+    }
+
+    renderStudy(container, content) {
+        const intro = document.createElement('p');
+        intro.style.marginBottom = '20px';
+        intro.innerHTML = `<strong>${content.intro}</strong>`;
+        container.appendChild(intro);
+
+        const grid = document.createElement('div');
+        grid.className = 'feature-grid';
+        
+        content.features.forEach((feature) => {
+            const card = document.createElement('div');
+            card.className = 'feature-card';
+            card.innerHTML = `
+                <h4>${feature.title}</h4>
+                <p>${feature.description}</p>
+            `;
+            grid.appendChild(card);
+        });
+        
+        container.appendChild(grid);
+
+        const conclusion = document.createElement('p');
+        conclusion.style.marginTop = '20px';
+        conclusion.style.fontWeight = '500';
+        conclusion.innerHTML = `<strong>${content.conclusion}</strong>`;
+        container.appendChild(conclusion);
+    }
+
+    renderBenefits(container, content) {
+        const section = document.createElement('div');
+        section.className = 'science-section';
+        
+        content.benefits.forEach((benefit) => {
+            const item = document.createElement('div');
+            item.className = 'biomarker-item';
+            item.style.background = '#fef3c7';
+            item.style.borderColor = '#fbbf24';
+            item.innerHTML = `
+                <h5 style="color: #92400e;">${benefit.title}</h5>
+                <p style="color: #78350f;">${benefit.description}</p>
+            `;
+            section.appendChild(item);
+        });
+        
+        container.appendChild(section);
+    }
+
+    animateContent() {
+        const cards = document.querySelectorAll('.feature-card');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.classList.add('animate');
+            }, index * 150);
+        });
+
+        const items = document.querySelectorAll('.biomarker-item');
+        items.forEach((item, index) => {
+            setTimeout(() => {
+                item.classList.add('animate');
+            }, index * 200);
         });
     }
 
-    showProfileCard() {
-        setTimeout(() => {
-            const card = document.getElementById('sleepProfileCard');
-            if (card) {
-                card.classList.add('visible');
-            }
-        }, 1000);
-    }
-
-    setupSliderTracking() {
-        // Track dashboard slider changes and update profile
-        const sliders = [
-            { id: 'duration-slider', profileKey: 'sleepHours', valueId: 'duration-value', suffix: 'h' },
-            { id: 'stress-slider', profileKey: 'stress', valueId: 'stress-value', suffix: '' },
-            { id: 'age-slider', profileKey: 'age', valueId: 'age-value', suffix: '' },
-            { id: 'activity-slider', profileKey: 'activity', valueId: 'activity-value', suffix: '' }
-        ];
-
-        sliders.forEach(slider => {
-            const element = document.getElementById(slider.id);
-            const valueDisplay = document.getElementById(slider.valueId);
-            
-            if (element && valueDisplay) {
-                element.addEventListener('input', (e) => {
-                    const value = parseFloat(e.target.value);
-                    this.profileData[slider.profileKey] = value;
-                    valueDisplay.textContent = value + slider.suffix;
-                    this.renderProfile();
-                });
-            }
+    updateProgressDots() {
+        const dots = document.querySelectorAll('.progress-dot');
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === this.currentSection);
         });
     }
 
-    hookIntoQuizSystem() {
-        // Hook into existing quiz completion
-        const originalDisplayResults = window.displayResults;
-        if (originalDisplayResults) {
-            window.displayResults = (userProfile, match) => {
-                console.log('Displaying results for:', userProfile, match);
-                
-                // Update profile with all data
-                this.updateProfile({
-                    ...userProfile,
-                    sleepTwin: match.participant.id
-                });
-                
-                // Call original function
-                originalDisplayResults(userProfile, match);
-            };
+    updateNavigationButtons() {
+        document.getElementById('prevBtn').disabled = this.currentSection === 0;
+        document.getElementById('nextBtn').textContent = 
+            this.currentSection === infoSections.length - 1 ? 'Start Quiz' : 'Next';
+    }
+
+    goToPrevious() {
+        if (this.currentSection > 0) {
+            this.currentSection--;
+            this.renderCurrentSection();
+            this.restartAutoAdvance();
         }
     }
 
-    updateProfile(data) {
-        console.log('Updating profile with:', data);
-        this.profileData = { ...this.profileData, ...data };
-        this.renderProfile();
-    }
-
-    renderProfile() {
-        const elements = {
-            profileDuration: document.getElementById('profileDuration'),
-            profileStress: document.getElementById('profileStress'),
-            profileLatency: document.getElementById('profileLatency'),
-            profileChronotype: document.getElementById('profileChronotype'),
-            profileTwin: document.getElementById('profileTwin')
-        };
-
-        // Update duration
-        if (this.profileData.sleepHours) {
-            this.updateMetricElement(elements.profileDuration, `${this.profileData.sleepHours}h`);
-        }
-
-        // Update stress
-        if (this.profileData.stressLevel) {
-            const stressLabels = ['Very Low', 'Low', 'Moderate', 'High', 'Very High'];
-            this.updateMetricElement(elements.profileStress, stressLabels[this.profileData.stressLevel - 1]);
-        }
-
-        // Update latency
-        if (this.profileData.sleepLatency !== undefined) {
-            this.updateMetricElement(elements.profileLatency, `${this.profileData.sleepLatency}m`);
-        }
-
-        // Update chronotype
-        if (this.profileData.chronotype) {
-            const chronoLabels = ['Evening', 'Mod. Evening', 'Neither', 'Mod. Morning', 'Morning'];
-            this.updateMetricElement(elements.profileChronotype, chronoLabels[this.profileData.chronotype - 1]);
-        }
-
-        // Update sleep twin
-        if (this.profileData.sleepTwin) {
-            this.updateMetricElement(elements.profileTwin, this.profileData.sleepTwin);
+    goToNext() {
+        if (this.currentSection < infoSections.length - 1) {
+            this.currentSection++;
+            this.renderCurrentSection();
+            this.restartAutoAdvance();
+        } else {
+            this.skipToQuiz();
         }
     }
 
-    updateMetricElement(element, value) {
-        if (element) {
-            element.textContent = value;
-            element.classList.remove('metric-empty');
-            element.classList.add('metric-filled');
+    skipToQuiz() {
+        this.stopAutoAdvance();
+        document.getElementById('interactiveInfo').style.display = 'none';
+        document.getElementById('quizSection').classList.add('show');
+        initializePredictions();
+    }
+
+    startAutoAdvance() {
+        if (!this.autoAdvanceEnabled) return;
+        
+        this.autoAdvanceTimer = setTimeout(() => {
+            if (this.currentSection < infoSections.length - 1) {
+                this.goToNext();
+            }
+        }, 8000);
+    }
+
+    stopAutoAdvance() {
+        if (this.autoAdvanceTimer) {
+            clearTimeout(this.autoAdvanceTimer);
+            this.autoAdvanceTimer = null;
         }
+    }
+
+    restartAutoAdvance() {
+        this.stopAutoAdvance();
+        this.startAutoAdvance();
     }
 }
 
-// Initialize the enhanced journey manager
+class QuizController {
+    constructor() {
+        this.currentQuestion = 1;
+        this.totalQuestions = 6;
+        this.answers = {};
+        this.init();
+    }
+
+    init() {
+        this.setupEventListeners();
+        this.updateProgress();
+        this.updateQuestionCounter();
+        this.showQuestion(1); // Show first question
+    }
+
+    setupEventListeners() {
+        // Navigation buttons
+        document.getElementById('nextQuestion').addEventListener('click', () => {
+            console.log('Next clicked on question', this.currentQuestion);
+            this.nextQuestion();
+        });
+        
+        document.getElementById('prevQuestion').addEventListener('click', () => {
+            console.log('Prev clicked on question', this.currentQuestion);
+            this.prevQuestion();
+        });
+
+        // Slider updates
+        document.getElementById('age').addEventListener('input', function() {
+            document.getElementById('ageValue').textContent = this.value + ' years';
+        });
+
+        document.getElementById('sleepHours').addEventListener('input', function() {
+            document.getElementById('sleepHoursValue').textContent = this.value + ' hours';
+        });
+
+        document.getElementById('sleepLatency').addEventListener('input', function() {
+            document.getElementById('sleepLatencyValue').textContent = this.value + ' minutes';
+        });
+
+        document.getElementById('nightAwakenings').addEventListener('input', function() {
+            document.getElementById('nightAwakeningsValue').textContent = this.value + ' times';
+        });
+    }
+
+    nextQuestion() {
+        // Save current answer first
+        this.saveCurrentAnswer();
+        
+        // Simple validation only for required questions
+        if (this.currentQuestion === 3) {
+            if (!document.querySelector('input[name="stress"]:checked')) {
+                alert('Please select your stress level');
+                return;
+            }
+        }
+        
+        if (this.currentQuestion === 6) {
+            if (!document.querySelector('input[name="chronotype"]:checked')) {
+                alert('Please select your chronotype');
+                return;
+            }
+        }
+
+        // Move to next question or submit
+        if (this.currentQuestion < this.totalQuestions) {
+            this.currentQuestion++;
+            this.showQuestion(this.currentQuestion);
+            this.updateProgress();
+            this.updateQuestionCounter();
+            this.updateNavigationButtons();
+        } else {
+            this.submitQuiz();
+        }
+    }
+
+    prevQuestion() {
+        if (this.currentQuestion > 1) {
+            this.currentQuestion--;
+            this.showQuestion(this.currentQuestion);
+            this.updateProgress();
+            this.updateQuestionCounter();
+            this.updateNavigationButtons();
+        }
+    }
+
+    showQuestion(questionNum) {
+        // Hide all questions
+        for (let i = 1; i <= this.totalQuestions; i++) {
+            const q = document.getElementById(`question${i}`);
+            if (q) {
+                q.style.display = 'none';
+                q.classList.remove('active');
+            }
+        }
+        
+        // Show current question
+        const currentQ = document.getElementById(`question${questionNum}`);
+        if (currentQ) {
+            currentQ.style.display = 'block';
+            currentQ.classList.add('active');
+        }
+    }
+
+    saveCurrentAnswer() {
+        console.log('Saving answer for question', this.currentQuestion);
+        
+        switch (this.currentQuestion) {
+            case 1:
+                this.answers.age = parseInt(document.getElementById('age').value);
+                break;
+            case 2:
+                this.answers.sleepHours = parseFloat(document.getElementById('sleepHours').value);
+                break;
+            case 3:
+                const stress = document.querySelector('input[name="stress"]:checked');
+                if (stress) this.answers.stressLevel = parseInt(stress.value);
+                break;
+            case 4:
+                this.answers.sleepLatency = parseInt(document.getElementById('sleepLatency').value);
+                break;
+            case 5:
+                this.answers.nightAwakenings = parseInt(document.getElementById('nightAwakenings').value);
+                break;
+            case 6:
+                const chronotype = document.querySelector('input[name="chronotype"]:checked');
+                if (chronotype) this.answers.chronotype = parseInt(chronotype.value);
+                break;
+        }
+        
+        console.log('Current answers:', this.answers);
+    }
+
+    updateProgress() {
+        const progress = (this.currentQuestion / this.totalQuestions) * 100;
+        const progressBar = document.getElementById('quizProgressFill');
+        if (progressBar) {
+            progressBar.style.width = progress + '%';
+        }
+    }
+
+    updateQuestionCounter() {
+        const counterText = `Question ${this.currentQuestion} of ${this.totalQuestions}`;
+        const counter1 = document.getElementById('questionCounter');
+        const counter2 = document.getElementById('questionCounterBottom');
+        
+        if (counter1) counter1.textContent = counterText;
+        if (counter2) counter2.textContent = counterText;
+    }
+
+    updateNavigationButtons() {
+        const prevBtn = document.getElementById('prevQuestion');
+        const nextBtn = document.getElementById('nextQuestion');
+
+        if (prevBtn) prevBtn.disabled = this.currentQuestion === 1;
+
+        if (nextBtn) {
+            if (this.currentQuestion === this.totalQuestions) {
+                nextBtn.textContent = 'Get My Match →';
+                nextBtn.classList.add('submit');
+            } else {
+                nextBtn.textContent = 'Next →';
+                nextBtn.classList.remove('submit');
+            }
+        }
+    }
+
+    submitQuiz() {
+        this.saveCurrentAnswer();
+        console.log('Final answers:', this.answers);
+
+        document.getElementById('results').classList.add('show');
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('matchResults').style.display = 'none';
+
+        setTimeout(() => {
+            const match = findBestMatch(this.answers);
+            displayResults(this.answers, match);
+        }, 2000);
+    }
+}
+
+function initializePredictions() {
+    new QuizController();
+}
+
+function findBestMatch(userProfile) {
+    let bestMatch = null;
+    let smallestDistance = Infinity;
+
+    const stressRanges = [[15, 25], [25, 35], [35, 50], [50, 65], [65, 74]];
+    const userStress = (stressRanges[userProfile.stressLevel - 1][0] + stressRanges[userProfile.stressLevel - 1][1]) / 2;
+
+    const meqRanges = [
+        [16, 41],   // Definitely Evening (≤41)
+        [35, 41],   // Moderately Evening  
+        [42, 58],   // Neither/Intermediate (42-58)
+        [59, 70],   // Moderately Morning
+        [71, 86]    // Definitely Morning (≥59, but split into moderate/definite)
+    ];
+    const userMeq = (meqRanges[userProfile.chronotype - 1][0] + meqRanges[userProfile.chronotype - 1][1]) / 2;
+    
+    participants.forEach(participant => {
+        const ageDiff = Math.abs(participant.age - userProfile.age) / 20;
+        const sleepDiff = Math.abs(participant.sleepHours - userProfile.sleepHours) / 7;
+        const stressDiff = Math.abs(participant.stressScore - userStress) / 64;
+        const latencyDiff = Math.abs(participant.sleepLatency - userProfile.sleepLatency) / 30;
+       const awakeningsDiff = Math.abs(participant.nightAwakenings - userProfile.nightAwakenings) / 40;
+       const meqDiff = Math.abs(participant.meqScore - userMeq) / 26;
+
+       const distance = Math.sqrt(
+           Math.pow(ageDiff * 0.15, 2) +
+           Math.pow(sleepDiff * 0.25, 2) +
+           Math.pow(stressDiff * 0.25, 2) +
+           Math.pow(latencyDiff * 0.20, 2) +
+           Math.pow(awakeningsDiff * 0.10, 2) +
+           Math.pow(meqDiff * 0.05, 2)
+       );
+
+       if (distance < smallestDistance) {
+           smallestDistance = distance;
+           bestMatch = participant;
+       }
+   });
+
+   const similarity = Math.max(0, 100 - (smallestDistance * 100));
+   return { participant: bestMatch, similarity };
+}
+
+function displayResults(userProfile, match) {
+   const participant = match.participant;
+   const similarity = match.similarity.toFixed(1);
+
+   const resultsHTML = `
+       <div class="match-header">
+           <div class="match-title">Your MMASH Sleep Match</div>
+           <div class="participant-id">Participant ${participant.id}</div>
+           <div class="accuracy">${similarity}% similarity to your sleep patterns</div>
+       </div>
+
+       <div class="comparison">
+           <div class="comparison-card predicted">
+               <h4>Your Sleep Profile</h4>
+               <p><strong>Age:</strong> ${userProfile.age} years</p>
+               <p><strong>Sleep Duration:</strong> ${userProfile.sleepHours} hours</p>
+               <p><strong>Stress Level:</strong> ${['Very Low', 'Low', 'Moderate', 'High', 'Very High'][userProfile.stressLevel - 1]}</p>
+               <p><strong>Sleep Latency:</strong> ${userProfile.sleepLatency} minutes</p>
+               <p><strong>Night Awakenings:</strong> ${userProfile.nightAwakenings} times</p>
+               <p><strong>Chronotype:</strong> ${['Definitely Evening', 'Moderately Evening', 'Neither', 'Moderately Morning', 'Definitely Morning'][userProfile.chronotype - 1]}</p>
+           </div>
+
+           <div class="comparison-card actual">
+               <h4>Matched Participant Data</h4>
+               <p><strong>Age:</strong> ${participant.age} years</p>
+               <p><strong>Sleep Duration:</strong> ${participant.sleepHours.toFixed(1)} hours</p>
+               <p><strong>Stress Score:</strong> ${participant.stressScore} (DSI)</p>
+               <p><strong>Sleep Latency:</strong> ${participant.sleepLatency} minutes</p>
+               <p><strong>Night Awakenings:</strong> ${participant.nightAwakenings} times</p>
+               <p><strong>Sleep Quality (PSQI):</strong> ${participant.psqi}</p>
+               <p><strong>Sleep Efficiency:</strong> ${participant.efficiency.toFixed(1)}%</p>
+           </div>
+       </div>
+
+       <div class="insights">
+           <h4>Sleep Science Insights</h4>
+           ${generateInsights(userProfile, participant)}
+       </div>
+   `;
+
+   document.getElementById('loading').style.display = 'none';
+   document.getElementById('matchResults').innerHTML = resultsHTML;
+   document.getElementById('matchResults').style.display = 'block';
+}
+
+function generateInsights(user, participant) {
+   const insights = [];
+
+   // Sleep duration insights
+   if (participant.sleepHours < 6) {
+       insights.push(`<div class="insight"><strong>Short Sleep Duration:</strong> Your matched participant averaged ${participant.sleepHours.toFixed(1)} hours - well below the recommended 7-9 hours. This often correlates with higher stress and poorer sleep quality.</div>`);
+   } else if (participant.sleepHours > 8) {
+       insights.push(`<div class="insight"><strong>Long Sleep Duration:</strong> Your match got ${participant.sleepHours.toFixed(1)} hours of sleep, which may indicate good sleep hygiene or compensation for poor sleep quality.</div>`);
+   }
+
+   // Sleep quality insights
+   if (participant.psqi > 5) {
+       insights.push(`<div class="insight"><strong>Sleep Quality:</strong> Your matched participant had a PSQI score of ${participant.psqi}, indicating room for improvement in sleep quality (scores >5 suggest poor sleep).</div>`);
+   } else {
+       insights.push(`<div class="insight"><strong>Good Sleep Quality:</strong> Your match had a PSQI score of ${participant.psqi}, indicating relatively good sleep quality.</div>`);
+   }
+
+   // Stress insights
+   if (participant.stressScore > 40) {
+       insights.push(`<div class="insight"><strong>High Stress Impact:</strong> Your matched participant had a Daily Stress Inventory score of ${participant.stressScore}, which often correlates with sleep fragmentation and reduced sleep efficiency.</div>`);
+   }
+
+   // Sleep fragmentation
+   if (participant.nightAwakenings > 20) {
+       insights.push(`<div class="insight"><strong>Sleep Fragmentation:</strong> Your match experienced ${participant.nightAwakenings} awakenings per night, indicating fragmented sleep that reduces restorative sleep phases.</div>`);
+   }
+
+   // Recommendations based on patterns
+   if (user.sleepLatency > 15) {
+       insights.push(`<div class="insight"><strong>Recommendation:</strong> Your reported sleep onset time of ${user.sleepLatency} minutes suggests possible sleep hygiene improvements could help you fall asleep faster.</div>`);
+   }
+
+   if (insights.length === 0) {
+       insights.push(`<div class="insight"><strong>Balanced Profile:</strong> Your sleep patterns match someone with relatively balanced sleep metrics. Focus on maintaining consistent sleep schedules.</div>`);
+   }
+
+   return insights.join('');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    window.enhancedJourneyManager = new EnhancedSleepJourneyManager();
+   new InfoController();
 });
 
-// Export for global access
-window.EnhancedSleepJourneyManager = EnhancedSleepJourneyManager;
