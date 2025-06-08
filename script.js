@@ -293,8 +293,9 @@ function initializeParticipantNavigation() {
     userIDs.forEach(userId => {
         const navItem = document.createElement('div');
         navItem.className = 'participant-nav-item';
-        navItem.textContent = `User ${userId}`;
+        navItem.textContent = userId; // Just show the number
         navItem.onclick = () => loadUserData(userId);
+        navItem.setAttribute('data-user-id', userId); // Add data attribute for easier selection
 
         if (userId === currentUser) {
             navItem.classList.add('active');
@@ -315,7 +316,7 @@ function loadUserData(userId) {
     document.querySelectorAll('.participant-nav-item').forEach(item => {
         item.classList.remove('active');
     });
-    const activeNavItem = document.querySelector(`.participant-nav-item:nth-child(${userId <= 10 ? userId : userId - 1})`);
+    const activeNavItem = document.querySelector(`[data-user-id="${userId}"]`);
     if (activeNavItem) {
         activeNavItem.classList.add('active');
         console.log('🔧 Updated active navigation item');
