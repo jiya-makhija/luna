@@ -532,43 +532,7 @@ function showMiniMessage() {
     }, 2000);
 }
 
-document.getElementById("toggleUserView").addEventListener("click", function() {
-    const userSection = document.getElementById("userSpecificSection");
-    const button = this;
-    const icon = button.querySelector('.icon');
 
-    if (userSection.style.display === "none") {
-        // Show user-specific section with animation
-        userSection.style.display = "block";
-        button.textContent = "🔒 Hide Detailed Analysis ";
-        button.appendChild(icon);
-        button.classList.add('expanded');
-
-        // Add a subtle shake animation to draw attention
-        button.style.animation = 'shake 0.5s ease-in-out';
-        setTimeout(() => {
-            button.style.animation = '';
-        }, 500);
-
-    } else {
-        // Hide user-specific section
-        userSection.style.display = "none";
-        button.textContent = "🔍 View Detailed Analysis ";
-        button.appendChild(icon);
-        button.classList.remove('expanded');
-    }
-});
-
-// Add shake keyframe animation
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-5px); }
-        75% { transform: translateX(5px); }
-    }
-`;
-document.head.appendChild(style);
 
 // Your actual data loading code
 const userIDs = Array.from({ length: 21 }, (_, i) => i + 1).filter(user => user !== 11 && user !== 21);
@@ -3883,14 +3847,6 @@ class SleepJourneyController {
     }
 
     setupTransitionButtons() {
-        // Individual section show button
-        const toggleButton = document.getElementById('toggleUserView');
-        if (toggleButton) {
-            toggleButton.addEventListener('click', () => {
-                this.showIndividualSection();
-            });
-        }
-
         // Transition buttons
         document.querySelectorAll('.transition-button').forEach(button => {
             button.addEventListener('click', (e) => {
@@ -3980,22 +3936,19 @@ class SleepJourneyController {
 
     showIndividualSection() {
         const userSection = document.getElementById("userSpecificSection");
-        const button = document.getElementById("toggleUserView");
-        
-        if (userSection && button) {
+
+        if (userSection) {
             userSection.style.display = "block";
             userSection.classList.add('active');
-            button.textContent = "🔒 Hide Individual Data ";
-            button.classList.add('expanded');
-            
+
             // Update navigation to identify step
             this.navigateToStep('identify');
-            
+
             // Smooth scroll to the section
             setTimeout(() => {
-                userSection.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start' 
+                userSection.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
                 });
             }, 300);
         }
