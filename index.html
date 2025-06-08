@@ -3,24 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>What's Your Sleep Story - Luna's Sleep Journey</title>
+    <title>What'sYourSleepStory - Sleep Clock Viewer</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-
 </head>
 <body>
-
-    <!-- Hero Section with Enhanced Luna -->
+    <!-- Hero Section -->
     <header class="hero-section">
         <div class="hero-content">
             <h1 class="hero-title">What's Your Sleep Story?</h1>
             <p class="hero-subtitle">Journey through the mysteries of sleep with Luna, your celestial guide to understanding rest and recovery</p>
             <div class="hero-divider"></div>
         </div>
-        
-        <!-- Enhanced Luna Character -->
-        <div class="luna-container">
+         <!-- Enhanced Luna Character -->
+         <div class="luna-container">
             <div class="luna-character" onclick="interactWithLuna()">
                 <div class="luna-body">
                     <div class="luna-face">
@@ -40,7 +37,7 @@
                     <div class="sparkle sparkle-4">🌟</div>
                 </div>
                 <div class="luna-speech" id="luna-speech">
-                    Welcome to your sleep journey! Click me to learn re! 🌙
+                    Welcome to your sleep journey! Click me to learn more! 🌙
                 </div>
             </div>
         </div>
@@ -101,17 +98,6 @@
                 </div>
             </div>
         </section>
-        <div class="narrative-transition" id="transition1">
-            <div class="transition-icon">🔍</div>
-            <h2 class="transition-title">Curious About Individual Patterns?</h2>
-            <p class="transition-text">
-                You've seen how heart rates vary between sleep and wake periods across all participants. 
-                Now dive deeper into personal sleep stories and discover the unique patterns of individual participants.
-            </p>
-            <button class="transition-button" onclick="showIndividualSection()">
-                Explore Individual Sleep Stories
-            </button>
-        </div>
 
         <!-- Hormone Analysis Section -->
         <section class="analysis-section hormone-section">
@@ -160,7 +146,117 @@
             </div>
         </section>
     </div>
-    
+
+    <!-- Sleep Quality Dashboard -->
+    <div class="dashboard">
+        <div class="header">
+            <h1 class="section-title">Sleep Quality Dashboard</h1>
+            <p>Explore relationships between lifestyle factors and sleep quality metrics</p>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Sleep Duration (hours)</label>
+                <input type="range" id="duration-slider" class="slider" min="3.3" max="8.2" step="0.1" value="7.0">
+                <span id="duration-value">8.0h</span>
+            </div>
+            
+            <div class="control-group">
+                <label>Stress Level</label>
+                <input type="range" id="stress-slider" class="slider" min="10" max="74" step="1" value="30">
+                <span id="stress-value">25</span>
+            </div>
+            
+            <div class="control-group">
+                <label>Age Range</label>
+                <input type="range" id="age-slider" class="slider" min="20" max="40" step="1" value="30">
+                <span id="age-value">35</span>
+            </div>
+            
+            <div class="control-group">
+                <label>Activity Level</label>
+                <input type="range" id="activity-slider" class="slider" min="600" max="4010" step="100" value="1000">
+                <span id="activity-value">5</span>
+            </div>
+        </div>
+        
+        <div class="charts-grid">
+            <div class="chart-container" id="dashboard">
+                <div class="chart-title">Sleep Efficiency vs Duration</div>
+                <svg id="efficiency-chart" width="400" height="300"></svg>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">WASO by Stress Level</div>
+                <svg id="waso-chart" width="400" height="300"></svg>
+            </div>
+        </div>
+        
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">Sleep Latency Distribution</div>
+                <svg id="latency-chart" width="400" height="300"></svg>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Awakenings by Age</div>
+                <svg id="awakenings-chart" width="400" height="300"></svg>
+            </div>
+        </div>
+        
+        <div class="bottom-row">
+            <div class="metric-card">
+                <div class="metric-value avg-metric" id="avg-efficiency">--</div>
+                <div class="metric-label">Average Sleep Efficiency</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value avg-metric" id="avg-waso">--</div>
+                <div class="metric-label">Average WASO (min)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value avg-metric" id="avg-latency">--</div>
+                <div class="metric-label">Average Sleep Latency (min)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Impact Analysis -->
+    <div class="activity-section">
+        <div class="section-title">Activity Impact Analysis</div>
+        
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="activity-controls">
+                    <div class="control-group">
+                        <label>Movement Type</label>
+                        <select id="movement-select">
+                            <option value="light">Light Movement</option>
+                            <option value="medium">Medium Movement</option>
+                            <option value="heavy">Heavy Movement</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="chart-title">Movement vs Sleep Latency</div>
+                <svg id="movement-chart" width="400" height="300"></svg>
+            </div>
+            
+            <div class="chart-container">
+                <div class="activity-controls">
+                    <div class="control-group">
+                        <label>Screen Type</label>
+                        <select id="screen-select">
+                            <option value="small">Small Screen</option>
+                            <option value="large">Large Screen</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="chart-title">Screen Time vs WASO</div>
+                <svg id="screen-chart" width="400" height="300"></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sleep Quiz Section -->
     <div class="transition-section">
         <h1>Connecting Sleep Physiology to Personalized Insights</h1>
         <p>
@@ -176,7 +272,7 @@
             personalized insights to optimize your rest.
         </p>
     </div>
-    
+
     <div class="container">
         <div class="header">
             <h1>Meet Your Sleep Twin 🌙</h1>
@@ -197,7 +293,7 @@
                 <button class="nav-btn" id="prevBtn" disabled>Previous</button>
                 <div class="auto-advance">
                     <input type="checkbox" id="autoAdvance" checked>
-                    <label for="autoAdvance">Auto-advance (8s)</label>
+                    <label for="autoAdvance">Auto-advance (10s)</label>
                 </div>
                 <button class="nav-btn" id="nextBtn">Next</button>
                 <button class="nav-btn skip-btn" id="skipBtn">Skip to Quiz</button>
@@ -325,6 +421,7 @@
             <div id="matchResults" style="display: none;"></div>
         </div>
     </div>
+
     <div class="narrative-transition" id="transition2" style="display: none;">
         <div class="transition-icon">⚡</div>
         <h2 class="transition-title">Now Let's Optimize Your Sleep</h2>
@@ -336,9 +433,8 @@
             Optimize Your Sleep
         </button>
     </div>
-    
 
-    <!-- Interactive Section Toggle -->
+    <!-- Individual Sleep Stories Section -->
     <section class="interactive-section">
         <div class="section-header">
             <h1 class="section-title">Individual Sleep Stories</h1>
@@ -375,7 +471,7 @@
                             <p><strong>📊 Sleep Efficiency:</strong> The percentage of time spent sleeping compared to total time in bed. Higher efficiency means better rest.</p>
                             <p><strong>🌙 Sleep Onset:</strong> The time it takes to transition from wakefulness into sleep.</p>
                         </div>
-                </div>
+                    </div>
                     <div class="sleep-metrics">
                         <h3 class="metrics-title">Sleep Summary</h3>
                         <div class="metrics-grid">
@@ -425,190 +521,10 @@
             </section>
         </div>
     </div>
-    <div class="sleep-simulator" id="sleepSimulator" style="display: none;">
-        <div class="simulator-header">
-            <h2 class="simulator-title">Your Sleep Twin Simulation</h2>
-            <p class="simulator-subtitle" id="simulatorSubtitle">Compare your patterns with your matched participant</p>
-        </div>
-
-        <div class="simulation-container">
-            <div class="simulation-panel current">
-                <div class="panel-header">
-                    <div class="panel-icon">📊</div>
-                    <h3 class="panel-title">Current Pattern</h3>
-                </div>
-                <div id="currentMetrics">
-                    <!-- Current metrics will be populated -->
-                </div>
-            </div>
-
-            <div class="simulation-panel optimized">
-                <div class="panel-header">
-                    <div class="panel-icon">⚡</div>
-                    <h3 class="panel-title">Optimized Potential</h3>
-                </div>
-                <div id="optimizedMetrics">
-                    <!-- Optimized metrics will be populated -->
-                </div>
-            </div>
-        </div>
-
-        <div class="optimization-controls">
-            <h3 class="controls-title">Adjust Lifestyle Factors</h3>
-            
-            <div class="control-group">
-                <label class="control-label">
-                    Sleep Duration
-                    <span class="control-value" id="durationValue">7.5h</span>
-                </label>
-                <input type="range" class="control-slider" id="durationSlider" 
-                       min="6" max="9" step="0.5" value="7.5">
-            </div>
-
-            <div class="control-group">
-                <label class="control-label">
-                    Stress Management
-                    <span class="control-value" id="stressValue">Moderate</span>
-                </label>
-                <input type="range" class="control-slider" id="stressSlider" 
-                       min="1" max="5" step="1" value="3">
-            </div>
-
-            <div class="control-group">
-                <label class="control-label">
-                    Sleep Hygiene Score
-                    <span class="control-value" id="hygieneValue">7/10</span>
-                </label>
-                <input type="range" class="control-slider" id="hygieneSlider" 
-                       min="1" max="10" step="1" value="7">
-            </div>
-        </div>
-    </div>
-
-
-
-    <div class="dashboard">
-        <div class="header">
-            <h1 class="section-title">Sleep Quality Dashboard</h1>
-            <p>Explore relationships between lifestyle factors and sleep quality metrics</p>
-        </div>
-        
-        <div class="controls">
-            <div class="control-group">
-                <label>Sleep Duration (hours)</label>
-                <input type="range" id="duration-slider" class="slider" min="3.3" max="8.2" step="0.1" value="7.0">
-                <span id="duration-value">8.0h</span>
-            </div>
-            
-            <div class="control-group">
-                <label>Stress Level</label>
-                <input type="range" id="stress-slider" class="slider" min="10" max="74" step="1" value="30">
-                <span id="stress-value">25</span>
-            </div>
-            
-            <div class="control-group">
-                <label>Age Range</label>
-                <input type="range" id="age-slider" class="slider" min="20" max="40" step="1" value="30">
-                <span id="age-value">35</span>
-            </div>
-            
-            <div class="control-group">
-                <label>Activity Level</label>
-                <input type="range" id="activity-slider" class="slider" min="600" max="4010" step="100" value="1000">
-                <span id="activity-value">5</span>
-            </div>
-        </div>
-        
-        <div class="charts-grid">
-            <div class="chart-container">
-                <div class="chart-title">Sleep Efficiency vs Duration</div>
-                <svg id="efficiency-chart" width="400" height="300"></svg>
-            </div>
-            
-            <div class="chart-container">
-                <div class="chart-title">WASO by Stress Level</div>
-                <svg id="waso-chart" width="400" height="300"></svg>
-            </div>
-        </div>
-        
-        <div class="charts-grid">
-            <div class="chart-container">
-                <div class="chart-title">Sleep Latency Distribution</div>
-                <svg id="latency-chart" width="400" height="300"></svg>
-            </div>
-            
-            <div class="chart-container">
-                <div class="chart-title">Awakenings by Age</div>
-                <svg id="awakenings-chart" width="400" height="300"></svg>
-            </div>
-        </div>
-        
-        <div class="bottom-row">
-            <div class="metric-card">
-                <div class="metric-value avg-metric" id="avg-efficiency">--</div>
-                <div class="metric-label">Average Sleep Efficiency</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-value avg-metric" id="avg-waso">--</div>
-                <div class="metric-label">Average WASO (min)</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-value avg-metric" id="avg-latency">--</div>
-                <div class="metric-label">Average Sleep Latency (min)</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="activity-section">
-        <div class="section-title">Activity Impact Analysis</div>
-        
-        <div class="charts-grid">
-            <div class="chart-container">
-                <div class="activity-controls">
-                    <div class="control-group">
-                        <label>Caffeine Events per Day</label>
-                        <input type="range" id="caffeine-slider" class="slider" min="0" max="10" step="1" value="2">
-                        <span id="caffeine-value">2</span>
-                    </div>
-                </div>
-                <div class="chart-title">Caffeine Events vs Sleep Efficiency</div>
-                <svg id="caffeine-chart" width="400" height="300"></svg>
-            </div>
-            
-            <div class="chart-container">
-                <div class="activity-controls">
-                    <div class="control-group">
-                        <label>Movement Type</label>
-                        <select id="movement-select">
-                            <option value="light">Light Movement</option>
-                            <option value="medium">Medium Movement</option>
-                            <option value="heavy">Heavy Movement</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="chart-title">Movement vs Sleep Latency</div>
-                <svg id="movement-chart" width="400" height="300"></svg>
-            </div>
-            
-            <div class="chart-container">
-                <div class="activity-controls">
-                    <div class="control-group">
-                        <label>Screen Type</label>
-                        <select id="screen-select">
-                            <option value="small">Small Screen</option>
-                            <option value="large">Large Screen</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="chart-title">Screen Time vs WASO</div>
-                <svg id="screen-chart" width="400" height="300"></svg>
-            </div>
-        </div>
-    </div>
 
     <div class="tooltip" id="tooltip"></div>
 
     <!-- Include JavaScript -->
-    <script src="script.js" defer></script>
+    <script src="script.js"></script>
 </body>
 </html>

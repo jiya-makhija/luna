@@ -1,47 +1,63 @@
-// Enhanced script with Luna character interactions while preserving all original functionality
-
 let currentUser = 1;
 
 // Luna Character Interactions
 const lunaMessages = [
-    "Hello! I'm Luna, your sleep guide! 🌙",
-    "Did you know your heart rate drops during sleep? ❤️",
-    "Sleep is when your body repairs itself! ✨",
-    "Melatonin helps you feel sleepy! 💤",
-    "Good sleep makes everything better! 🌟",
-    "Sweet dreams are made of good sleep hygiene! 💫",
-    "I love watching over sleepy data! 🌙✨"
+  "Did you know your heart rate drops during sleep? ❤️",
+  "Sleep is when your body repairs itself! ✨",
+  "Melatonin helps you feel sleepy! 💤",
+  "Good sleep makes everything better! 🌟",
+  "Sweet dreams are made of good sleep hygiene! 💫",
+  "I love watching over sleepy data! 🌙✨"
 ];
 
 let lunaMessageIndex = 0;
+let isFirstInteraction = true;
+
+// Show default prompt when page loads
+function showDefaultPrompt() {
+  const lunaSpeech = document.getElementById('luna-speech');
+  const lunaMouth = document.getElementById('luna-mouth');
+  
+  if (lunaSpeech) {
+    lunaSpeech.textContent = "Hello! I'm Luna, your sleep guide! 🌙";
+    lunaSpeech.classList.add('show');
+    lunaMouth.classList.add('happy');
+  }
+}
 
 function interactWithLuna() {
-    const lunaCharacter = document.querySelector('.luna-character');
-    const lunaSpeech = document.getElementById('luna-speech');
-    const lunaEyes = document.querySelectorAll('.luna-eye');
-    const lunaMouth = document.getElementById('luna-mouth');
-    
-    // Make Luna happy
-    lunaEyes.forEach(eye => {
-        eye.classList.remove('sleepy');
-    });
-    lunaMouth.classList.add('happy');
-    
-    // Show speech bubble with cycling messages
-    lunaSpeech.textContent = lunaMessages[lunaMessageIndex];
-    lunaSpeech.classList.add('show');
-    
-    // Cycle through messages
-    lunaMessageIndex = (lunaMessageIndex + 1) % lunaMessages.length;
-    
-    // Hide speech bubble after 3 seconds
-    setTimeout(() => {
-        lunaSpeech.classList.remove('show');
-        lunaMouth.classList.remove('happy');
-    }, 3000);
-    
-    // Add some sparkle effect
-    createLunaSparkles();
+  const lunaCharacter = document.querySelector('.luna-character');
+  const lunaSpeech = document.getElementById('luna-speech');
+  const lunaEyes = document.querySelectorAll('.luna-eye');
+  const lunaMouth = document.getElementById('luna-mouth');
+
+  // Make Luna happy
+  lunaEyes.forEach(eye => {
+    eye.classList.remove('sleepy');
+  });
+  lunaMouth.classList.add('happy');
+
+  // If it's the first interaction, start with the first message
+  if (isFirstInteraction) {
+    isFirstInteraction = false;
+    lunaMessageIndex = 0;
+  }
+
+  // Show speech bubble with cycling messages
+  lunaSpeech.textContent = lunaMessages[lunaMessageIndex];
+  lunaSpeech.classList.add('show');
+
+  // Cycle through messages
+  lunaMessageIndex = (lunaMessageIndex + 1) % lunaMessages.length;
+
+  // Hide speech bubble after 3 seconds
+  setTimeout(() => {
+    lunaSpeech.classList.remove('show');
+    lunaMouth.classList.remove('happy');
+  }, 3000);
+
+  // Add some sparkle effect
+  createLunaSparkles();
 }
 
 function createLunaSparkles() {
@@ -87,6 +103,12 @@ function createLunaSparkles() {
         }, 1000 + i * 100);
     }
 }
+
+// Initialize default prompt when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Small delay to ensure elements are rendered
+    setTimeout(showDefaultPrompt, 500);
+  });
 
 
 // Mini Luna interactions
@@ -255,6 +277,7 @@ function renderCortisolMelatoninChart(avgCortisolBeforeSleep, avgCortisolWakeUp,
         .attr("y", 20)
         .attr("font-size", "24px")
         .attr("font-weight", "bold")
+        .attr("fill", "white")
         .text("Cortisol & Melatonin Levels: Before Sleep vs Wake Up");
 
     // Define log scales for cortisol & melatonin
@@ -423,6 +446,7 @@ function renderCortisolMelatoninChart(avgCortisolBeforeSleep, avgCortisolWakeUp,
         .attr("y", 20)
         .attr("x", -height / 2)
         .style("text-anchor", "middle")
+        .attr("fill", "white")
         .text("Cortisol (ng/mL)");
 
     svg.append("text")
@@ -431,6 +455,7 @@ function renderCortisolMelatoninChart(avgCortisolBeforeSleep, avgCortisolWakeUp,
         .attr("y", -width + 20)
         .attr("x", height / 2)
         .style("text-anchor", "middle")
+        .attr("fill", "white")
         .text("Melatonin (pg/mL)");
 
     // Add legend
@@ -628,7 +653,7 @@ function renderDensityPlot(hrData) {
         .append("text")
         .attr("x", width / 2)
         .attr("y", 40)
-        .attr("fill", "black")
+        .attr("fill", "white")
         .style("text-anchor", "middle")
         .style("font-weight", "bold")
         .style("font-size", 12)
@@ -640,7 +665,7 @@ function renderDensityPlot(hrData) {
         .attr("transform", "rotate(-90)")
         .attr("y", -60)
         .attr("x", -height / 2)
-        .attr("fill", "black")
+        .attr("fill", "white")
         .style("text-anchor", "middle")
         .style("font-weight", "bold")
         .style("font-size", 12)
@@ -665,7 +690,7 @@ function renderDensityPlot(hrData) {
         // Add filled area for sleep
         g.append("path")
             .datum(sleepDensity)
-            .attr("fill", "#fbbf24")              // ← Changed from "#4A90E2" to golden yellow
+            .attr("fill", "#fbbf24")
             .attr("fill-opacity", 0.3)
             .attr("d", area);
         
@@ -673,7 +698,7 @@ function renderDensityPlot(hrData) {
         g.append("path")
             .datum(sleepDensity)
             .attr("fill", "none")
-            .attr("stroke", "#fbbf24")            // ← Changed from "#4A90E2" to golden yellow
+            .attr("stroke", "#fbbf24")
             .attr("stroke-width", 3)
             .attr("d", line)
             .style("cursor", "crosshair")
@@ -771,8 +796,8 @@ function renderDensityPlot(hrData) {
                 }
                 
                 // Calculate percentages
-                const sleepCount = sleepHR.filter(hr => Math.abs(hr - sleepPoint[0]) <= 2).length;
-                const awakeCount = awakeHR.filter(hr => Math.abs(hr - sleepPoint[0]) <= 2).length;
+                const sleepCount = sleepHR.filter(hr => Math.abs(hr - awakePoint[0]) <= 2).length;
+                const awakeCount = awakeHR.filter(hr => Math.abs(hr - awakePoint[0]) <= 2).length;
                 const sleepPercent = sleepHR.length > 0 ? (sleepCount / sleepHR.length * 100).toFixed(1) : 0;
                 const awakePercent = awakeHR.length > 0 ? (awakeCount / awakeHR.length * 100).toFixed(1) : 0;
                 
@@ -781,13 +806,13 @@ function renderDensityPlot(hrData) {
                     .style("opacity", .9);
                 
                 tooltip_density.html(`
-                    <strong>💤 Sleep Curve</strong><br/>
-                    <strong>Heart Rate: ${Math.round(sleepPoint[0])} BPM</strong><br/>
-                    <span style="color: #fbbf24;">Sleep Density: ${sleepPoint[1].toFixed(4)}</span><br/>
-                    <span style="color: #f59e0b;">Awake Density: ${awakeDensityVal.toFixed(4)}</span><br/>
+                    <strong>☀️ Awake Curve</strong><br/>
+                    <strong>Heart Rate: ${Math.round(awakePoint[0])} BPM</strong><br/>
+                    <span style="color: #4A90E2;">Sleep Density: ${sleepDensityVal.toFixed(4)}</span><br/>
+                    <span style="color: #E74C3C;">Awake Density: ${awakePoint[1].toFixed(4)}</span><br/>
                     <hr style="margin: 5px 0; border-color: #444;">
-                    <span style="color: #fbbf24;">Sleep: ${sleepPercent}% of readings</span><br/>
-                    <span style="color: #f59e0b;">Awake: ${awakePercent}% of readings</span>
+                    <span style="color: #4A90E2;">Sleep: ${sleepPercent}% of readings</span><br/>
+                    <span style="color: #E74C3C;">Awake: ${awakePercent}% of readings</span>
                 `)
                 .style("left", (event) => {
                     const tooltip = document.getElementById("tooltip_density");
@@ -796,8 +821,7 @@ function renderDensityPlot(hrData) {
                 })
                 .style("top", (event) => {
                     const tooltip = document.getElementById("tooltip_density");
-                    return `${Math.min(window.innerHeight - tooltip.offsetHeight - 10, event.pageY - 10)}px`;
-                });
+                    return `${Math.min(window.innerHeight - tooltip.offsetHeight - 10, event.pageY - 10)}px`;});
             })
             .on("mouseout", function() {
                 d3.select(this).attr("stroke-width", 3);
@@ -846,6 +870,7 @@ function renderDensityPlot(hrData) {
         .attr("x", 20)
         .attr("y", 12)
         .text("💤 Sleep Heart Rate")
+        .style("fill", "white")
         .style("font-size", "14px");
     
     // Awake legend
@@ -862,6 +887,7 @@ function renderDensityPlot(hrData) {
         .attr("x", 20)
         .attr("y", 37)
         .text("☀️ Awake Heart Rate")
+        .style("fill", "white")
         .style("font-size", "14px");
     
     // Overlap legend (if exists)
@@ -879,6 +905,7 @@ function renderDensityPlot(hrData) {
             .attr("x", 20)
             .attr("y", 62)
             .text("Overlap")
+            .style("fill", "white")
             .style("font-size", "14px");
     }
     
@@ -2289,7 +2316,6 @@ Promise.all([
             createWASOChart();
             createLatencyChart();
             createAwakeningsChart();
-            createCaffeineChart();
             createMovementChart();
             createScreenChart();
             updateMetrics();
@@ -2499,8 +2525,18 @@ Promise.all([
                 .attr("width", d => xScale(d.x1) - xScale(d.x0) - 1)
                 .attr("y", d => yScale(d.length))
                 .attr("height", d => chartHeight - yScale(d.length))
-                .attr("fill", "#4ecdc4");
+                .attr("fill", "#4ecdc4")
+                .on("mouseover", (event, d) => {
+                    tooltip.style("opacity", 1)
+                        .html(`Latency: ${d.x0.toFixed(1)}-${d.x1.toFixed(1)} min<br/>Frequency: ${d.length}`)
+                        .style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 10) + "px");
+                })
+                .on("mouseout", () => {
+                    tooltip.style("opacity", 0);
+                });
         }
+
         
         function createAwakeningsChart() {
             const svg = d3.select("#awakenings-chart");
@@ -2564,67 +2600,6 @@ Promise.all([
                 });
         }
 
-        function createCaffeineChart() {
-            const svg = d3.select("#caffeine-chart");
-            svg.selectAll("*").remove();
-            
-            const g = svg.append("g")
-                .attr("transform", `translate(${margin.left},${margin.top})`);
-            
-            const xScale = d3.scaleLinear()
-                .domain([0, d3.max(filteredData, d => d.caffeineEvents) || 10])
-                .range([0, chartWidth]);
-            
-            const yScale = d3.scaleLinear()
-                .domain([d3.min(filteredData, d => d.efficiency) - 5, d3.max(filteredData, d => d.efficiency) + 5])
-                .range([chartHeight, 0]);
-            
-            // Axes
-            g.append("g")
-                .attr("class", "axis")
-                .attr("transform", `translate(0,${chartHeight})`)
-                .call(d3.axisBottom(xScale));
-            
-            g.append("g")
-                .attr("class", "axis")
-                .call(d3.axisLeft(yScale));
-            
-            // Axis labels
-            g.append("text")
-                .attr("class", "axis-label")
-                .attr("transform", `translate(${chartWidth/2}, ${chartHeight + 35})`)
-                .style("text-anchor", "middle")
-                .text("Caffeine Events per Day");
-            
-            g.append("text")
-                .attr("class", "axis-label")
-                .attr("transform", "rotate(-90)")
-                .attr("y", 0 - margin.left)
-                .attr("x", 0 - (chartHeight / 2))
-                .attr("dy", "1em")
-                .style("text-anchor", "middle")
-                .text("Sleep Efficiency (%)");
-            
-            // Dots
-            g.selectAll(".dot")
-                .data(filteredData)
-                .enter()
-                .append("circle")
-                .attr("class", "dot")
-                .attr("cx", d => xScale(d.caffeineEvents))
-                .attr("cy", d => yScale(d.efficiency))
-                .attr("r", 4)
-                .attr("fill", "#e74c3c")
-                .on("mouseover", (event, d) => {
-                    tooltip.style("opacity", 1)
-                        .html(`Caffeine: ${d.caffeineEvents} events<br/>Efficiency: ${d.efficiency}%<br/>ID: ${d.id}`)
-                        .style("left", (event.pageX + 10) + "px")
-                        .style("top", (event.pageY - 10) + "px");
-                })
-                .on("mouseout", () => {
-                    tooltip.style("opacity", 0);
-                });
-        }
         
         function createMovementChart() {
             const svg = d3.select("#movement-chart");
@@ -3481,7 +3456,6 @@ document.addEventListener('DOMContentLoaded', function() {
    new InfoController();
 });
 
-
 // Enhanced Navigation and Journey Controller
 class SleepJourneyController {
     constructor() {
@@ -3736,652 +3710,5 @@ class SleepJourneyController {
     }
 }
 
-// Enhanced Quiz Controller with Profile Updates
-class EnhancedQuizController extends QuizController {
-    constructor(journeyController) {
-        super();
-        this.journeyController = journeyController;
-    }
 
-    saveCurrentAnswer() {
-        super.saveCurrentAnswer();
-        
-        // Update profile card as user progresses
-        switch (this.currentQuestion) {
-            case 2:
-                this.journeyController.updateProfileData('duration', this.answers.sleepHours);
-                break;
-            case 3:
-                this.journeyController.updateProfileData('stress', 
-                    ['Very Low', 'Low', 'Moderate', 'High', 'Very High'][this.answers.stressLevel - 1]);
-                break;
-            case 4:
-                this.journeyController.updateProfileData('latency', this.answers.sleepLatency);
-                break;
-            case 6:
-                this.journeyController.updateProfileData('chronotype', this.answers.chronotype);
-                break;
-        }
-    }
 
-    submitQuiz() {
-        super.submitQuiz();
-        
-        // Move to identify step when quiz is submitted
-        this.journeyController.navigateToStep('identify');
-    }
-}
-
-// Enhanced Results Display with Navigation Integration
-function enhancedDisplayResults(userProfile, match, journeyController) {
-    const participant = match.participant;
-    const similarity = match.similarity.toFixed(1);
-    
-    // Update profile card with twin info
-    const twinId = participant.id.replace('user_', '');
-    journeyController.updateProfileData('twin', `Participant ${twinId}`);
-    
-    // Show transition to optimize step
-    const transition2 = document.getElementById('transition2');
-    if (transition2) {
-        transition2.style.display = 'block';
-        setTimeout(() => {
-            transition2.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 1000);
-    }
-    
-    // Highlight the matched participant in individual view
-    highlightSleepTwin(twinId);
-    
-    // Call original display function
-    displayResults(userProfile, match);
-}
-
-function highlightSleepTwin(twinId) {
-    // Add special styling to the matched participant
-    const participantCircle = document.getElementById(`user-${twinId}`);
-    if (participantCircle) {
-        participantCircle.classList.add('sleep-twin');
-        
-        // Add notification
-        setTimeout(() => {
-            createTwinNotification(twinId);
-        }, 2000);
-    }
-}
-
-function createTwinNotification(twinId) {
-    const notification = document.createElement('div');
-    notification.className = 'twin-notification';
-    notification.innerHTML = `
-        <div class="notification-content">
-            <span class="notification-icon">👯</span>
-            <span class="notification-text">Your sleep twin is Participant ${twinId}!</span>
-            <button class="notification-view" onclick="viewTwinData(${twinId})">View Data</button>
-        </div>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        notification.remove();
-    }, 5000);
-}
-
-function viewTwinData(twinId) {
-    // Load the twin's data and scroll to individual section
-    if (window.loadParticipantData) {
-        loadParticipantData(parseInt(twinId));
-    }
-    
-    const userSection = document.getElementById("userSpecificSection");
-    if (userSection) {
-        userSection.style.display = "block";
-        userSection.scrollIntoView({ behavior: 'smooth' });
-    }
-    
-    // Remove notification
-    const notification = document.querySelector('.twin-notification');
-    if (notification) notification.remove();
-}
-
-// Global functions for transition buttons
-function showIndividualSection() {
-    if (window.journeyController) {
-        window.journeyController.showIndividualSection();
-    }
-}
-
-function showDashboard() {
-    if (window.journeyController) {
-        window.journeyController.showDashboard();
-    }
-}
-
-// Initialize everything when DOM loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize journey controller
-    window.journeyController = new SleepJourneyController();
-    
-    // Override the original QuizController initialization
-    window.initializePredictions = function() {
-        new EnhancedQuizController(window.journeyController);
-    };
-    
-    // Override displayResults to use enhanced version
-    const originalDisplayResults = window.displayResults;
-    window.displayResults = function(userProfile, match) {
-        enhancedDisplayResults(userProfile, match, window.journeyController);
-    };
-    
-    // Add smooth scrolling to all internal links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
-});
-
-// Complete Sleep Journey Integration System
-// This connects all sections: Heart Rate → Hormones → Sleep Twin → Individual Stories → Dashboard
-
-class SleepJourneyIntegration {
-    constructor() {
-        this.currentStep = 'explore';
-        this.userProfile = {
-            duration: null,
-            stress: null,
-            latency: null,
-            chronotype: null,
-            twin: null,
-            completedSections: new Set()
-        };
-        this.journeyData = {};
-        this.init();
-    }
-
-    init() {
-        this.setupNavigationFlow();
-        this.setupProfileCard();
-        this.setupScrollBasedNavigation();
-        this.setupTransitionButtons();
-        this.setupQuizIntegration();
-        this.setupDashboardIntegration();
-        this.initializeJourney();
-    }
-
-    // Step 1: Setup navigation flow between sections
-    setupNavigationFlow() {
-        // Navigation step clicks
-        document.querySelectorAll('.progress-step').forEach(step => {
-            step.addEventListener('click', (e) => {
-                const targetStep = step.getAttribute('data-step');
-                this.navigateToStep(targetStep);
-            });
-        });
-
-        // Update navigation state
-        this.updateNavigationState();
-    }
-
-    // Step 2: Setup profile card that updates throughout journey
-    setupProfileCard() {
-        const profileCard = document.getElementById('sleepProfileCard');
-        if (profileCard) {
-            // Show profile card after short delay
-            setTimeout(() => {
-                profileCard.classList.add('visible');
-            }, 2000);
-        }
-    }
-
-    // Step 3: Setup scroll-based navigation updates
-    setupScrollBasedNavigation() {
-        const observerOptions = {
-            threshold: 0.3,
-            rootMargin: '-100px 0px -100px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const sectionId = entry.target.id;
-                    this.updateStepFromSection(sectionId);
-                }
-            });
-        }, observerOptions);
-
-        // Observe all key sections
-        const sections = [
-            'dualLineContainer',        // Heart Rate Analysis
-            'cortisolMelatoninChart',   // Hormone Balance
-            'interactiveInfo',          // Sleep Twin Finder
-            'quizSection',              // Quiz
-            'results',                  // Results
-            'userSpecificSection',      // Individual Stories
-            'sleepSimulator',           // Sleep Simulator
-            'efficiency-chart'          // Dashboard
-        ].map(id => document.getElementById(id)).filter(el => el);
-
-        sections.forEach(section => observer.observe(section));
-    }
-
-    // Step 4: Setup transition buttons between sections
-    setupTransitionButtons() {
-        // "Explore Individual Sleep Stories" button
-        const exploreButton = document.querySelector('button[onclick="showIndividualSection()"]');
-        if (exploreButton) {
-            exploreButton.addEventListener('click', () => {
-                this.showIndividualSection();
-            });
-        }
-
-        // "Start Quiz" and "Skip to Quiz" buttons
-        document.querySelectorAll('#skipBtn, button:contains("Start Quiz")').forEach(btn => {
-            btn.addEventListener('click', () => {
-                this.navigateToStep('identify');
-                this.scrollToElement('quizSection');
-            });
-        });
-
-        // "Optimize Your Sleep" button (after finding twin)
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('transition-button') && 
-                e.target.textContent.includes('Optimize')) {
-                this.navigateToStep('optimize');
-                this.scrollToElement('sleepSimulator');
-            }
-        });
-    }
-
-    // Step 5: Setup quiz integration with profile updates
-    setupQuizIntegration() {
-        // Enhance existing quiz to update profile card
-        const originalInitializePredictions = window.initializePredictions;
-        window.initializePredictions = () => {
-            if (originalInitializePredictions) {
-                originalInitializePredictions();
-            }
-            this.enhanceQuizWithProfileUpdates();
-        };
-
-        // Override displayResults to integrate twin finding
-        const originalDisplayResults = window.displayResults;
-        window.displayResults = (userProfile, match) => {
-            this.handleTwinFound(userProfile, match);
-            if (originalDisplayResults) {
-                originalDisplayResults(userProfile, match);
-            }
-        };
-    }
-
-    // Step 6: Setup dashboard integration
-    setupDashboardIntegration() {
-        // Connect dashboard sliders to profile card
-        setTimeout(() => {
-            this.connectDashboardToProfile();
-        }, 3000);
-    }
-
-    // Navigate to specific step
-    navigateToStep(stepName) {
-        this.currentStep = stepName;
-        this.updateNavigationState();
-        this.updateProfileCardForStep();
-        
-        // Mark step as completed
-        this.userProfile.completedSections.add(stepName);
-        
-        // Update progress in navigation
-        this.updateStepProgress();
-    }
-
-    // Update navigation visual state
-    updateNavigationState() {
-        document.querySelectorAll('.progress-step').forEach(step => {
-            const stepName = step.getAttribute('data-step');
-            step.classList.toggle('active', stepName === this.currentStep);
-            
-            // Mark completed steps
-            const stepOrder = ['explore', 'identify', 'optimize'];
-            const currentIndex = stepOrder.indexOf(this.currentStep);
-            const thisIndex = stepOrder.indexOf(stepName);
-            step.classList.toggle('completed', thisIndex < currentIndex);
-        });
-    }
-
-    // Update step from section visibility
-    updateStepFromSection(sectionId) {
-        const stepMap = {
-            'dualLineContainer': 'explore',
-            'cortisolMelatoninChart': 'explore',
-            'interactiveInfo': 'identify',
-            'quizSection': 'identify',
-            'results': 'identify',
-            'userSpecificSection': 'identify',
-            'sleepSimulator': 'optimize',
-            'efficiency-chart': 'optimize'
-        };
-
-        const newStep = stepMap[sectionId];
-        if (newStep && newStep !== this.currentStep) {
-            this.navigateToStep(newStep);
-        }
-    }
-
-    // Show individual section with smooth transition
-    showIndividualSection() {
-        const userSection = document.getElementById("userSpecificSection");
-        const button = document.getElementById("toggleUserView");
-        
-        if (userSection && button) {
-            userSection.style.display = "block";
-            userSection.classList.add('active');
-            
-            // Update button
-            button.textContent = "🔒 Hide Individual Data ";
-            button.classList.add('expanded');
-            
-            // Navigate to identify step
-            this.navigateToStep('identify');
-            
-            // Smooth scroll
-            setTimeout(() => {
-                this.scrollToElement('userSpecificSection');
-            }, 300);
-        }
-    }
-
-    // Enhanced quiz with profile card updates
-    enhanceQuizWithProfileUpdates() {
-        // Monitor slider changes
-        const sliders = [
-            { id: 'sleepHours', profileKey: 'duration', formatter: (v) => `${v}h` },
-            { id: 'sleepLatency', profileKey: 'latency', formatter: (v) => `${v}min` }
-        ];
-
-        sliders.forEach(({ id, profileKey, formatter }) => {
-            const slider = document.getElementById(id);
-            if (slider) {
-                slider.addEventListener('input', (e) => {
-                    this.updateProfileData(profileKey, formatter(e.target.value));
-                });
-            }
-        });
-
-        // Monitor radio button changes
-        const radioGroups = [
-            { name: 'stress', profileKey: 'stress', 
-              labels: ['Very Low', 'Low', 'Moderate', 'High', 'Very High'] },
-            { name: 'chronotype', profileKey: 'chronotype',
-              labels: ['Evening', 'Mod. Evening', 'Neutral', 'Mod. Morning', 'Morning'] }
-        ];
-
-        radioGroups.forEach(({ name, profileKey, labels }) => {
-            document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
-                radio.addEventListener('change', (e) => {
-                    if (e.target.checked) {
-                        const value = parseInt(e.target.value);
-                        this.updateProfileData(profileKey, labels[value - 1]);
-                    }
-                });
-            });
-        });
-    }
-
-    // Handle when sleep twin is found
-    handleTwinFound(userProfile, match) {
-        const participant = match.participant;
-        const twinId = participant.id.replace('user_', '');
-        
-        // Update profile card
-        this.updateProfileData('twin', `Participant ${twinId}`);
-        
-        // Store twin data for later use
-        this.journeyData.sleepTwin = {
-            id: twinId,
-            participant: participant,
-            similarity: match.similarity,
-            userProfile: userProfile
-        };
-        
-        // Highlight twin in individual section
-        this.highlightSleepTwin(twinId);
-        
-        // Show transition to optimization
-        setTimeout(() => {
-            this.showOptimizationTransition();
-        }, 2000);
-    }
-
-    // Highlight sleep twin in participant navigation
-    highlightSleepTwin(twinId) {
-        const participantCircle = document.getElementById(`user-${twinId}`);
-        if (participantCircle) {
-            participantCircle.classList.add('sleep-twin');
-            
-            // Add special twin notification
-            setTimeout(() => {
-                this.showTwinNotification(twinId);
-            }, 1000);
-        }
-    }
-
-    // Show twin notification
-    showTwinNotification(twinId) {
-        const notification = document.createElement('div');
-        notification.className = 'twin-notification';
-        notification.innerHTML = `
-            <div class="notification-content">
-                <span class="notification-icon">👯</span>
-                <span class="notification-text">Found your sleep twin: Participant ${twinId}!</span>
-                <button class="notification-view" onclick="window.sleepJourney.viewTwinData(${twinId})">View Data</button>
-            </div>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        // Auto-remove after 6 seconds
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.remove();
-            }
-        }, 6000);
-    }
-
-    // View twin data function
-    viewTwinData(twinId) {
-        // Load twin's individual data
-        if (window.loadParticipantData) {
-            window.loadParticipantData(parseInt(twinId));
-        }
-        
-        // Show individual section
-        this.showIndividualSection();
-        
-        // Remove notification
-        const notification = document.querySelector('.twin-notification');
-        if (notification) notification.remove();
-    }
-
-    // Show optimization transition
-    showOptimizationTransition() {
-        const transition = document.getElementById('transition2');
-        if (transition) {
-            transition.style.display = 'block';
-            setTimeout(() => {
-                this.scrollToElement('transition2');
-            }, 500);
-        }
-    }
-
-    // Connect dashboard to profile card
-    connectDashboardToProfile() {
-        const sliders = [
-            { id: 'duration-slider', profileKey: 'duration', formatter: (v) => `${v}h` },
-            { id: 'stress-slider', profileKey: 'stress', 
-              formatter: (v) => {
-                  const val = parseInt(v);
-                  if (val < 20) return 'Low';
-                  if (val < 35) return 'Moderate';
-                  if (val < 50) return 'High';
-                  return 'Very High';
-              }
-            }
-        ];
-
-        sliders.forEach(({ id, profileKey, formatter }) => {
-            const slider = document.getElementById(id);
-            if (slider) {
-                slider.addEventListener('input', (e) => {
-                    this.updateProfileData(profileKey, formatter(e.target.value));
-                });
-                
-                // Initialize with current value
-                this.updateProfileData(profileKey, formatter(slider.value));
-            }
-        });
-    }
-
-    // Update profile data and render
-    updateProfileData(key, value) {
-        this.userProfile[key] = value;
-        this.renderProfileMetrics();
-    }
-
-    // Render profile metrics
-    renderProfileMetrics() {
-        const metrics = {
-            'profileDuration': this.userProfile.duration || '--',
-            'profileStress': this.userProfile.stress || '--',
-            'profileLatency': this.userProfile.latency || '--',
-            'profileChronotype': this.getChronotypeText(this.userProfile.chronotype),
-            'profileTwin': this.userProfile.twin || '--'
-        };
-
-        Object.entries(metrics).forEach(([id, value]) => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value;
-                element.classList.toggle('metric-empty', value === '--');
-            }
-        });
-    }
-
-    // Get chronotype text
-    getChronotypeText(chronotype) {
-        const types = {
-            1: 'Evening', 2: 'Mod. Evening', 3: 'Neutral', 
-            4: 'Mod. Morning', 5: 'Morning'
-        };
-        return types[chronotype] || '--';
-    }
-
-    // Update profile card for current step
-    updateProfileCardForStep() {
-        const profileCard = document.getElementById('sleepProfileCard');
-        if (!profileCard) return;
-
-        const stepDescriptions = {
-            'explore': 'Exploring sleep patterns...',
-            'identify': 'Finding your sleep twin...',
-            'optimize': 'Optimizing your sleep...'
-        };
-
-        const subtitle = profileCard.querySelector('.profile-subtitle');
-        if (subtitle) {
-            subtitle.textContent = stepDescriptions[this.currentStep] || 'Building as you explore...';
-        }
-
-        // Add step-specific styling
-        profileCard.className = `sleep-profile-card visible step-${this.currentStep}`;
-    }
-
-    // Smooth scroll to element
-    scrollToElement(elementId) {
-        const element = document.getElementById(elementId);
-        if (element) {
-            const headerOffset = 100;
-            const elementPosition = element.getBoundingClientRect().top;
-            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: 'smooth'
-            });
-        }
-    }
-
-    // Initialize journey
-    initializeJourney() {
-        // Set initial state
-        this.navigateToStep('explore');
-        
-        // Update profile card subtitle
-        this.updateProfileCardForStep();
-        
-        console.log('🌙 Sleep Journey Integration initialized!');
-        console.log('✨ Navigation, profile card, and section connections are active');
-    }
-
-    // Update step progress visually
-    updateStepProgress() {
-        const stepOrder = ['explore', 'identify', 'optimize'];
-        const currentIndex = stepOrder.indexOf(this.currentStep);
-        
-        stepOrder.forEach((step, index) => {
-            const stepElement = document.querySelector(`[data-step="${step}"]`);
-            if (stepElement) {
-                stepElement.classList.toggle('completed', index < currentIndex);
-                stepElement.classList.toggle('active', index === currentIndex);
-            }
-        });
-    }
-}
-
-// Global functions for backwards compatibility
-window.showIndividualSection = function() {
-    if (window.sleepJourney) {
-        window.sleepJourney.showIndividualSection();
-    }
-};
-
-window.showDashboard = function() {
-    if (window.sleepJourney) {
-        window.sleepJourney.navigateToStep('optimize');
-        window.sleepJourney.scrollToElement('sleepSimulator');
-    }
-};
-
-// Initialize the complete sleep journey system
-document.addEventListener('DOMContentLoaded', function() {
-    // Wait for all components to load
-    setTimeout(() => {
-        window.sleepJourney = new SleepJourneyIntegration();
-        
-        // Debug functions
-        window.testJourney = function() {
-            console.log('🧪 Testing journey integration...');
-            console.log('Current step:', window.sleepJourney.currentStep);
-            console.log('User profile:', window.sleepJourney.userProfile);
-            console.log('Journey data:', window.sleepJourney.journeyData);
-        };
-        
-        window.simulateTwin = function() {
-            console.log('🎭 Simulating sleep twin discovery...');
-            window.sleepJourney.handleTwinFound(
-                { age: 27, sleepHours: 7.5, stressLevel: 3 },
-                { participant: { id: 'user_5' }, similarity: 89.5 }
-            );
-        };
-        
-    }, 1500);
-});
