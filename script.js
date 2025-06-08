@@ -93,13 +93,19 @@ function animateMainPage() {
 }
 
 function animateQuizPage() {
+    console.log('🔧 Animating quiz page...');
+
     // Initialize InfoController only when quiz page is accessed
     if (!infoController) {
+        console.log('🔧 Creating new InfoController...');
         infoController = new InfoController();
     }
 
-    // Start auto-advance now that user is on quiz page
-    infoController.activateAutoAdvance();
+    // Start auto-advance now that user is on quiz page (with small delay to ensure elements are ready)
+    setTimeout(() => {
+        console.log('🔧 Activating auto-advance...');
+        infoController.activateAutoAdvance();
+    }, 100);
 
     // Initialize quiz if needed
     if (typeof initializeQuiz === 'function') {
@@ -3256,9 +3262,12 @@ class InfoController {
     }
 
     init() {
+        console.log('🔧 InfoController init called');
+        console.log('🔧 infoSections length:', infoSections.length);
         this.renderCurrentSection();
         this.setupEventListeners();
         // Don't start auto-advance immediately - wait for user to be on quiz page
+        console.log('🔧 InfoController init completed');
     }
 
     setupEventListeners() {
@@ -3449,11 +3458,20 @@ class InfoController {
     }
 
     startAutoAdvance() {
-        if (!this.autoAdvanceEnabled) return;
-        
+        console.log('🔧 startAutoAdvance called, autoAdvanceEnabled:', this.autoAdvanceEnabled);
+        if (!this.autoAdvanceEnabled) {
+            console.log('🔧 Auto-advance disabled, returning');
+            return;
+        }
+
+        console.log('🔧 Setting auto-advance timer for 8 seconds...');
         this.autoAdvanceTimer = setTimeout(() => {
+            console.log('🔧 Auto-advance timer fired!');
             if (this.currentSection < infoSections.length - 1) {
+                console.log('🔧 Going to next section...');
                 this.goToNext();
+            } else {
+                console.log('🔧 Already at last section');
             }
         }, 8000);
     }
@@ -3472,8 +3490,12 @@ class InfoController {
 
     // Method to start auto-advance when quiz page becomes active
     activateAutoAdvance() {
+        console.log('🔧 activateAutoAdvance called, autoAdvanceEnabled:', this.autoAdvanceEnabled);
         if (this.autoAdvanceEnabled) {
+            console.log('🔧 Starting auto-advance...');
             this.startAutoAdvance();
+        } else {
+            console.log('🔧 Auto-advance is disabled');
         }
     }
 }
