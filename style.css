@@ -2145,11 +2145,7 @@ h4 { font-size: 1.25rem; }
         gap: 15px;
     }
     
-    .toggle-button {
-        min-width: 250px;
-        padding: 18px 40px;
-        font-size: 1rem;
-    }
+
     
     .floating-circle {
         display: none;
@@ -2217,9 +2213,7 @@ h4 { font-size: 1.25rem; }
 
 /* Print Styles */
 @media print {
-    .floating-elements,
-    .pulse-ring,
-    .toggle-button {
+    .floating-elements {
         display: none;
     }
     
