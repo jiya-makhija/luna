@@ -1447,98 +1447,11 @@ h4 { font-size: 1.25rem; }
     color: rgba(241, 245, 249, 0.8);
 }
 
-/* Button Styling with Night Theme */
-.button-wrapper {
-    position: relative;
-    display: inline-block;
-    margin: 40px 0;
-}
 
-.pulse-ring {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 120px;
-    height: 120px;
-    border: 3px solid rgba(251, 191, 36, 0.4);
-    border-radius: 50%;
-    animation: pulse-glow 2s infinite;
-}
 
-@keyframes pulse-glow {
-    0% {
-        transform: translate(-50%, -50%) scale(0.8);
-        opacity: 1;
-        box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
-    }
-    100% {
-        transform: translate(-50%, -50%) scale(2.2);
-        opacity: 0;
-        box-shadow: 0 0 40px rgba(251, 191, 36, 0.2);
-    }
-}
 
-.toggle-button {
-    position: relative;
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
-    border: none;
-    border-radius: 60px;
-    padding: 25px 60px;
-    color: #1f2937;
-    font-size: 1.2rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    box-shadow: 
-        0 15px 40px rgba(251, 191, 36, 0.4),
-        0 0 30px rgba(245, 158, 11, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    overflow: hidden;
-    min-width: 320px;
-    z-index: 2;
-    border: 2px solid rgba(251, 191, 36, 0.5);
-}
 
-.toggle-button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-    transition: left 0.6s;
-}
 
-.toggle-button:hover {
-    transform: translateY(-6px) scale(1.05);
-    box-shadow: 
-        0 25px 60px rgba(251, 191, 36, 0.6),
-        0 0 40px rgba(245, 158, 11, 0.5);
-    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #fcd34d 100%);
-}
-
-.toggle-button:hover::before {
-    left: 100%;
-}
-
-.toggle-button:active {
-    transform: translateY(-2px) scale(1.02);
-}
-
-.toggle-button .icon {
-    display: inline-block;
-    margin-left: 15px;
-    transition: transform 0.3s ease;
-    font-size: 1.2rem;
-}
-
-.toggle-button.expanded .icon {
-    transform: rotate(180deg);
-}
 
 /* Luna's floating mini companions */
 .luna-mini {
