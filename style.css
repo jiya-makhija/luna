@@ -506,6 +506,9 @@ h4 { font-size: 1.25rem; }
     -webkit-text-fill-color: transparent;
     background-clip: text;
     animation: gradient-shift 6s ease-in-out infinite;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .page-subtitle {
@@ -514,6 +517,7 @@ h4 { font-size: 1.25rem; }
     max-width: 600px;
     margin: 0 auto;
     line-height: 1.6;
+    text-align: center;
 }
 
 /* Page Navigation Buttons */
@@ -1596,11 +1600,53 @@ h4 { font-size: 1.25rem; }
     }
 }
 
+/* Sleep Twin Section */
+.sleep-twin-section {
+    max-width: 600px;
+    margin: 0 auto 40px;
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.1));
+    border-radius: 15px;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.sleep-twin-button {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #1e293b;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+    margin-bottom: 10px;
+}
+
+.sleep-twin-button:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 25px rgba(251, 191, 36, 0.4);
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.sleep-twin-description {
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    margin: 0;
+    opacity: 0.8;
+}
+
 /* User Navigation */
 .user-nav-container {
     max-width: 1200px;
     margin: 0 auto 60px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .nav-title {
@@ -1615,6 +1661,9 @@ h4 { font-size: 1.25rem; }
     flex-wrap: wrap;
     justify-content: center;
     gap: 15px;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
 }
 
 .participant-circle {
