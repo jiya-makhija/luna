@@ -358,7 +358,13 @@ function checkAndShowSleepTwinButton() {
         // Add click handler
         goToSleepTwinButton.onclick = () => {
             console.log('🔧 Navigating to sleep twin:', window.matchedParticipant.id);
-            loadUserData(parseInt(window.matchedParticipant.id));
+
+            // Extract the number from the participant ID (e.g., "user_14" -> 14)
+            const participantNumber = window.matchedParticipant.id.replace('user_', '');
+            const userId = parseInt(participantNumber);
+
+            console.log('🔧 Extracted user ID:', userId);
+            loadUserData(userId);
 
             // Scroll to the sleep clock container
             setTimeout(() => {
