@@ -60,6 +60,110 @@ body {
     min-height: 100vh;
 }
 
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    color: var(--text-primary);
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+h1 { font-size: clamp(2.5rem, 5vw, 4rem); }
+h2 { font-size: clamp(2rem, 4vw, 3rem); }
+h3 { font-size: clamp(1.5rem, 3vw, 2rem); }
+h4 { font-size: 1.25rem; }
+
+.text-gradient {
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light), var(--accent-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Page Navigation */
+.page-navigation {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.page-navigation:hover {
+    background: rgba(15, 23, 42, 0.95);
+}
+
+.nav-item {
+    color: #cbd5e1;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-item:hover, .nav-item.active {
+    color: var(--accent-gold);
+}
+
+.nav-item::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+    transition: all 0.3s ease;
+}
+
+.nav-item:hover::after, .nav-item.active::after {
+    width: 100%;
+    left: 0;
+}
+
+/* Page Structure */
+.page {
+    display: none;
+    min-height: 100vh;
+    padding-top: 80px; /* Space for fixed navigation */
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.active-page {
+    display: block;
+    opacity: 1;
+}
+
+/* Page Transitions */
+.fade-in {
+    animation: page-fade-in 0.8s ease forwards;
+}
+
+.fade-out {
+    animation: page-fade-out 0.5s ease forwards;
+}
+
+@keyframes page-fade-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes page-fade-out {
+    from { opacity: 1; transform: translateY(20px); }
+    to { opacity: 0; transform: translateY(0); }
+}
+
 /* Enhanced Animated Starry Sky */
 body::before {
     content: '';
@@ -2429,6 +2533,3 @@ h4 { font-size: 1.25rem; }
 ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(45deg, #f59e0b, #d97706);
 }
-
-
-
