@@ -316,9 +316,14 @@
         <div class="page-header">
             <h1 class="page-title">Individual Sleep Stories</h1>
             <p class="page-subtitle">Explore detailed sleep patterns from the MMASH study participants.</p>
-            <div class="sleep-clock-intro">
-                <p>🔍 <strong>Browse all 21 participants</strong> to see how different people sleep, or jump directly to your matched sleep twin!</p>
-            </div>
+        </div>
+
+        <!-- Sleep Twin Button - Show if user has completed quiz -->
+        <div id="sleepTwinSection" class="sleep-twin-section" style="display: none;">
+            <button id="goToSleepTwin" class="sleep-twin-button">
+                🌟 Go to Your Sleep Twin
+            </button>
+            <p class="sleep-twin-description">Jump directly to your matched participant's sleep data</p>
         </div>
 
         <!-- User Selection Navigation - Always Visible -->
