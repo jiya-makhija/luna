@@ -3544,11 +3544,24 @@ function displayResults(userProfile, match) {
    const participant = match.participant;
    const similarity = match.similarity.toFixed(1);
 
+   // Store the matched participant globally for sleep clock navigation
+   window.matchedParticipant = participant;
+
    const resultsHTML = `
        <div class="match-header">
-           <div class="match-title">Your MMASH Sleep Match</div>
+           <div class="match-title">🎯 Meet Your Sleep Twin!</div>
            <div class="participant-id">Participant ${participant.id}</div>
            <div class="accuracy">${similarity}% similarity to your sleep patterns</div>
+       </div>
+
+       <div class="sleep-twin-cta">
+           <div class="twin-highlight">
+               <h3>🌙 Your Sleep Twin: Participant ${participant.id}</h3>
+               <p>You've been matched with someone who has remarkably similar sleep patterns to yours!</p>
+               <button class="view-twin-clock-btn" onclick="viewSleepTwinClock(${participant.id})">
+                   🔍 View ${participant.id}'s Sleep Clock
+               </button>
+           </div>
        </div>
 
        <div class="comparison">
@@ -3563,7 +3576,7 @@ function displayResults(userProfile, match) {
            </div>
 
            <div class="comparison-card actual">
-               <h4>Matched Participant Data</h4>
+               <h4>Your Twin's Actual Data</h4>
                <p><strong>Age:</strong> ${participant.age} years</p>
                <p><strong>Sleep Duration:</strong> ${participant.sleepHours.toFixed(1)} hours</p>
                <p><strong>Stress Score:</strong> ${participant.stressScore} (DSI)</p>
@@ -3577,6 +3590,10 @@ function displayResults(userProfile, match) {
        <div class="insights">
            <h4>Sleep Science Insights</h4>
            ${generateInsights(userProfile, participant)}
+       </div>
+
+       <div class="next-steps">
+           <p><strong>What's Next?</strong> Explore your sleep twin's detailed sleep clock to see how their night unfolds, then browse all 21 participants to discover different sleep patterns!</p>
        </div>
    `;
 
@@ -3882,6 +3899,63 @@ class SleepJourneyController {
     }
 }
 
+// Function to view sleep twin's clock
+function viewSleepTwinClock(participantId) {
+    // Navigate to sleep clock page
+    navigateTo('sleepClock');
+
+    // Set the current user to the matched participant
+    setTimeout(() => {
+        if (typeof setCurrentUser === 'function') {
+            setCurrentUser(participantId);
+        } else {
+            // Fallback: directly update currentUser variable
+            currentUser = participantId;
+            if (typeof updateUserDisplay === 'function') {
+                updateUserDisplay();
+            }
+        }
+
+        // Highlight the matched participant in the navigation
+        highlightSleepTwin(participantId);
+    }, 700); // Wait for page transition
+}
+
+// Function to highlight the sleep twin in the participant navigation
+function highlightSleepTwin(participantId) {
+    // Add special styling to the matched participant
+    const participantNavs = document.querySelectorAll('.participant-nav-item');
+    participantNavs.forEach(nav => {
+        const navId = parseInt(nav.getAttribute('data-user-id') || nav.textContent.match(/\d+/)?.[0]);
+        if (navId === participantId) {
+            nav.classList.add('sleep-twin-highlight');
+            nav.innerHTML = `🌟 ${nav.textContent} (Your Twin!)`;
+        }
+    });
+
+    // Show a message about the sleep twin
+    const sleepClockContainer = document.getElementById('sleepClockContainer');
+    if (sleepClockContainer) {
+        const twinMessage = document.createElement('div');
+        twinMessage.className = 'sleep-twin-message';
+        twinMessage.innerHTML = `
+            <div class="twin-message-content">
+                <h3>🎯 This is Your Sleep Twin!</h3>
+                <p>Participant ${participantId} has sleep patterns most similar to yours. Explore their sleep clock below, then feel free to browse other participants for comparison.</p>
+            </div>
+        `;
+        sleepClockContainer.insertBefore(twinMessage, sleepClockContainer.firstChild);
+
+        // Auto-remove message after 8 seconds
+        setTimeout(() => {
+            if (twinMessage.parentNode) {
+                twinMessage.remove();
+            }
+        }, 8000);
+    }
+}
+
 // Export functions for global use
 window.navigateTo = navigateTo;
 window.interactWithLuna = interactWithLuna;
+window.viewSleepTwinClock = viewSleepTwinClock;
