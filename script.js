@@ -92,6 +92,9 @@ function animateSleepClockPage() {
     // Initialize sleep clock visualizations if needed
     if (typeof initializeSleepClock === 'function') {
         initializeSleepClock();
+    } else {
+        // Fallback: initialize sleep clock functionality directly
+        initializeSleepClockFunctionality();
     }
 }
 
@@ -248,6 +251,76 @@ function scrollToHeartRate() {
             block: 'start'
         });
     }
+}
+
+// Initialize sleep clock functionality
+function initializeSleepClockFunctionality() {
+    // Initialize participant navigation
+    initializeParticipantNavigation();
+
+    // Load initial user data (user 1 by default)
+    loadUserData(currentUser);
+}
+
+// Initialize participant navigation
+function initializeParticipantNavigation() {
+    const participantNav = document.getElementById('participantNav');
+    if (!participantNav) return;
+
+    // Clear existing navigation
+    participantNav.innerHTML = '';
+
+    // Create navigation for all users (excluding 11 and 21 as per your data)
+    const userIDs = Array.from({ length: 21 }, (_, i) => i + 1).filter(user => user !== 11 && user !== 21);
+
+    userIDs.forEach(userId => {
+        const navItem = document.createElement('div');
+        navItem.className = 'participant-nav-item';
+        navItem.textContent = `User ${userId}`;
+        navItem.onclick = () => loadUserData(userId);
+
+        if (userId === currentUser) {
+            navItem.classList.add('active');
+        }
+
+        participantNav.appendChild(navItem);
+    });
+}
+
+// Load user data for sleep clock
+function loadUserData(userId) {
+    currentUser = userId;
+
+    // Update navigation active state
+    document.querySelectorAll('.participant-nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    document.querySelector(`.participant-nav-item:nth-child(${userId <= 10 ? userId : userId - 1})`).classList.add('active');
+
+    // Load sleep data
+    d3.csv(`data/DataPaper/user_${userId}/sleep.csv`).then(sleepData => {
+        if (sleepData && sleepData.length > 0) {
+            const sleepInfo = sleepData[0];
+            updateSleepMetrics(sleepInfo);
+            renderSleepArc(sleepInfo);
+        }
+    }).catch(error => {
+        console.error(`Error loading sleep data for user ${userId}:`, error);
+    });
+
+    // Load heart rate data
+    d3.csv(`data/DataPaper/user_${userId}/hr.csv`).then(hrData => {
+        if (hrData && hrData.length > 0) {
+            // Also load sleep data for heart rate chart
+            d3.csv(`data/DataPaper/user_${userId}/sleep.csv`).then(sleepData => {
+                if (sleepData && sleepData.length > 0) {
+                    renderHeartRateChart(hrData, sleepData[0]);
+                }
+            });
+        }
+    }).catch(error => {
+        console.error(`Error loading heart rate data for user ${userId}:`, error);
+    });
 }
 
 // Initialize the application
