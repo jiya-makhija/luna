@@ -3688,16 +3688,6 @@ function displayResults(userProfile, match) {
            <div class="accuracy">${similarity}% similarity to your sleep patterns</div>
        </div>
 
-       <div class="sleep-twin-cta">
-           <div class="twin-highlight">
-               <h3>🌙 Your Sleep Twin: Participant ${participant.id}</h3>
-               <p>You've been matched with someone who has remarkably similar sleep patterns to yours!</p>
-               <button class="view-twin-clock-btn" onclick="viewSleepTwinClock(${participant.id})">
-                   🔍 View ${participant.id}'s Sleep Clock
-               </button>
-           </div>
-       </div>
-
        <div class="comparison">
            <div class="comparison-card predicted">
                <h4>Your Sleep Profile</h4>
