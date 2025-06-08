@@ -9,14 +9,20 @@ const pages = {
 let currentPage = 'main';
 
 function navigateTo(pageId) {
-    if (currentPage === pageId) return;
+    console.log('🔧 Navigating to page:', pageId);
+    if (currentPage === pageId) {
+        console.log('🔧 Already on page:', pageId);
+        return;
+    }
 
     // Initialize pages if not already done
     if (!pages.main) {
+        console.log('🔧 Initializing page references...');
         pages.main = document.getElementById('mainPage');
         pages.quiz = document.getElementById('quizPage');
         pages.sleepClock = document.getElementById('sleepClockPage');
         pages.dashboard = document.getElementById('dashboardPage');
+        console.log('🔧 Page references:', pages);
     }
 
     // Update navigation active state
@@ -1316,15 +1322,25 @@ function updateSleepMetrics(sleepInfo) {
 const width = 450, height = 450, radius = 150;
 
 function setupSleepClock() {
+    console.log('🔧 Setting up sleep clock...');
+
     // Clear any existing SVG
     d3.select("#sleepClockContainer svg").remove();
 
-    const svg = d3.select("#sleepClockContainer")
+    const container = d3.select("#sleepClockContainer");
+    if (container.empty()) {
+        console.error('❌ sleepClockContainer not found!');
+        return null;
+    }
+
+    const svg = container
         .append("svg")
         .attr("width", width)
         .attr("height", height)
         .append("g")
         .attr("transform", `translate(${width / 2}, ${height / 2})`);
+
+    console.log('🔧 SVG created successfully');
     
 
     // Add outer circle
@@ -1410,12 +1426,16 @@ function timeToRad(timeStr) {
 }
 
 function renderSleepArc(sleepInfo) {
+    console.log('🔧 Rendering sleep arc with data:', sleepInfo);
+
     // Setup or clear sleep clock
     const svg = setupSleepClock();
-    
+    console.log('🔧 Sleep clock SVG setup complete');
+
     // Parse times from the data
     const inBedTime = sleepInfo["In Bed Time"];
     const outBedTime = sleepInfo["Out Bed Time"];
+    console.log('🔧 Sleep times - In bed:', inBedTime, 'Out bed:', outBedTime);
     
     // Create arc generator
     const arc = d3.arc()
