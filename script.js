@@ -89,10 +89,13 @@ function animateQuizPage() {
 }
 
 function animateSleepClockPage() {
+    console.log('🔧 Animating sleep clock page...');
     // Initialize sleep clock visualizations if needed
     if (typeof initializeSleepClock === 'function') {
+        console.log('🔧 Using initializeSleepClock function');
         initializeSleepClock();
     } else {
+        console.log('🔧 Using fallback initializeSleepClockFunctionality');
         // Fallback: initialize sleep clock functionality directly
         initializeSleepClockFunctionality();
     }
@@ -255,6 +258,9 @@ function scrollToHeartRate() {
 
 // Initialize sleep clock functionality
 function initializeSleepClockFunctionality() {
+    console.log('🔧 Initializing sleep clock functionality...');
+    console.log('🔧 Current user:', currentUser);
+
     // Initialize participant navigation
     initializeParticipantNavigation();
 
@@ -264,14 +270,19 @@ function initializeSleepClockFunctionality() {
 
 // Initialize participant navigation
 function initializeParticipantNavigation() {
+    console.log('🔧 Initializing participant navigation...');
     const participantNav = document.getElementById('participantNav');
-    if (!participantNav) return;
+    if (!participantNav) {
+        console.error('❌ participantNav element not found!');
+        return;
+    }
 
     // Clear existing navigation
     participantNav.innerHTML = '';
 
     // Create navigation for all users (excluding 11 and 21 as per your data)
     const userIDs = Array.from({ length: 21 }, (_, i) => i + 1).filter(user => user !== 11 && user !== 21);
+    console.log('🔧 Creating navigation for users:', userIDs);
 
     userIDs.forEach(userId => {
         const navItem = document.createElement('div');
@@ -285,41 +296,60 @@ function initializeParticipantNavigation() {
 
         participantNav.appendChild(navItem);
     });
+
+    console.log('🔧 Participant navigation created with', userIDs.length, 'items');
 }
 
 // Load user data for sleep clock
 function loadUserData(userId) {
+    console.log('🔧 Loading user data for user:', userId);
     currentUser = userId;
 
     // Update navigation active state
     document.querySelectorAll('.participant-nav-item').forEach(item => {
         item.classList.remove('active');
     });
-    document.querySelector(`.participant-nav-item:nth-child(${userId <= 10 ? userId : userId - 1})`).classList.add('active');
+    const activeNavItem = document.querySelector(`.participant-nav-item:nth-child(${userId <= 10 ? userId : userId - 1})`);
+    if (activeNavItem) {
+        activeNavItem.classList.add('active');
+        console.log('🔧 Updated active navigation item');
+    } else {
+        console.warn('⚠️ Could not find navigation item to activate');
+    }
 
     // Load sleep data
+    console.log('🔧 Loading sleep data...');
     d3.csv(`data/DataPaper/user_${userId}/sleep.csv`).then(sleepData => {
+        console.log('🔧 Sleep data loaded:', sleepData);
         if (sleepData && sleepData.length > 0) {
             const sleepInfo = sleepData[0];
+            console.log('🔧 Sleep info:', sleepInfo);
             updateSleepMetrics(sleepInfo);
             renderSleepArc(sleepInfo);
+        } else {
+            console.warn('⚠️ No sleep data found');
         }
     }).catch(error => {
-        console.error(`Error loading sleep data for user ${userId}:`, error);
+        console.error(`❌ Error loading sleep data for user ${userId}:`, error);
     });
 
     // Load heart rate data
-    d3.csv(`data/DataPaper/user_${userId}/hr.csv`).then(hrData => {
+    console.log('🔧 Loading heart rate data...');
+    d3.csv(`data/DataPaper/user_${userId}/Actigraph.csv`).then(hrData => {
+        console.log('🔧 Heart rate data loaded, length:', hrData.length);
         if (hrData && hrData.length > 0) {
             // Also load sleep data for heart rate chart
             d3.csv(`data/DataPaper/user_${userId}/sleep.csv`).then(sleepData => {
                 if (sleepData && sleepData.length > 0) {
-                    renderHeartRateChart(hrData, sleepData[0]);
+                    console.log('🔧 Rendering heart rate graph...');
+                    renderHeartRateGraph(hrData, sleepData[0]);
                 }
             });
+        } else {
+            console.warn('⚠️ No heart rate data found');
         }
     }).catch(error => {
-        console.error(`Error loading heart rate data for user ${userId}:`, error);
+        console.error(`❌ Error loading heart rate data for user ${userId}:`, error);
     });
 }
 
