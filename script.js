@@ -487,24 +487,24 @@ document.getElementById("toggleUserView").addEventListener("click", function() {
     const userSection = document.getElementById("userSpecificSection");
     const button = this;
     const icon = button.querySelector('.icon');
-    
-    if (userSection.style.display === "none" || userSection.style.display === "") {
+
+    if (userSection.style.display === "none") {
         // Show user-specific section with animation
         userSection.style.display = "block";
-        button.textContent = "🔒 Hide Specific Users ";
+        button.textContent = "🔒 Hide Detailed Analysis ";
         button.appendChild(icon);
         button.classList.add('expanded');
-        
+
         // Add a subtle shake animation to draw attention
         button.style.animation = 'shake 0.5s ease-in-out';
         setTimeout(() => {
             button.style.animation = '';
         }, 500);
-        
+
     } else {
         // Hide user-specific section
         userSection.style.display = "none";
-        button.textContent = "🔍 View Specific Users ";
+        button.textContent = "🔍 View Detailed Analysis ";
         button.appendChild(icon);
         button.classList.remove('expanded');
     }
