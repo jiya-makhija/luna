@@ -96,6 +96,12 @@ function animateQuizPage() {
 
 function animateSleepClockPage() {
     console.log('🔧 Animating sleep clock page...');
+
+    // Check for sleep twin button first
+    setTimeout(() => {
+        checkAndShowSleepTwinButton();
+    }, 100);
+
     // Initialize sleep clock visualizations if needed
     if (typeof initializeSleepClock === 'function') {
         console.log('🔧 Using initializeSleepClock function');
@@ -267,6 +273,9 @@ function initializeSleepClockFunctionality() {
     console.log('🔧 Initializing sleep clock functionality...');
     console.log('🔧 Current user:', currentUser);
 
+    // Check if user has a matched sleep twin and show button
+    checkAndShowSleepTwinButton();
+
     // Initialize participant navigation
     initializeParticipantNavigation();
 
@@ -286,8 +295,8 @@ function initializeParticipantNavigation() {
     // Clear existing navigation
     participantNav.innerHTML = '';
 
-    // Create navigation for all users (excluding 11 and 21 as per your data)
-    const userIDs = Array.from({ length: 21 }, (_, i) => i + 1).filter(user => user !== 11 && user !== 21);
+    // Create navigation for all users (excluding 11 as it doesn't exist in the data)
+    const userIDs = Array.from({ length: 22 }, (_, i) => i + 1).filter(user => user !== 11);
     console.log('🔧 Creating navigation for users:', userIDs);
 
     userIDs.forEach(userId => {
@@ -305,6 +314,45 @@ function initializeParticipantNavigation() {
     });
 
     console.log('🔧 Participant navigation created with', userIDs.length, 'items');
+}
+
+// Check if user has a matched sleep twin and show the button
+function checkAndShowSleepTwinButton() {
+    const sleepTwinSection = document.getElementById('sleepTwinSection');
+    const goToSleepTwinButton = document.getElementById('goToSleepTwin');
+
+    if (!sleepTwinSection || !goToSleepTwinButton) {
+        console.log('🔧 Sleep twin elements not found');
+        return;
+    }
+
+    // Check if user has completed quiz and has a matched participant
+    if (window.matchedParticipant && window.matchedParticipant.id) {
+        console.log('🔧 Found matched participant:', window.matchedParticipant.id);
+
+        // Show the sleep twin section
+        sleepTwinSection.style.display = 'block';
+
+        // Update button text with participant ID
+        goToSleepTwinButton.innerHTML = `🌟 Go to Your Sleep Twin (Participant ${window.matchedParticipant.id})`;
+
+        // Add click handler
+        goToSleepTwinButton.onclick = () => {
+            console.log('🔧 Navigating to sleep twin:', window.matchedParticipant.id);
+            loadUserData(parseInt(window.matchedParticipant.id));
+
+            // Scroll to the sleep clock container
+            setTimeout(() => {
+                const sleepClockContainer = document.getElementById('sleepClockContainer');
+                if (sleepClockContainer) {
+                    sleepClockContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 500);
+        };
+    } else {
+        console.log('🔧 No matched participant found');
+        sleepTwinSection.style.display = 'none';
+    }
 }
 
 // Load user data for sleep clock
