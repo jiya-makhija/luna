@@ -239,6 +239,17 @@ function createLunaSparkles() {
     }
 }
 
+// Function to scroll to heart rate section
+function scrollToHeartRate() {
+    const heartRateSection = document.querySelector('.heart-rate-section');
+    if (heartRateSection) {
+        heartRateSection.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+}
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize pages
