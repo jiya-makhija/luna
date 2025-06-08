@@ -1,17 +1,152 @@
+// Page Navigation System
+const pages = {
+    main: null,
+    quiz: null,
+    sleepClock: null,
+    dashboard: null
+};
+
+let currentPage = 'main';
+
+function navigateTo(pageId) {
+    if (currentPage === pageId) return;
+
+    // Initialize pages if not already done
+    if (!pages.main) {
+        pages.main = document.getElementById('mainPage');
+        pages.quiz = document.getElementById('quizPage');
+        pages.sleepClock = document.getElementById('sleepClockPage');
+        pages.dashboard = document.getElementById('dashboardPage');
+    }
+
+    // Update navigation active state
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+
+    // Find and activate the correct nav item
+    const navItems = document.querySelectorAll('.nav-item');
+    const pageOrder = ['main', 'quiz', 'sleepClock', 'dashboard'];
+    const targetIndex = pageOrder.indexOf(pageId);
+    if (targetIndex !== -1 && navItems[targetIndex]) {
+        navItems[targetIndex].classList.add('active');
+    }
+
+    // Hide current page with fade-out
+    if (pages[currentPage]) {
+        pages[currentPage].classList.add('fade-out');
+        setTimeout(() => {
+            pages[currentPage].classList.remove('active-page', 'fade-out');
+        }, 500);
+    }
+
+    // Show target page with animation
+    setTimeout(() => {
+        if (pages[pageId]) {
+            pages[pageId].classList.add('active-page', 'fade-in');
+            currentPage = pageId;
+
+            // Trigger any page-specific animations
+            runPageAnimations(pageId);
+
+            // Update Luna for the new page
+            updateLunaForCurrentPage();
+        }
+    }, 600);
+}
+
+function runPageAnimations(pageId) {
+    switch(pageId) {
+        case 'main':
+            animateMainPage();
+            break;
+        case 'quiz':
+            animateQuizPage();
+            break;
+        case 'sleepClock':
+            animateSleepClockPage();
+            break;
+        case 'dashboard':
+            animateDashboardPage();
+            break;
+    }
+}
+
+function animateMainPage() {
+    const elements = document.querySelectorAll('.main-page-element');
+    elements.forEach((el, index) => {
+        setTimeout(() => {
+            el.classList.add('animate');
+        }, index * 200);
+    });
+}
+
+function animateQuizPage() {
+    // Initialize quiz if needed
+    if (typeof initializeQuiz === 'function') {
+        initializeQuiz();
+    }
+}
+
+function animateSleepClockPage() {
+    // Initialize sleep clock visualizations if needed
+    if (typeof initializeSleepClock === 'function') {
+        initializeSleepClock();
+    }
+}
+
+function animateDashboardPage() {
+    // Initialize dashboard if needed
+    if (typeof initializeDashboard === 'function') {
+        initializeDashboard();
+    }
+}
+
 let currentUser = 1;
 
-// Luna Character Interactions
-const lunaMessages = [
-  "Did you know your heart rate drops during sleep? ❤️",
-  "Sleep is when your body repairs itself! ✨",
-  "Melatonin helps you feel sleepy! 💤",
-  "Good sleep makes everything better! 🌟",
-  "Sweet dreams are made of good sleep hygiene! 💫",
-  "I love watching over sleepy data! 🌙✨"
-];
+// Enhanced Luna Character Interactions for Multi-Page Experience
+const pageMessages = {
+    main: [
+        "Welcome to your sleep journey! Click me for tips! 🌙",
+        "Ready to discover your sleep patterns? Let's go! ✨",
+        "I'm Luna, your sleep guide through this experience! 💫",
+        "Sleep is when your body repairs and your mind processes the day! 🧠",
+        "Did you know? Your heart rate naturally slows during sleep! ❤️"
+    ],
+    quiz: [
+        "Answer honestly for the best sleep insights! 📝",
+        "This quiz will help find your sleep twin! 👯",
+        "Your answers help me understand your sleep better! 🧠",
+        "Everyone has unique sleep patterns - let's find yours! 🔍",
+        "Take your time with each question! ⏰"
+    ],
+    sleepClock: [
+        "This clock shows your body's natural rhythm! ⏰",
+        "Notice how cortisol and melatonin change throughout the day! 🔄",
+        "Your sleep-wake cycle is regulated by these hormones! 💤",
+        "Each person's sleep story is unique and fascinating! 📖",
+        "Watch how your heart rate tells a story of rest and activity! 💓"
+    ],
+    dashboard: [
+        "Explore how different factors affect your sleep! 📊",
+        "Try adjusting the sliders to see what improves sleep! 🛌",
+        "Small lifestyle changes can make big differences! 🌟",
+        "Stress and activity levels greatly impact sleep quality! 🏃‍♀️",
+        "Age affects sleep patterns - it's completely normal! 👥"
+    ]
+};
 
+let lunaMessages = pageMessages.main;
 let lunaMessageIndex = 0;
 let isFirstInteraction = true;
+
+function updateLunaForCurrentPage() {
+    if (pageMessages[currentPage]) {
+        lunaMessages = pageMessages[currentPage];
+        isFirstInteraction = true;
+        lunaMessageIndex = 0;
+    }
+}
 
 // Show default prompt when page loads
 function showDefaultPrompt() {
@@ -104,11 +239,48 @@ function createLunaSparkles() {
     }
 }
 
-// Initialize default prompt when page loads
+// Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
-    // Small delay to ensure elements are rendered
-    setTimeout(showDefaultPrompt, 500);
-  });
+    // Initialize pages
+    pages.main = document.getElementById('mainPage');
+    pages.quiz = document.getElementById('quizPage');
+    pages.sleepClock = document.getElementById('sleepClockPage');
+    pages.dashboard = document.getElementById('dashboardPage');
+
+    // Set initial page
+    if (pages.main) {
+        pages.main.classList.add('active-page');
+        currentPage = 'main';
+    }
+
+    // Set initial navigation state
+    const firstNavItem = document.querySelector('.nav-item');
+    if (firstNavItem) {
+        firstNavItem.classList.add('active');
+    }
+
+    // Initialize Luna
+    setTimeout(showDefaultPrompt, 1000);
+    updateLunaForCurrentPage();
+
+    // Start with main page animations
+    setTimeout(() => {
+        animateMainPage();
+    }, 500);
+
+    // Initialize other components if they exist
+    if (typeof initializeQuiz === 'function') {
+        initializeQuiz();
+    }
+
+    if (typeof loadData === 'function') {
+        loadData();
+    }
+
+    if (typeof initializeDashboard === 'function') {
+        initializeDashboard();
+    }
+});
 
 
 // Mini Luna interactions
@@ -3701,7 +3873,7 @@ class SleepJourneyController {
     getChronotypeText(chronotype) {
         const types = {
             1: 'Evening',
-            2: 'Moderately Evening', 
+            2: 'Moderately Evening',
             3: 'Neutral',
             4: 'Moderately Morning',
             5: 'Morning'
@@ -3710,5 +3882,6 @@ class SleepJourneyController {
     }
 }
 
-
-
+// Export functions for global use
+window.navigateTo = navigateTo;
+window.interactWithLuna = interactWithLuna;
