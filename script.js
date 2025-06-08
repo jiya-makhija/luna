@@ -3701,9 +3701,9 @@ class SleepJourneyController {
     getChronotypeText(chronotype) {
         const types = {
             1: 'Evening',
-            2: 'Mod. Evening', 
+            2: 'Moderately Evening', 
             3: 'Neutral',
-            4: 'Mod. Morning',
+            4: 'Moderately Morning',
             5: 'Morning'
         };
         return types[chronotype] || '--';
