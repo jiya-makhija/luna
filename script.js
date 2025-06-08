@@ -40,6 +40,11 @@ function navigateTo(pageId) {
 
     // Hide current page with fade-out
     if (pages[currentPage]) {
+        // Stop auto-advance if leaving quiz page
+        if (currentPage === 'quiz' && infoController) {
+            infoController.stopAutoAdvance();
+        }
+
         pages[currentPage].classList.add('fade-out');
         setTimeout(() => {
             pages[currentPage].classList.remove('active-page', 'fade-out');
@@ -88,6 +93,14 @@ function animateMainPage() {
 }
 
 function animateQuizPage() {
+    // Initialize InfoController only when quiz page is accessed
+    if (!infoController) {
+        infoController = new InfoController();
+    }
+
+    // Start auto-advance now that user is on quiz page
+    infoController.activateAutoAdvance();
+
     // Initialize quiz if needed
     if (typeof initializeQuiz === 'function') {
         initializeQuiz();
@@ -3245,7 +3258,7 @@ class InfoController {
     init() {
         this.renderCurrentSection();
         this.setupEventListeners();
-        this.startAutoAdvance();
+        // Don't start auto-advance immediately - wait for user to be on quiz page
     }
 
     setupEventListeners() {
@@ -3455,6 +3468,13 @@ class InfoController {
     restartAutoAdvance() {
         this.stopAutoAdvance();
         this.startAutoAdvance();
+    }
+
+    // Method to start auto-advance when quiz page becomes active
+    activateAutoAdvance() {
+        if (this.autoAdvanceEnabled) {
+            this.startAutoAdvance();
+        }
     }
 }
 
@@ -3778,9 +3798,8 @@ function generateInsights(user, participant) {
    return insights.join('');
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-   new InfoController();
-});
+// Remove automatic initialization - will be initialized when quiz page is accessed
+let infoController = null;
 
 // Enhanced Navigation and Journey Controller
 class SleepJourneyController {
