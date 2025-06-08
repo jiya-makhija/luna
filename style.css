@@ -662,39 +662,7 @@ body::before {
     to { box-shadow: 0 0 20px rgba(59, 130, 246, 0.6); }
 }
 
-.hero-cta-button {
-    background: linear-gradient(45deg, var(--accent-primary), var(--accent-primary-light));
-    color: white;
-    border: none;
-    padding: 18px 36px;
-    border-radius: 30px;
-    font-size: 1.2rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
-    margin-top: 2rem;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-}
 
-.hero-cta-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 35px rgba(59, 130, 246, 0.5);
-    background: linear-gradient(45deg, var(--accent-primary-light), var(--accent-primary));
-}
-
-.hero-cta-button:active {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-}
-
-@media (max-width: 768px) {
-    .hero-cta-button {
-        padding: 16px 32px;
-        font-size: 1.1rem;
-    }
-}
 
 
 
@@ -1679,6 +1647,51 @@ h4 { font-size: 1.25rem; }
     color: #1f2937;
     border-color: #fcd34d;
     transform: scale(1.1);
+}
+
+/* Participant Navigation */
+.user-nav-container {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.nav-title {
+    color: #e2e8f0;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+#participantNav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.participant-nav-item {
+    background: linear-gradient(135deg, #334155, #475569);
+    color: #e2e8f0;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.participant-nav-item:hover {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.participant-nav-item.active {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    border-color: rgba(59, 130, 246, 0.6);
 }
 
 /* User Analysis */
