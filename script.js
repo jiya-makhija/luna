@@ -369,7 +369,7 @@ function checkAndShowSleepTwinButton() {
         sleepTwinSection.style.display = 'block';
 
         // Update button text with participant ID
-        goToSleepTwinButton.innerHTML = `🌟 Go to Your Sleep Twin (Participant ${window.matchedParticipant.id})`;
+        goToSleepTwinButton.innerHTML = `🌟 Go to Your Sleep Twin (Participant ${window.matchedParticipant.id.replace('user_', '')})`;
 
         // Add click handler
         goToSleepTwinButton.onclick = () => {
@@ -4179,7 +4179,7 @@ function displayResults(userProfile, match) {
    const resultsHTML = `
        <div class="match-header">
            <div class="match-title">🎯 Meet Your Sleep Twin!</div>
-           <div class="participant-id">Participant ${participant.id}</div>
+           <div class="participant-id">Participant ${participant.id.replace('user_', '')}</div>
            <div class="accuracy">${similarity}% similarity to your sleep patterns</div>
        </div>
 
