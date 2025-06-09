@@ -265,7 +265,7 @@
                                 <label for="stress5" class="radio-label">Very High</label>
                             </div>
                         </div>
-
+                        <div class="answer-validation" id="stressValidation">Please select your stress level</div>
                     </div>
 
                     <div class="question" id="question4">
@@ -308,7 +308,7 @@
                                 <label for="chrono5" class="radio-label">Definitely Morning</label>
                             </div>
                         </div>
-
+                        <div class="answer-validation" id="chronotypeValidation">Please select your chronotype</div>
                     </div>
                 </div>
 
@@ -433,11 +433,13 @@
             <div class="charts-grid">
                 <div class="chart-container">
                     <div class="chart-title">Sleep Efficiency vs Duration</div>
+                    <div class="chart-subtitle">Does sleeping longer mean you're getting better quality sleep?</div>
                     <svg id="efficiency-chart" width="400" height="300"></svg>
                 </div>
 
                 <div class="chart-container">
                     <div class="chart-title">WASO by Stress Level</div>
+                    <div class="chart-subtitle">Does feeling stressed make you wake up more during the night?</div>
                     <svg id="waso-chart" width="400" height="300"></svg>
                 </div>
             </div>
@@ -445,11 +447,13 @@
             <div class="charts-grid">
                 <div class="chart-container">
                     <div class="chart-title">Sleep Latency Distribution</div>
+                    <div class="chart-subtitle">How long does it usually take to drift off once you're in bed?</div>
                     <svg id="latency-chart" width="400" height="300"></svg>
                 </div>
 
                 <div class="chart-container">
                     <div class="chart-title">Awakenings by Age</div>
+                    <div class="chart-subtitle">How does your age affect how often you wake up at night?</div>
                     <svg id="awakenings-chart" width="400" height="300"></svg>
                 </div>
             </div>
@@ -486,6 +490,7 @@
                             </div>
                         </div>
                         <div class="chart-title">Movement vs Sleep Latency</div>
+                        <div class="chart-subtitle">Does the level of physical activity affect how quickly you fall asleep?</div>
                         <svg id="movement-chart" width="400" height="300"></svg>
                     </div>
 
@@ -500,6 +505,7 @@
                             </div>
                         </div>
                         <div class="chart-title">Screen Time vs WASO</div>
+                        <div class="chart-subtitle">Does the type and amount of screen time affect how often you wake up at night?</div>
                         <svg id="screen-chart" width="400" height="300"></svg>
                     </div>
                 </div>

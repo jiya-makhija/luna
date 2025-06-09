@@ -672,7 +672,8 @@ svg.selectAll(".bar-melatonin")
     .attr("y", d => yScaleMelatonin(d.melatonin))
     .attr("width", xScale.bandwidth() / 2)
     .attr("height", d => height - 60 - yScaleMelatonin(d.melatonin))
-    .attr("fill", melatoninColor);
+    .attr("fill", melatoninColor)
+    .attr("opacity", 0.65) ;
 
 // Cortisol bars with fixed tooltip
 svg.selectAll(".bar-cortisol")
@@ -683,7 +684,8 @@ svg.selectAll(".bar-cortisol")
     .attr("y", d => yScaleCortisol(d.cortisol))
     .attr("width", xScale.bandwidth() / 2)
     .attr("height", d => height - 60 - yScaleCortisol(d.cortisol))
-    .attr("fill", cortisolColor);
+    .attr("fill", cortisolColor)
+    .attr("opacity", 0.65) ;
 
         // Add cortisol bars
     svg.selectAll(".bar-cortisol")
@@ -745,14 +747,16 @@ svg.selectAll(".bar-cortisol")
         .attr("y", 0)
         .attr("width", 15)
         .attr("height", 15)
-        .attr("fill", cortisolColor);
+        .attr("fill", cortisolColor)
+        .attr("opacity", 0.65) ;
 
     legend.append("text")
         .attr("class", "legend-cortisol")
         .attr("x", 20)
         .attr("y", 12)
         .style("font-weight", "bold")
-        .text("Cortisol");
+        .text("Cortisol")
+        .attr("opacity", 0.65) ;
 
     // Melatonin legend
     legend.append("rect")
@@ -760,14 +764,16 @@ svg.selectAll(".bar-cortisol")
         .attr("y", 25)
         .attr("width", 15)
         .attr("height", 15)
-        .attr("fill", melatoninColor);
+        .attr("fill", melatoninColor)
+        .attr("opacity", 0.65) ;
 
     legend.append("text")
         .attr("class", "legend-melatonin")
         .attr("x", 20)
         .attr("y", 37)
         .style("font-weight", "bold")
-        .text("Melatonin");
+        .text("Melatonin")
+        .attr("opacity", 0.65) ;
 }
 
 
@@ -1011,10 +1017,10 @@ function renderDensityPlot(hrData) {
                 tooltip_density.html(`
                     <strong>💤 Sleep Curve</strong><br/>
                     <strong>Heart Rate: ${Math.round(sleepPoint[0])} BPM</strong><br/>
-                    <span style="color: #fbbf24;">Sleep Density: ${sleepPoint[1].toFixed(4)}</span><br/>
+                    <span style="color: #4A90E2;">Sleep Density: ${sleepPoint[1].toFixed(4)}</span><br/>
                     <span style="color: #E74C3C;">Awake Density: ${awakeDensityVal.toFixed(4)}</span><br/>
                     <hr style="margin: 5px 0; border-color: #444;">
-                    <span style="color: #fbbf24;">Sleep: ${sleepPercent}% of readings</span><br/>
+                    <span style="color: #4A90E2;">Sleep: ${sleepPercent}% of readings</span><br/>
                     <span style="color: #E74C3C;">Awake: ${awakePercent}% of readings</span>
                 `)
                 .style("left", (event) => {
@@ -1084,10 +1090,10 @@ function renderDensityPlot(hrData) {
                 tooltip_density.html(`
                     <strong>☀️ Awake Curve</strong><br/>
                     <strong>Heart Rate: ${Math.round(awakePoint[0])} BPM</strong><br/>
-                    <span style="color: #fbbf24;">Sleep Density: ${sleepDensityVal.toFixed(4)}</span><br/>
+                    <span style="color: #4A90E2;">Sleep Density: ${sleepDensityVal.toFixed(4)}</span><br/>
                     <span style="color: #E74C3C;">Awake Density: ${awakePoint[1].toFixed(4)}</span><br/>
                     <hr style="margin: 5px 0; border-color: #444;">
-                    <span style="color: #fbbf24;">Sleep: ${sleepPercent}% of readings</span><br/>
+                    <span style="color: #4A90E2;">Sleep: ${sleepPercent}% of readings</span><br/>
                     <span style="color: #E74C3C;">Awake: ${awakePercent}% of readings</span>
                 `)
                 .style("left", (event) => {
@@ -1137,9 +1143,9 @@ function renderDensityPlot(hrData) {
     legend.append("rect")
         .attr("width", 15)
         .attr("height", 15)
-        .attr("fill", "#fbbf24")
+        .attr("fill", "#4A90E2")
         .attr("fill-opacity", 0.3)
-        .attr("stroke", "#fbbf24")
+        .attr("stroke", "#4A90E2")
         .attr("stroke-width", 2);
     
     legend.append("text")
@@ -1196,7 +1202,7 @@ function renderDensityPlot(hrData) {
             .attr("x2", xScale(sleepMean))
             .attr("y1", 0)
             .attr("y2", height)
-            .attr("stroke", "#fbbf24")
+            .attr("stroke", "#4A90E2")
             .attr("stroke-width", 2)
             .attr("stroke-dasharray", "5,5")
             .attr("opacity", 0.7);
@@ -1217,7 +1223,7 @@ function renderDensityPlot(hrData) {
             .attr("y", -5)
             .attr("text-anchor", "middle")
             .style("font-size", "10px")
-            .style("fill", "#fbbf24")
+            .style("fill", "#4A90E2")
             .text(`Sleep: ${sleepMean.toFixed(1)}`);
         
         g.append("text")
@@ -2660,6 +2666,40 @@ Promise.all([
             setTimeout(() => document.addEventListener('click', closeOutside), 100);
         }
 
+        // Intersection Observer for scroll-triggered animations
+        const animationObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !entry.target.classList.contains('animated')) {
+                    entry.target.classList.add('animated');
+                    const chartId = entry.target.id;
+                    triggerChartAnimation(chartId);
+                }
+            });
+        }, { threshold: 0.3 });
+
+        function triggerChartAnimation(chartId) {
+            switch(chartId) {
+                case 'efficiency-chart':
+                    animateEfficiencyChart();
+                    break;
+                case 'waso-chart':
+                    animateWASOChart();
+                    break;
+                case 'latency-chart':
+                    animateLatencyChart();
+                    break;
+                case 'awakenings-chart':
+                    animateAwakeningsChart();
+                    break;
+                case 'movement-chart':
+                    animateMovementChart();
+                    break;
+                case 'screen-chart':
+                    animateScreenChart();
+                    break;
+            }
+        }
+
         // Title tooltips data - descriptions for each chart
         const titleTooltips = {
             'Sleep Efficiency vs Duration': 'How well you sleep vs. how long you sleep.',
@@ -2842,11 +2882,6 @@ Promise.all([
             return '#e74c3c'; // Red - poor
         }
 
-        // function getWASOColor(waso) {
-        //     if (waso <= 20) return '#2ecc71'; // Green - good
-        //     if (waso <= 40) return '#f39c12'; // Yellow - moderate
-        //     return '#e74c3c'; // Red - high
-        // }
         // Updated WASO color function with health-based thresholds
         function getWASOColor(stressLevel) {
             if (stressLevel <= 20) return '#f1c40f';      // Yellow - low stress (13)
@@ -2864,15 +2899,7 @@ Promise.all([
         // if (latency <= 3.5) return '#f39c12'; // Orange - borderline
         return '#f39c12'; // Red - prolonged (3.5+ min)
     }
-        
-        // Initialize charts
-        // function initCharts() {
-        //     createEfficiencyChart();
-        //     createWASOChart();
-        //     createLatencyChart();
-        //     createAwakeningsChart();
-        //     updateMetrics();
-        // }
+      
         function initCharts() {
             createEfficiencyChart();
             createWASOChart();
@@ -2883,6 +2910,9 @@ Promise.all([
             updateMetrics();
             addMoonIcons();
             addTooltipsToCharts();
+            document.querySelectorAll('svg[id$="-chart"]').forEach(chart => {
+                animationObserver.observe(chart);
+            });
         }
         
         function createEfficiencyChart() {
@@ -2929,35 +2959,63 @@ Promise.all([
             updateEfficiencyChart(g, xScale, yScale);
         }
         
+    
         function updateEfficiencyChart(g, xScale, yScale) {
             const dots = g.selectAll(".dot")
                 .data(filteredData, d => d.id);
+        
+            dots.exit().remove();
             
-            dots.enter()
+            const newDots = dots.enter()
                 .append("circle")
                 .attr("class", "dot")
                 .attr("r", 4)
-                .merge(dots)
-                .transition()
-                .duration(300)
                 .attr("cx", d => xScale(d.sleepDuration))
                 .attr("cy", d => yScale(d.efficiency))
-                // .attr("fill", d => stressColorScale(d.stress));
+                .attr("fill", d => getEfficiencyColor(d.efficiency))
+                .style("opacity", 1);
+            
+            const allDots = newDots.merge(dots)
+                .attr("cx", d => xScale(d.sleepDuration))
+                .attr("cy", d => yScale(d.efficiency))
                 .attr("fill", d => getEfficiencyColor(d.efficiency));
             
-            dots.exit().remove();
-            
-            g.selectAll(".dot")
+            // Add hover interactions
+            allDots
                 .on("mouseover", (event, d) => {
+                    d3.select(event.target).transition().duration(200).attr("r", 6);
                     tooltip.style("opacity", 1)
                         .html(`Duration: ${d.sleepDuration}h<br/>Efficiency: ${d.efficiency}%<br/>Stress: ${d.stress}<br/>Age: ${d.age}`)
                         .style("left", (event.pageX + 10) + "px")
                         .style("top", (event.pageY - 10) + "px");
                 })
-                .on("mouseout", () => {
+                .on("mouseout", (event) => {
+                    d3.select(event.target).transition().duration(200).attr("r", 4);
                     tooltip.style("opacity", 0);
                 });
         }
+        
+        function animateEfficiencyChart() {
+            const svg = d3.select("#efficiency-chart");
+            const g = svg.select("g");
+            const xScale = d3.scaleLinear().domain([4, 12]).range([0, chartWidth]);
+            const yScale = d3.scaleLinear().domain([50, 100]).range([chartHeight, 0]);
+            
+            g.selectAll(".dot")
+                .attr("cx", 0)
+                .attr("cy", chartHeight)
+                .attr("r", 0)
+                .style("opacity", 0)
+                .transition()
+                .duration(1500)
+                .delay((d, i) => i * 80)
+                .ease(d3.easeBounceOut)
+                .attr("cx", d => xScale(d.sleepDuration))
+                .attr("cy", d => yScale(d.efficiency))
+                .attr("r", 4)
+                .style("opacity", 1);
+        }
+        
         
         function createWASOChart() {
             const svg = d3.select("#waso-chart");
@@ -3012,7 +3070,7 @@ Promise.all([
                 .style("text-anchor", "middle")
                 .text("Average WASO (min)");
             
-            // Bars
+            //Bars
             g.selectAll(".bar")
                 .data(binData)
                 .enter()
@@ -3022,7 +3080,6 @@ Promise.all([
                 .attr("width", xScale.bandwidth())
                 .attr("y", d => yScale(d.avgWASO))
                 .attr("height", d => chartHeight - yScale(d.avgWASO))
-                // .attr("fill", "#ff6b6b")
                 .attr("fill", d => getWASOColor(d.stress))
                 .on("mouseover", (event, d) => {
                     tooltip.style("opacity", 1)
@@ -3034,6 +3091,7 @@ Promise.all([
                     tooltip.style("opacity", 0);
                 });
         }
+
         
         function createLatencyChart() {
             const svg = d3.select("#latency-chart");
@@ -3091,7 +3149,6 @@ Promise.all([
                 .attr("width", d => xScale(d.x1) - xScale(d.x0) - 1)
                 .attr("y", d => yScale(d.length))
                 .attr("height", d => chartHeight - yScale(d.length))
-                // .attr("fill", "#4ecdc4")
                 .attr("fill", d => getLatencyColor((d.x0 + d.x1) / 2))
                 .on("mouseover", (event, d) => {
                     tooltip.style("opacity", 1)
@@ -3154,27 +3211,67 @@ Promise.all([
                 .style("text-anchor", "middle")
                 .text("Number of Awakenings");
             
-            // Dots
+            
+                    const dots = g.selectAll(".dot")
+            .data(filteredData)
+            .enter()
+            .append("circle")
+            .attr("class", "dot")
+            .attr("fill", d => awakeningsColorScale(d.awakenings));
+
+        // Animate them after creation
+        animateAwakeningsChart();
+
+        // Tooltip interactions
+        dots.on("mouseover", function(event, d) {
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr("r", d => radiusScale(d.awakenings) * 1.3);
+
+                tooltip.style("opacity", 1)
+                    .html(`Age: ${d.age}<br/>Awakenings: ${d.awakenings}<br/>Sleep Duration: ${d.sleepDuration}h`)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 10) + "px");
+            })
+            .on("mouseout", function() {
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr("r", d => radiusScale(d.awakenings));
+
+                tooltip.style("opacity", 0);
+            });
+                }
+
+        function animateAwakeningsChart() {
+            const svg = d3.select("#awakenings-chart");
+            const g = svg.select("g");
+        
+            const xScale = d3.scaleLinear().domain([20, 40]).range([0, chartWidth]);
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(filteredData, d => d.awakenings) + 1])
+                .range([chartHeight, 0]);
+        
+            const radiusScale = d3.scaleLinear()
+                .domain([d3.min(filteredData, d => d.awakenings), d3.max(filteredData, d => d.awakenings)])
+                .range([3, 10]);
+        
             g.selectAll(".dot")
-                .data(filteredData)
-                .enter()
-                .append("circle")
-                .attr("class", "dot")
+                .attr("cx", xScale(20)) // All start at left edge
+                .attr("cy", yScale(0))  // All start at bottom
+                .attr("r", 0)
+                .style("opacity", 0)
+                .transition()
+                .duration(1200)
+                .delay((d, i) => i * 60)
+                .ease(d3.easeElasticOut.amplitude(1).period(0.3))
                 .attr("cx", d => xScale(d.age))
                 .attr("cy", d => yScale(d.awakenings))
                 .attr("r", d => radiusScale(d.awakenings))
-                .attr("fill", d => awakeningsColorScale(d.awakenings))
-                // .attr("fill", d => getActivityColor(d.movementMedium || 0))
-                .on("mouseover", (event, d) => {
-                    tooltip.style("opacity", 1)
-                        .html(`Age: ${d.age}<br/>Awakenings: ${d.awakenings}<br/>Sleep Duration: ${d.sleepDuration}h`)
-                        .style("left", (event.pageX + 10) + "px")
-                        .style("top", (event.pageY - 10) + "px");
-                })
-                .on("mouseout", () => {
-                    tooltip.style("opacity", 0);
-                });
+                .style("opacity", 1);
         }
+        
 
         
         function createMovementChart() {
@@ -3206,17 +3303,32 @@ Promise.all([
                 .attr("width", chartWidth)
                 .attr("height", chartHeight)
                 .attr("fill", "#1a1d29");
-
-            
        
             // Target zone for good sleep latency (0-3 minutes)
-            g.append("rect")
+            const optimalZone = g.append("rect")
             .attr("x", 0)
             .attr("y", yScale(3))
             .attr("width", chartWidth)
             .attr("height", yScale(0) - yScale(3))
             .attr("fill", "#22c55e")
-            .attr("opacity", 0.1);
+            .attr("opacity", 0.05);
+
+            // Add tooltip functionality to optimal zone
+            optimalZone
+            .on("mouseover", function(event) {
+                // Highlight the zone slightly on hover
+                d3.select(this).attr("opacity", 0.1);
+                
+                tooltip.style("opacity", 1)
+                    .html(`<strong>Optimal Sleep Latency Zone</strong><br/>Falling asleep within 0-3 minutes is considered healthy`)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 10) + "px");
+            })
+            .on("mouseout", function() {
+                // Return to original opacity
+                d3.select(this).attr("opacity", 0.05);
+                tooltip.style("opacity", 0);
+            });
     
             // Axes
             g.append("g")
@@ -3270,27 +3382,54 @@ Promise.all([
                 .text("Sleep Latency (min)");
             
             // Dots
-            g.selectAll(".dot")
-                .data(filteredData)
-                .enter()
-                .append("circle")
-                .attr("class", "dot")
-                .attr("cx", d => xScale(d[movementKey]))
-                .attr("cy", d => yScale(d.latency))
-                .attr("r", 5)
-                .attr("fill", d => colorScale(d.latency))
-                .attr("stroke", "white")
-                .attr("stroke-width", 1)
-                .on("mouseover", (event, d) => {
-                    tooltip.style("opacity", 1)
-                        .html(`${movementType} Movement: ${d[movementKey]} min<br/>Latency: ${d.latency} min<br/>ID: ${d.id}`)
-                        .style("left", (event.pageX + 10) + "px")
-                        .style("top", (event.pageY - 10) + "px");
-                })
-                .on("mouseout", () => {
-                    tooltip.style("opacity", 0);
-                });
+            const dots = g.selectAll(".dot")
+            .data(filteredData)
+            .enter()
+            .append("circle")
+            .attr("class", "dot")
+            .attr("cx", 0) // Start at origin (0, 0)
+            .attr("cy", yScale(0)) // Start at bottom
+            .attr("r", 0) // Start with no radius
+            .attr("fill", d => colorScale(d.latency))
+            .attr("stroke", "white")
+            .attr("stroke-width", 1)
+            .style("opacity", 0); // Start invisible
 
+        // Animate dots to their final positions
+        dots.transition()
+            .duration(1200)
+            .delay((d, i) => i * 50)
+            .ease(d3.easeCubicOut)
+            .attr("cx", d => xScale(d[movementKey]))
+            .attr("cy", d => yScale(d.latency))
+            .attr("r", 5)
+            .style("opacity", 1);
+
+        // Add hover interactions
+        dots
+            .on("mouseover", function(event, d) {
+                // Grow dot on hover
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr("r", 8)
+                    .attr("stroke-width", 2);
+                    
+                tooltip.style("opacity", 1)
+                    .html(`${movementType} Movement: ${d[movementKey]} min<br/>Latency: ${d.latency} min<br/>ID: ${d.id}`)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 10) + "px");
+            })
+            .on("mouseout", function() {
+                // Return to normal size
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr("r", 5)
+                    .attr("stroke-width", 1);
+                    
+                tooltip.style("opacity", 0);
+            });
         }
         
         function createScreenChart() {
@@ -3341,26 +3480,57 @@ Promise.all([
                 .text("WASO (min)");
             
             // Dots
-            g.selectAll(".dot")
-                .data(filteredData)
-                .enter()
-                .append("circle")
-                .attr("class", "dot")
-                .attr("cx", d => xScale(d[screenKey]))
-                .attr("cy", d => yScale(d.waso))
-                .attr("r", d => screenType === 'small' ? 4 : 6.5
-                )
-                .attr("fill", d => colorScale(d.waso))
-                .on("mouseover", (event, d) => {
-                    tooltip.style("opacity", 1)
-                        .html(`${screenType} Screen: ${d[screenKey]} min<br/>WASO: ${d.waso} min<br/>ID: ${d.id}`)
-                        .style("left", (event.pageX + 10) + "px")
-                        .style("top", (event.pageY - 10) + "px");
-                })
-                .on("mouseout", () => {
-                    tooltip.style("opacity", 0);
-                });
-                
+            // Dots with animation from origin
+            const dots = g.selectAll(".dot")
+            .data(filteredData)
+            .enter()
+            .append("circle")
+            .attr("class", "dot")
+            .attr("cx", 0) // Start at origin (0, 0)
+            .attr("cy", yScale(0)) // Start at bottom
+            .attr("r", 0) // Start with no radius
+            .attr("fill", d => colorScale(d.waso))
+            .attr("stroke", "white")
+            .attr("stroke-width", 1)
+            .style("opacity", 0); // Start invisible
+
+        // Animate dots to their final positions
+        dots.transition()
+            .duration(1200)
+            .delay((d, i) => i * 50) // Stagger animation
+            .ease(d3.easeCubicOut)
+            .attr("cx", d => xScale(d[screenKey]))
+            .attr("cy", d => yScale(d.waso))
+            .attr("r", d => screenType === 'small' ? 4 : 6.5)
+            .style("opacity", 1);
+
+        // Add hover interactions
+        dots
+            .on("mouseover", function(event, d) {
+                // Grow dot on hover
+                const currentRadius = screenType === 'small' ? 4 : 6.5;
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr("r", currentRadius * 1.5)
+                    .attr("stroke-width", 2);
+                    
+                tooltip.style("opacity", 1)
+                    .html(`${screenType} Screen: ${d[screenKey]} min<br/>WASO: ${d.waso} min<br/>ID: ${d.id}`)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 10) + "px");
+            })
+            .on("mouseout", function() {
+                // Return to normal size
+                const currentRadius = screenType === 'small' ? 4 : 6.5;
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr("r", currentRadius)
+                    .attr("stroke-width", 1);
+                    
+                tooltip.style("opacity", 0);
+            });    
         }
         
         function updateMetrics() {
@@ -3374,44 +3544,7 @@ Promise.all([
         }
         
         function filterData() {
-            // const durationValue = +d3.select("#duration-slider").property("value");
-            // const stressValue = +d3.select("#stress-slider").property("value");
-            // const ageValue = +d3.select("#age-slider").property("value");
-            // const activityValue = +d3.select("#activity-slider").property("value");
 
-            // Initial filtering with moderate thresholds
-            // filteredData = sleepData.filter(d => {
-            // return Math.abs(d.age - ageValue) <= 15 &&
-            //    Math.abs(d.activityLevel - activityValue) <= 500;
-            //  });
-
-            // // If too few points, expand criteria
-            // if (filteredData.length < 20) {
-            //      filteredData = sleepData.filter(d => {
-            // return Math.abs(d.sleepDuration - durationValue) <= 2 &&
-            //        Math.abs(d.stress - stressValue) <= 20 &&
-            //        Math.abs(d.age - ageValue) <= 15 &&
-            //        Math.abs(d.activityLevel - activityValue) <= 1000; // based on your CSV
-            //  });
-            // }
-            // Initial filtering with moderate thresholds
-            // filteredData = sleepData.filter(d => {
-            //     return (
-            //         Math.abs(d.sleepDuration - durationValue) <= 2 &&
-            //         Math.abs(d.stress - stressValue) <= 20
-            //         );
-            //     });
-
-            //     // If too few points, expand criteria
-            // if (filteredData.length < 20) {
-            //     filteredData = sleepData.filter(d => {
-            //         return (
-            //             Math.abs(d.sleepDuration - durationValue) <= 4 && // relaxed threshold
-            //             Math.abs(d.stress - stressValue) <= 40
-            //         );
-            //     });
-            // }
-            
             // Update metrics
             updateMetrics();
             
@@ -3858,12 +3991,14 @@ class QuizController {
         // Simple validation only for required questions
         if (this.currentQuestion === 3) {
             if (!document.querySelector('input[name="stress"]:checked')) {
+                alert('Please select your stress level');
                 return;
             }
         }
-
+        
         if (this.currentQuestion === 6) {
             if (!document.querySelector('input[name="chronotype"]:checked')) {
+                alert('Please select your chronotype');
                 return;
             }
         }
@@ -4044,7 +4179,7 @@ function displayResults(userProfile, match) {
    const resultsHTML = `
        <div class="match-header">
            <div class="match-title">🎯 Meet Your Sleep Twin!</div>
-           <div class="participant-id">Participant ${participant.id.replace('user_', '')}</div>
+           <div class="participant-id">Participant ${participant.id}</div>
            <div class="accuracy">${similarity}% similarity to your sleep patterns</div>
        </div>
 
