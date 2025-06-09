@@ -660,8 +660,8 @@ function renderCortisolMelatoninChart(avgCortisolBeforeSleep, avgCortisolWakeUp,
         .range([height - 60, 60]);
 
     // Meaningful colors
-    const cortisolColor = "#e74c3c"; // Red for cortisol (stress hormone)
-    const melatoninColor = "#3498db"; // Blue for melatonin (sleep hormone)
+    const cortisolColor = "#f59e0b"; // Orange for cortisol (stress hormone)
+    const melatoninColor = "#fbbf24"; // Yellow for melatonin (sleep hormone)
 
     // Melatonin bars with fixed tooltip
 svg.selectAll(".bar-melatonin")
