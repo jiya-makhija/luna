@@ -1011,10 +1011,10 @@ function renderDensityPlot(hrData) {
                 tooltip_density.html(`
                     <strong>💤 Sleep Curve</strong><br/>
                     <strong>Heart Rate: ${Math.round(sleepPoint[0])} BPM</strong><br/>
-                    <span style="color: #4A90E2;">Sleep Density: ${sleepPoint[1].toFixed(4)}</span><br/>
+                    <span style="color: #fbbf24;">Sleep Density: ${sleepPoint[1].toFixed(4)}</span><br/>
                     <span style="color: #E74C3C;">Awake Density: ${awakeDensityVal.toFixed(4)}</span><br/>
                     <hr style="margin: 5px 0; border-color: #444;">
-                    <span style="color: #4A90E2;">Sleep: ${sleepPercent}% of readings</span><br/>
+                    <span style="color: #fbbf24;">Sleep: ${sleepPercent}% of readings</span><br/>
                     <span style="color: #E74C3C;">Awake: ${awakePercent}% of readings</span>
                 `)
                 .style("left", (event) => {
@@ -1084,10 +1084,10 @@ function renderDensityPlot(hrData) {
                 tooltip_density.html(`
                     <strong>☀️ Awake Curve</strong><br/>
                     <strong>Heart Rate: ${Math.round(awakePoint[0])} BPM</strong><br/>
-                    <span style="color: #4A90E2;">Sleep Density: ${sleepDensityVal.toFixed(4)}</span><br/>
+                    <span style="color: #fbbf24;">Sleep Density: ${sleepDensityVal.toFixed(4)}</span><br/>
                     <span style="color: #E74C3C;">Awake Density: ${awakePoint[1].toFixed(4)}</span><br/>
                     <hr style="margin: 5px 0; border-color: #444;">
-                    <span style="color: #4A90E2;">Sleep: ${sleepPercent}% of readings</span><br/>
+                    <span style="color: #fbbf24;">Sleep: ${sleepPercent}% of readings</span><br/>
                     <span style="color: #E74C3C;">Awake: ${awakePercent}% of readings</span>
                 `)
                 .style("left", (event) => {
@@ -1137,9 +1137,9 @@ function renderDensityPlot(hrData) {
     legend.append("rect")
         .attr("width", 15)
         .attr("height", 15)
-        .attr("fill", "#4A90E2")
+        .attr("fill", "#fbbf24")
         .attr("fill-opacity", 0.3)
-        .attr("stroke", "#4A90E2")
+        .attr("stroke", "#fbbf24")
         .attr("stroke-width", 2);
     
     legend.append("text")
@@ -1196,7 +1196,7 @@ function renderDensityPlot(hrData) {
             .attr("x2", xScale(sleepMean))
             .attr("y1", 0)
             .attr("y2", height)
-            .attr("stroke", "#4A90E2")
+            .attr("stroke", "#fbbf24")
             .attr("stroke-width", 2)
             .attr("stroke-dasharray", "5,5")
             .attr("opacity", 0.7);
@@ -1217,7 +1217,7 @@ function renderDensityPlot(hrData) {
             .attr("y", -5)
             .attr("text-anchor", "middle")
             .style("font-size", "10px")
-            .style("fill", "#4A90E2")
+            .style("fill", "#fbbf24")
             .text(`Sleep: ${sleepMean.toFixed(1)}`);
         
         g.append("text")
