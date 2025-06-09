@@ -2004,11 +2004,11 @@ h4 { font-size: 1.25rem; }
 }
 
 .legend-cortisol {
-    fill: #f59e0b;
+    fill: #e74c3c;
 }
 
 .legend-melatonin {
-    fill: #fbbf24;
+    fill: #3498db;
 }
 
 .x-axis-label {

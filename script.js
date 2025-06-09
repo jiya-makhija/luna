@@ -660,8 +660,8 @@ function renderCortisolMelatoninChart(avgCortisolBeforeSleep, avgCortisolWakeUp,
         .range([height - 60, 60]);
 
     // Meaningful colors
-    const cortisolColor = "#f59e0b"; // Orange for cortisol (stress hormone)
-    const melatoninColor = "#fbbf24"; // Yellow for melatonin (sleep hormone)
+    const cortisolColor = "#e74c3c"; // Red for cortisol (stress hormone)
+    const melatoninColor = "#3498db"; // Blue for melatonin (sleep hormone)
 
     // Melatonin bars with fixed tooltip
 svg.selectAll(".bar-melatonin")
@@ -4044,7 +4044,7 @@ function displayResults(userProfile, match) {
    const resultsHTML = `
        <div class="match-header">
            <div class="match-title">🎯 Meet Your Sleep Twin!</div>
-           <div class="participant-id">Participant ${participant.id}</div>
+           <div class="participant-id">Participant ${participant.id.replace('user_', '')}</div>
            <div class="accuracy">${similarity}% similarity to your sleep patterns</div>
        </div>
 
