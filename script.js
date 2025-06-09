@@ -659,9 +659,9 @@ function renderCortisolMelatoninChart(avgCortisolBeforeSleep, avgCortisolWakeUp,
         .nice()
         .range([height - 60, 60]);
 
-    // Meaningful colors
-    const cortisolColor = "#e74c3c"; // Red for cortisol (stress hormone)
-    const melatoninColor = "#3498db"; // Blue for melatonin (sleep hormone)
+    // Meaningful colors - vibrant red and blue
+    const cortisolColor = "#ff3333"; // Bright red for cortisol (stress hormone)
+    const melatoninColor = "#0066ff"; // Bright blue for melatonin (sleep hormone)
 
     // Melatonin bars with fixed tooltip
 svg.selectAll(".bar-melatonin")
@@ -673,7 +673,7 @@ svg.selectAll(".bar-melatonin")
     .attr("width", xScale.bandwidth() / 2)
     .attr("height", d => height - 60 - yScaleMelatonin(d.melatonin))
     .attr("fill", melatoninColor)
-    .attr("opacity", 0.65) ;
+    .attr("opacity", 0.85) ;
 
 // Cortisol bars with fixed tooltip
 svg.selectAll(".bar-cortisol")
@@ -685,7 +685,7 @@ svg.selectAll(".bar-cortisol")
     .attr("width", xScale.bandwidth() / 2)
     .attr("height", d => height - 60 - yScaleCortisol(d.cortisol))
     .attr("fill", cortisolColor)
-    .attr("opacity", 0.65) ;
+    .attr("opacity", 0.85) ;
 
         // Add cortisol bars
     svg.selectAll(".bar-cortisol")
@@ -748,7 +748,7 @@ svg.selectAll(".bar-cortisol")
         .attr("width", 15)
         .attr("height", 15)
         .attr("fill", cortisolColor)
-        .attr("opacity", 0.65) ;
+        .attr("opacity", 0.85) ;
 
     legend.append("text")
         .attr("class", "legend-cortisol")
@@ -765,7 +765,7 @@ svg.selectAll(".bar-cortisol")
         .attr("width", 15)
         .attr("height", 15)
         .attr("fill", melatoninColor)
-        .attr("opacity", 0.65) ;
+        .attr("opacity", 0.85) ;
 
     legend.append("text")
         .attr("class", "legend-melatonin")
