@@ -3858,14 +3858,12 @@ class QuizController {
         // Simple validation only for required questions
         if (this.currentQuestion === 3) {
             if (!document.querySelector('input[name="stress"]:checked')) {
-                alert('Please select your stress level');
                 return;
             }
         }
-        
+
         if (this.currentQuestion === 6) {
             if (!document.querySelector('input[name="chronotype"]:checked')) {
-                alert('Please select your chronotype');
                 return;
             }
         }
