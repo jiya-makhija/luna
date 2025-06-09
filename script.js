@@ -747,16 +747,14 @@ svg.selectAll(".bar-cortisol")
         .attr("y", 0)
         .attr("width", 15)
         .attr("height", 15)
-        .attr("fill", cortisolColor)
-        .attr("opacity", 0.65) ;
+        .attr("fill", cortisolColor);
 
     legend.append("text")
         .attr("class", "legend-cortisol")
         .attr("x", 20)
         .attr("y", 12)
         .style("font-weight", "bold")
-        .text("Cortisol")
-        .attr("opacity", 0.65) ;
+        .text("Cortisol");
 
     // Melatonin legend
     legend.append("rect")
@@ -764,16 +762,14 @@ svg.selectAll(".bar-cortisol")
         .attr("y", 25)
         .attr("width", 15)
         .attr("height", 15)
-        .attr("fill", melatoninColor)
-        .attr("opacity", 0.65) ;
+        .attr("fill", melatoninColor);
 
     legend.append("text")
         .attr("class", "legend-melatonin")
         .attr("x", 20)
         .attr("y", 37)
         .style("font-weight", "bold")
-        .text("Melatonin")
-        .attr("opacity", 0.65) ;
+        .text("Melatonin");
 }
 
 
