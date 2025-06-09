@@ -9,20 +9,16 @@ const pages = {
 let currentPage = 'main';
 
 function navigateTo(pageId) {
-    console.log('🔧 Navigating to page:', pageId);
     if (currentPage === pageId) {
-        console.log('🔧 Already on page:', pageId);
         return;
     }
 
     // Initialize pages if not already done
     if (!pages.main) {
-        console.log('🔧 Initializing page references...');
         pages.main = document.getElementById('mainPage');
         pages.quiz = document.getElementById('quizPage');
         pages.sleepClock = document.getElementById('sleepClockPage');
         pages.dashboard = document.getElementById('dashboardPage');
-        console.log('🔧 Page references:', pages);
     }
 
     // Update navigation active state
@@ -93,17 +89,14 @@ function animateMainPage() {
 }
 
 function animateQuizPage() {
-    console.log('🔧 Animating quiz page...');
 
     // Initialize InfoController only when quiz page is accessed
     if (!infoController) {
-        console.log('🔧 Creating new InfoController...');
         infoController = new InfoController();
     }
 
     // Start auto-advance now that user is on quiz page (with small delay to ensure elements are ready)
     setTimeout(() => {
-        console.log('🔧 Activating auto-advance...');
         infoController.activateAutoAdvance();
     }, 100);
 
@@ -114,7 +107,6 @@ function animateQuizPage() {
 }
 
 function animateSleepClockPage() {
-    console.log('🔧 Animating sleep clock page...');
 
     // Check for sleep twin button first
     setTimeout(() => {
@@ -123,10 +115,8 @@ function animateSleepClockPage() {
 
     // Initialize sleep clock visualizations if needed
     if (typeof initializeSleepClock === 'function') {
-        console.log('🔧 Using initializeSleepClock function');
         initializeSleepClock();
     } else {
-        console.log('🔧 Using fallback initializeSleepClockFunctionality');
         // Fallback: initialize sleep clock functionality directly
         initializeSleepClockFunctionality();
     }
@@ -173,6 +163,14 @@ const pageMessages = {
     ]
 };
 
+// Default messages for each page (shown before first click)
+const pageDefaultMessages = {
+    main: "Hello! I'm Luna, your sleep guide! 🌙",
+    quiz: "Ready to find your sleep twin? Let's start! ✨",
+    sleepClock: "Discover your body's natural sleep rhythm! ⏰",
+    dashboard: "Click on the mini moons to learn more! 🌙✨"
+};
+
 let lunaMessages = pageMessages.main;
 let lunaMessageIndex = 0;
 let isFirstInteraction = true;
@@ -182,58 +180,82 @@ function updateLunaForCurrentPage() {
         lunaMessages = pageMessages[currentPage];
         isFirstInteraction = true;
         lunaMessageIndex = 0;
+        
+        // Show the page-specific default message
+        showDefaultPrompt();
     }
 }
 
 // Show default prompt when page loads
 function showDefaultPrompt() {
-  const lunaSpeech = document.getElementById('luna-speech');
-  const lunaMouth = document.getElementById('luna-mouth');
-  
-  if (lunaSpeech) {
-    lunaSpeech.textContent = "Hello! I'm Luna, your sleep guide! 🌙";
-    lunaSpeech.classList.add('show');
-    lunaMouth.classList.add('happy');
-  }
+    const lunaSpeech = document.getElementById('luna-speech');
+    const lunaMouth = document.getElementById('luna-mouth');
+    
+    if (lunaSpeech) {
+        // Use page-specific default message
+        const defaultMessage = pageDefaultMessages[currentPage] || pageDefaultMessages.main;
+        lunaSpeech.textContent = defaultMessage;
+        lunaSpeech.classList.add('show');
+        
+        if (lunaMouth) {
+            lunaMouth.classList.add('happy');
+        }
+    }
 }
 
 function interactWithLuna() {
-  const lunaCharacter = document.querySelector('.luna-character');
-  const lunaSpeech = document.getElementById('luna-speech');
-  const lunaEyes = document.querySelectorAll('.luna-eye');
-  const lunaMouth = document.getElementById('luna-mouth');
+    const lunaCharacter = document.querySelector('.luna-character');
+    const lunaSpeech = document.getElementById('luna-speech');
+    const lunaEyes = document.querySelectorAll('.luna-eye');
+    const lunaMouth = document.getElementById('luna-mouth');
 
-  // Make Luna happy
-  lunaEyes.forEach(eye => {
-    eye.classList.remove('sleepy');
-  });
-  lunaMouth.classList.add('happy');
+    // Make Luna happy
+    lunaEyes.forEach(eye => {
+        eye.classList.remove('sleepy');
+    });
+    if (lunaMouth) {
+        lunaMouth.classList.add('happy');
+    }
 
-  // If it's the first interaction, start with the first message
-  if (isFirstInteraction) {
-    isFirstInteraction = false;
-    lunaMessageIndex = 0;
-  }
+    // If it's the first interaction, start with the first message
+    if (isFirstInteraction) {
+        isFirstInteraction = false;
+        lunaMessageIndex = 0;
+    }
 
-  // Show speech bubble with cycling messages
-  lunaSpeech.textContent = lunaMessages[lunaMessageIndex];
-  lunaSpeech.classList.add('show');
+    // Show speech bubble with cycling messages
+    lunaSpeech.textContent = lunaMessages[lunaMessageIndex];
+    lunaSpeech.classList.add('show');
 
-  // Cycle through messages
-  lunaMessageIndex = (lunaMessageIndex + 1) % lunaMessages.length;
+    // Cycle through messages
+    lunaMessageIndex = (lunaMessageIndex + 1) % lunaMessages.length;
 
-  // Hide speech bubble after 3 seconds
-  setTimeout(() => {
-    lunaSpeech.classList.remove('show');
-    lunaMouth.classList.remove('happy');
-  }, 3000);
+    // Hide speech bubble after 3 seconds
+    setTimeout(() => {
+        lunaSpeech.classList.remove('show');
+        if (lunaMouth) {
+            lunaMouth.classList.remove('happy');
+        }
+    }, 3000);
 
-  // Add some sparkle effect
-  createLunaSparkles();
+    // Add some sparkle effect
+    createLunaSparkles();
+}
+
+function animateDashboardPage() {
+    // Initialize dashboard if needed
+    if (typeof initializeDashboard === 'function') {
+        initializeDashboard();
+    }
+    
+    // Update Luna messaging for dashboard
+    updateLunaForCurrentPage();
 }
 
 function createLunaSparkles() {
     const lunaContainer = document.querySelector('.luna-container');
+    if (!lunaContainer) return;
+    
     const sparkleCount = 8;
     
     for (let i = 0; i < sparkleCount; i++) {
@@ -289,8 +311,6 @@ function scrollToHeartRate() {
 
 // Initialize sleep clock functionality
 function initializeSleepClockFunctionality() {
-    console.log('🔧 Initializing sleep clock functionality...');
-    console.log('🔧 Current user:', currentUser);
 
     // Check if user has a matched sleep twin and show button
     checkAndShowSleepTwinButton();
@@ -304,7 +324,6 @@ function initializeSleepClockFunctionality() {
 
 // Initialize participant navigation
 function initializeParticipantNavigation() {
-    console.log('🔧 Initializing participant navigation...');
     const participantNav = document.getElementById('participantNav');
     if (!participantNav) {
         console.error('❌ participantNav element not found!');
@@ -316,7 +335,6 @@ function initializeParticipantNavigation() {
 
     // Create navigation for all users (excluding 11 as it doesn't exist in the data)
     const userIDs = Array.from({ length: 22 }, (_, i) => i + 1).filter(user => user !== 11);
-    console.log('🔧 Creating navigation for users:', userIDs);
 
     userIDs.forEach(userId => {
         const navItem = document.createElement('div');
@@ -332,7 +350,6 @@ function initializeParticipantNavigation() {
         participantNav.appendChild(navItem);
     });
 
-    console.log('🔧 Participant navigation created with', userIDs.length, 'items');
 }
 
 // Check if user has a matched sleep twin and show the button
@@ -347,7 +364,6 @@ function checkAndShowSleepTwinButton() {
 
     // Check if user has completed quiz and has a matched participant
     if (window.matchedParticipant && window.matchedParticipant.id) {
-        console.log('🔧 Found matched participant:', window.matchedParticipant.id);
 
         // Show the sleep twin section
         sleepTwinSection.style.display = 'block';
@@ -357,13 +373,11 @@ function checkAndShowSleepTwinButton() {
 
         // Add click handler
         goToSleepTwinButton.onclick = () => {
-            console.log('🔧 Navigating to sleep twin:', window.matchedParticipant.id);
 
             // Extract the number from the participant ID (e.g., "user_14" -> 14)
             const participantNumber = window.matchedParticipant.id.replace('user_', '');
             const userId = parseInt(participantNumber);
 
-            console.log('🔧 Extracted user ID:', userId);
             loadUserData(userId);
 
             // Scroll to the sleep clock container
@@ -382,7 +396,6 @@ function checkAndShowSleepTwinButton() {
 
 // Load user data for sleep clock
 function loadUserData(userId) {
-    console.log('🔧 Loading user data for user:', userId);
     currentUser = userId;
 
     // Update navigation active state
@@ -392,18 +405,15 @@ function loadUserData(userId) {
     const activeNavItem = document.querySelector(`[data-user-id="${userId}"]`);
     if (activeNavItem) {
         activeNavItem.classList.add('active');
-        console.log('🔧 Updated active navigation item');
     } else {
         console.warn('⚠️ Could not find navigation item to activate');
     }
 
     // Load sleep data
-    console.log('🔧 Loading sleep data...');
     d3.csv(`data/DataPaper/user_${userId}/sleep.csv`).then(sleepData => {
         console.log('🔧 Sleep data loaded:', sleepData);
         if (sleepData && sleepData.length > 0) {
             const sleepInfo = sleepData[0];
-            console.log('🔧 Sleep info:', sleepInfo);
             updateSleepMetrics(sleepInfo);
             renderSleepArc(sleepInfo);
         } else {
@@ -414,14 +424,11 @@ function loadUserData(userId) {
     });
 
     // Load heart rate data
-    console.log('🔧 Loading heart rate data...');
     d3.csv(`data/DataPaper/user_${userId}/Actigraph.csv`).then(hrData => {
-        console.log('🔧 Heart rate data loaded, length:', hrData.length);
         if (hrData && hrData.length > 0) {
             // Also load sleep data for heart rate chart
             d3.csv(`data/DataPaper/user_${userId}/sleep.csv`).then(sleepData => {
                 if (sleepData && sleepData.length > 0) {
-                    console.log('🔧 Rendering heart rate graph...');
                     renderHeartRateGraph(hrData, sleepData[0]);
                 }
             });
@@ -608,6 +615,7 @@ function renderCortisolMelatoninChart(avgCortisolBeforeSleep, avgCortisolWakeUp,
         .attr("font-size", "24px")
         .attr("font-weight", "bold")
         .attr("fill", "white")
+        .style("font-family", "'Playfair Display', serif")
         .text("Cortisol & Melatonin Levels: Before Sleep vs Wake Up");
 
     // Define log scales for cortisol & melatonin
@@ -655,55 +663,27 @@ function renderCortisolMelatoninChart(avgCortisolBeforeSleep, avgCortisolWakeUp,
     const cortisolColor = "#e74c3c"; // Red for cortisol (stress hormone)
     const melatoninColor = "#3498db"; // Blue for melatonin (sleep hormone)
 
-    const tooltip_mel = d3.select("#tooltip_mel");
+    // Melatonin bars with fixed tooltip
+svg.selectAll(".bar-melatonin")
+    .data(data)
+    .enter().append("rect")
+    .attr("class", "bar-melatonin")
+    .attr("x", d => xScale(d.label) + xScale.bandwidth() / 2)
+    .attr("y", d => yScaleMelatonin(d.melatonin))
+    .attr("width", xScale.bandwidth() / 2)
+    .attr("height", d => height - 60 - yScaleMelatonin(d.melatonin))
+    .attr("fill", melatoninColor);
 
-    // Add melatonin bars (shifted slightly for readability)
-    svg.selectAll(".bar-melatonin")
-        .data(data)
-        .enter().append("rect")
-        .attr("class", "bar-melatonin")
-        .attr("x", d => xScale(d.label) + xScale.bandwidth() / 2)
-        .attr("y", d => yScaleMelatonin(d.melatonin))
-        .attr("width", xScale.bandwidth() / 2)
-        .attr("height", d => height - 60 - yScaleMelatonin(d.melatonin))
-        .attr("fill", melatoninColor)
-        .on("mouseover", function(event, d) {
-            const mouseX = event.clientX;
-            const mouseY = event.clientY;
-
-            // ✅ Use tooltip_mel instead of tooltip
-            tooltip_mel.transition().duration(200).style("opacity", 1);
-            tooltip_mel.html(`
-                <div class="tooltip_mel-title">Melatonin</div>
-                <div class="tooltip_mel-metric">
-                    <span class="tooltip_mel-label">${d.label}:</span>
-                    <span class="tooltip_mel-value">${d.originalMelatonin.toFixed(2)} pg/mL</span>
-                </div>
-            `)
-            .style("left", () => {
-                const tooltip = document.getElementById("tooltip_mel");
-                const left = Math.max(
-                    10, // ✅ Ensures tooltip stays at least 10px from the left edge
-                    Math.min(
-                        window.innerWidth - tooltip.offsetWidth - 10, // ✅ Prevents right-side overflow
-                        mouseX - tooltip.offsetWidth / 2 // ✅ Centers tooltip over cursor
-                    )
-                );
-                return `${left}px`;
-            })
-            .style("top", () => {
-                const tooltip = document.getElementById("tooltip_mel");
-                return `${Math.max(
-                    10, // ✅ Ensures it doesn't go off the top edge
-                    mouseY + 20 // ✅ Positions below cursor instead of above
-                )}px`;
-            })
-            
-        })
-        .on("mouseout", function() {
-            // ✅ Use tooltip_mel instead of tooltip
-            tooltip_mel.transition().duration(200).style("opacity", 0);
-        });
+// Cortisol bars with fixed tooltip
+svg.selectAll(".bar-cortisol")
+    .data(data)
+    .enter().append("rect")
+    .attr("class", "bar-cortisol")
+    .attr("x", d => xScale(d.label))
+    .attr("y", d => yScaleCortisol(d.cortisol))
+    .attr("width", xScale.bandwidth() / 2)
+    .attr("height", d => height - 60 - yScaleCortisol(d.cortisol))
+    .attr("fill", cortisolColor);
 
         // Add cortisol bars
     svg.selectAll(".bar-cortisol")
@@ -714,41 +694,7 @@ function renderCortisolMelatoninChart(avgCortisolBeforeSleep, avgCortisolWakeUp,
         .attr("y", d => yScaleCortisol(d.cortisol))
         .attr("width", xScale.bandwidth() / 2)
         .attr("height", d => height - 60 - yScaleCortisol(d.cortisol))
-        .attr("fill", cortisolColor)
-        .on("mouseover", function(event, d) {
-            const mouseX = event.clientX;
-            const mouseY = event.clientY;
-
-            tooltip_mel.transition().duration(200).style("opacity", 1);
-            tooltip_mel.html(`
-                <div class="tooltip_mel-title">Cortisol</div>
-                <div class="tooltip_mel-metric">
-                    <span class="tooltip_mel-label">${d.label}:</span>
-                    <span class="tooltip_mel-value">${d.originalCortisol.toFixed(2)} ng/mL</span>
-                </div>
-            `)
-            .style("left", () => {
-                const tooltip = document.getElementById("tooltip_mel");
-                const left = Math.max(
-                    10, // ✅ Ensures tooltip stays at least 10px from the left edge
-                    Math.min(
-                        window.innerWidth - tooltip.offsetWidth - 10, // ✅ Prevents right-side overflow
-                        mouseX - tooltip.offsetWidth / 2 // ✅ Centers tooltip over cursor
-                    )
-                );
-                return `${left}px`;
-            })
-            .style("top", () => {
-                const tooltip = document.getElementById("tooltip_mel");
-                return `${Math.max(
-                    10, // ✅ Ensures it doesn't go off the top edge
-                    mouseY + 20 // ✅ Positions below cursor instead of above
-                )}px`;
-            })
-        })
-        .on("mouseout", function() {
-            tooltip_mel.transition().duration(200).style("opacity", 0);
-        });
+        .attr("fill", cortisolColor);
 
 
     // Add X-axis
@@ -1360,7 +1306,6 @@ function updateSleepMetrics(sleepInfo) {
 const width = 450, height = 450, radius = 150;
 
 function setupSleepClock() {
-    console.log('🔧 Setting up sleep clock...');
 
     // Clear any existing SVG
     d3.select("#sleepClockContainer svg").remove();
@@ -1378,7 +1323,6 @@ function setupSleepClock() {
         .append("g")
         .attr("transform", `translate(${width / 2}, ${height / 2})`);
 
-    console.log('🔧 SVG created successfully');
     
 
     // Add outer circle
@@ -1464,16 +1408,13 @@ function timeToRad(timeStr) {
 }
 
 function renderSleepArc(sleepInfo) {
-    console.log('🔧 Rendering sleep arc with data:', sleepInfo);
 
     // Setup or clear sleep clock
     const svg = setupSleepClock();
-    console.log('🔧 Sleep clock SVG setup complete');
 
     // Parse times from the data
     const inBedTime = sleepInfo["In Bed Time"];
     const outBedTime = sleepInfo["Out Bed Time"];
-    console.log('🔧 Sleep times - In bed:', inBedTime, 'Out bed:', outBedTime);
     
     // Create arc generator
     const arc = d3.arc()
@@ -2584,6 +2525,7 @@ function createParticipantNav() {
 createParticipantNav();
 loadParticipantData(1);
 
+// Dashboard for Sleep and Activity Data Visualization
 
 let sleepData = [];
 let filteredData = [];
@@ -2629,11 +2571,6 @@ Promise.all([
     initCharts();
 });
 
-        // filteredData = [...sleepData];
-        // initCharts();
-        // });
-
-        // let filteredData = [...sleepData];
         
         // Chart dimensions
         const margin = {top: 20, right: 30, bottom: 40, left: 50};
@@ -2646,6 +2583,287 @@ Promise.all([
         
         // Tooltip
         const tooltip = d3.select("#tooltip");
+
+        function addMoonIcons() {
+            Object.keys(chartInsights).forEach(chartId => {
+                const chartElement = document.getElementById(chartId);
+                if (chartElement) {
+                    // Make sure the chart container is relatively positioned
+                    const container = chartElement.closest('.chart-container') || chartElement.parentElement;
+                    if (container && !container.style.position) {
+                        container.style.position = 'relative';
+                    }
+                    
+                    // Remove existing moon icon if present
+                    const existingMoon = container.querySelector('.moon-icon');
+                    if (existingMoon) {
+                        existingMoon.remove();
+                    }
+                    
+                    // Create moon icon
+                    const moonIcon = document.createElement('div');
+                    moonIcon.className = 'moon-icon';
+                    moonIcon.onclick = () => showInsight(chartId);
+                    
+                    container.appendChild(moonIcon);
+                }
+            });
+        }
+        
+        // Function to show insight popup next to moon
+        function showInsight(chartId) {
+            const insight = chartInsights[chartId];
+            if (!insight) return;
+            
+            const moonIcon = document.querySelector(`#${chartId}`).closest('.chart-container, [id*="chart"]').parentElement.querySelector('.moon-icon');
+            if (!moonIcon) return;
+            
+            // Remove any existing popup
+            const existingPopup = document.querySelector('.insight-popup');
+            if (existingPopup) {
+                existingPopup.remove();
+            }
+            
+            // Create popup
+            const popup = document.createElement('div');
+            popup.className = 'insight-popup';
+            
+            popup.innerHTML = `
+                <button class="close-insight" onclick="this.closest('.insight-popup').remove()">&times;</button>
+                <div class="insight-title">${insight.title}</div>
+                <div class="insight-text">${insight.text}</div>
+            `;
+            
+            // Add to container
+            const container = moonIcon.parentElement;
+            container.appendChild(popup);
+            
+            // Position popup below moon icon
+            const moonRect = moonIcon.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            
+            // Position relative to container
+            popup.style.top = (moonRect.bottom - containerRect.top + 10) + 'px';
+            popup.style.right = '10px';
+            
+            // Show popup with animation
+            setTimeout(() => popup.classList.add('show'), 10);
+            
+            // Close popup when clicking outside
+            const closeOutside = (e) => {
+                if (!popup.contains(e.target) && !moonIcon.contains(e.target)) {
+                    popup.remove();
+                    document.removeEventListener('click', closeOutside);
+                }
+            };
+            
+            setTimeout(() => document.addEventListener('click', closeOutside), 100);
+        }
+
+        // Title tooltips data - descriptions for each chart
+        const titleTooltips = {
+            'Sleep Efficiency vs Duration': 'How well you sleep vs. how long you sleep.',
+            'WASO by Stress Level': 'How often stress messes with your sleep by waking you up.',
+            'Sleep Latency Distribution': 'How long people take to fall asleep once they hit the bed.',
+            'Awakenings by Age': 'How often people wake up at night at different ages.'
+            };
+        
+        // Fixed function to add tooltips to chart titles
+        function addTooltipsToCharts() {
+            const tooltips = {
+                'Sleep Efficiency vs Duration': 'How well you sleep vs. how long you sleep.',
+                'WASO by Stress Level': 'How often stress messes with your sleep by waking you up.',
+                'Sleep Latency Distribution': 'How long people take to fall asleep once they hit the bed.',
+                'Awakenings by Age': 'How often people wake up at night at different ages.'
+            };
+        
+            document.querySelectorAll('h3').forEach(title => {
+                const titleText = title.textContent.trim();
+                if (tooltips[titleText] && !title.querySelector('.help-icon')) {
+                    title.style.position = 'relative';
+                    
+                    
+                    helpIcon.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        
+                        // Remove existing tooltip
+                        const existing = document.querySelector('.chart-tooltip-popup');
+                        if (existing) {
+                            existing.remove();
+                            return;
+                        }
+                        
+                        // Create tooltip
+                        const popup = document.createElement('div');
+                        popup.className = 'chart-tooltip-popup';
+                        popup.innerHTML = tooltips[titleText];
+                        popup.style.cssText = `
+                            position: absolute;
+                            top: 25px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            background: #2c3e50;
+                            color: white;
+                            padding: 8px 12px;
+                            border-radius: 6px;
+                            font-size: 13px;
+                            max-width: 200px;
+                            z-index: 1000;
+                            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                            white-space: normal;
+                        `;
+                        
+                        title.appendChild(popup);
+                        
+                        // Auto-remove after click outside
+                        setTimeout(() => {
+                            document.addEventListener('click', function closeTooltip() {
+                                popup.remove();
+                                document.removeEventListener('click', closeTooltip);
+                            });
+                        }, 100);
+                    });
+                    
+                    title.appendChild(helpIcon);
+                }
+            });
+        }
+
+        function addTooltipToElement(titleElement, tooltipText) {
+            // Remove existing help icon if present
+            const existingIcon = titleElement.querySelector('.help-icon');
+            if (existingIcon) {
+                existingIcon.remove();
+            }
+            
+            // Create custom tooltip popup
+            helpIcon.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Remove any existing custom tooltip
+                const existingTooltip = document.querySelector('.custom-chart-tooltip');
+                if (existingTooltip) {
+                    existingTooltip.remove();
+                    return; // Toggle behavior - if tooltip exists, just remove it
+                }
+                
+                // Create custom tooltip
+                const customTooltip = document.createElement('div');
+                customTooltip.className = 'custom-chart-tooltip';
+                customTooltip.innerHTML = `
+                    <button class="tooltip-close" onclick="this.parentElement.remove()">&times;</button>
+                    <div class="tooltip-content">${tooltipText}</div>
+                `;
+                
+                customTooltip.style.cssText = `
+                    position: absolute !important;
+                    background: #2c3e50 !important;
+                    color: white !important;
+                    padding: 10px 15px !important;
+                    border-radius: 8px !important;
+                    font-size: 14px !important;
+                    max-width: 250px !important;
+                    z-index: 10000 !important;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+                    border: 1px solid #34495e !important;
+                `;
+                
+                // Position tooltip
+                const iconRect = helpIcon.getBoundingClientRect();
+                customTooltip.style.left = (iconRect.left - 100) + 'px';
+                customTooltip.style.top = (iconRect.bottom + 5) + 'px';
+                
+                // Add close button styles
+                const closeBtn = customTooltip.querySelector('.tooltip-close');
+                closeBtn.style.cssText = `
+                    position: absolute !important;
+                    top: 5px !important;
+                    right: 8px !important;
+                    background: none !important;
+                    border: none !important;
+                    color: #bdc3c7 !important;
+                    font-size: 16px !important;
+                    cursor: pointer !important;
+                    padding: 0 !important;
+                    width: 20px !important;
+                    height: 20px !important;
+                `;
+                
+                document.body.appendChild(customTooltip);
+                
+                // Close tooltip when clicking outside
+                const closeOutside = (event) => {
+                    if (!customTooltip.contains(event.target) && !helpIcon.contains(event.target)) {
+                        customTooltip.remove();
+                        document.removeEventListener('click', closeOutside);
+                    }
+                };
+                
+                setTimeout(() => document.addEventListener('click', closeOutside), 100);
+            });
+            
+        }
+
+
+        // Chart insights data
+        const chartInsights = {
+            'efficiency-chart': {
+                title: "Less sleep, but better sleep?",
+                text: "Even 5–6 hour sleepers are clocking 85%+ efficiency. It's not just about hours — some are true power-napping pros. 🚀"
+            },
+            'waso-chart': {
+                title: "Stressed and restless? We feel you.",
+                text: "WASO peaks around a stress score of 33. Stress might be sneaking into your sheets and stealing your Zzz's. 😰"
+            },
+            'latency-chart': {
+                title: "How fast do you hit the snooze zone?",
+                text: "The majority of our sleepyheads drift off in under a minute. A few night owls linger in latency land for 3–5 minutes, hinting at possible pre-sleep restlessness. 🦉"
+            },
+            'awakenings-chart': {
+                title: "Who's waking up before the alarm?",
+                text: "From ages 22 to 30, there's a full constellation of sleep interruption patterns. Some sleepers rise more than 40 times a night. Could stress or lifestyle be the real night thieves? ⏰"
+            },
+            'movement-chart': {
+                title: "Does more motion mean faster snoozin'?",
+                text: "Light movers show mixed sleep latency, with some taking longer to drift off. But with heavy movement, sleep latency shrinks — most sleepers are out in under 2 minutes. Looks like tired muscles = quicker dreams. 🛏️"
+            },
+            'screen-chart': {
+                title: "Is your screen stealing your sleep?",
+                text: "Small screen users actually see higher WASO on average than large screen users. Maybe it's not just what size you're using, but when and how you use it that's keeping you awake. 🔦"
+            }
+        };
+
+
+        // UPDATED: Health-based color scales instead of stress/age
+        function getEfficiencyColor(efficiency) {
+            if (efficiency >= 85) return '#2ecc71'; // Green - optimal
+            if (efficiency >= 70) return '#f39c12'; // Yellow - borderline
+            return '#e74c3c'; // Red - poor
+        }
+
+        // function getWASOColor(waso) {
+        //     if (waso <= 20) return '#2ecc71'; // Green - good
+        //     if (waso <= 40) return '#f39c12'; // Yellow - moderate
+        //     return '#e74c3c'; // Red - high
+        // }
+        // Updated WASO color function with health-based thresholds
+        function getWASOColor(stressLevel) {
+            if (stressLevel <= 20) return '#f1c40f';      // Yellow - low stress (13)
+            if (stressLevel <= 30) return '#f39c12';      // Light orange (23, 28) 
+            if (stressLevel <= 40) return '#e67e22';      // Orange (33, 38)
+            if (stressLevel <= 45) return '#d35400';      // Dark orange (43)
+            return '#e74c3c';                             // Red - high stress (48)
+          }
+
+        // Updated latency color function for 0-5 minute range
+    function getLatencyColor(latency) {
+        if (latency <= 0.5) return '#27ae60'; // Dark green - very fast
+        if (latency <= 1.5) return '#2ecc71'; // Green - optimal (0.5-1.5 min)
+        if (latency <= 3.5) return '#f1c40f'; // Yellow - acceptable
+        // if (latency <= 3.5) return '#f39c12'; // Orange - borderline
+        return '#f39c12'; // Red - prolonged (3.5+ min)
+    }
         
         // Initialize charts
         // function initCharts() {
@@ -2663,6 +2881,8 @@ Promise.all([
             createMovementChart();
             createScreenChart();
             updateMetrics();
+            addMoonIcons();
+            addTooltipsToCharts();
         }
         
         function createEfficiencyChart() {
@@ -2722,7 +2942,8 @@ Promise.all([
                 .duration(300)
                 .attr("cx", d => xScale(d.sleepDuration))
                 .attr("cy", d => yScale(d.efficiency))
-                .attr("fill", d => stressColorScale(d.stress));
+                // .attr("fill", d => stressColorScale(d.stress));
+                .attr("fill", d => getEfficiencyColor(d.efficiency));
             
             dots.exit().remove();
             
@@ -2801,7 +3022,8 @@ Promise.all([
                 .attr("width", xScale.bandwidth())
                 .attr("y", d => yScale(d.avgWASO))
                 .attr("height", d => chartHeight - yScale(d.avgWASO))
-                .attr("fill", "#ff6b6b")
+                // .attr("fill", "#ff6b6b")
+                .attr("fill", d => getWASOColor(d.stress))
                 .on("mouseover", (event, d) => {
                     tooltip.style("opacity", 1)
                         .html(`Stress: ${Math.round(d.stress)}<br/>Avg WASO: ${d.avgWASO.toFixed(1)} min<br/>Count: ${d.count}`)
@@ -2822,11 +3044,11 @@ Promise.all([
             
             const bins = d3.histogram()
                 .value(d => d.latency)
-                .domain([0, 30])
-                .thresholds(15)(filteredData);
+                .domain([0, 5])
+                .thresholds(d3.range(0, 6, 1))(filteredData);
             
             const xScale = d3.scaleLinear()
-                .domain([0, 30])
+                .domain([0, 5])
                 .range([0, chartWidth]);
             
             const yScale = d3.scaleLinear()
@@ -2869,7 +3091,8 @@ Promise.all([
                 .attr("width", d => xScale(d.x1) - xScale(d.x0) - 1)
                 .attr("y", d => yScale(d.length))
                 .attr("height", d => chartHeight - yScale(d.length))
-                .attr("fill", "#4ecdc4")
+                // .attr("fill", "#4ecdc4")
+                .attr("fill", d => getLatencyColor((d.x0 + d.x1) / 2))
                 .on("mouseover", (event, d) => {
                     tooltip.style("opacity", 1)
                         .html(`Latency: ${d.x0.toFixed(1)}-${d.x1.toFixed(1)} min<br/>Frequency: ${d.length}`)
@@ -2890,12 +3113,20 @@ Promise.all([
                 .attr("transform", `translate(${margin.left},${margin.top})`);
             
             const xScale = d3.scaleLinear()
-                .domain([20, 80])
+                .domain([20, 40])
                 .range([0, chartWidth]);
             
             const yScale = d3.scaleLinear()
                 .domain([0, d3.max(filteredData, d => d.awakenings) + 1])
                 .range([chartHeight, 0]);
+
+            const radiusScale = d3.scaleLinear()
+                .domain([d3.min(filteredData, d => d.awakenings), d3.max(filteredData, d => d.awakenings)])
+                .range([3, 10]); // Min radius 3px, max radius 10px
+
+            const awakeningsColorScale = d3.scaleSequential()
+                .domain([d3.min(filteredData, d => d.awakenings), d3.max(filteredData, d => d.awakenings)])
+                .interpolator(d3.interpolateViridis);
             
             // Axes
             g.append("g")
@@ -2931,8 +3162,9 @@ Promise.all([
                 .attr("class", "dot")
                 .attr("cx", d => xScale(d.age))
                 .attr("cy", d => yScale(d.awakenings))
-                .attr("r", 3)
-                .attr("fill", d => ageColorScale(d.age))
+                .attr("r", d => radiusScale(d.awakenings))
+                .attr("fill", d => awakeningsColorScale(d.awakenings))
+                // .attr("fill", d => getActivityColor(d.movementMedium || 0))
                 .on("mouseover", (event, d) => {
                     tooltip.style("opacity", 1)
                         .html(`Age: ${d.age}<br/>Awakenings: ${d.awakenings}<br/>Sleep Duration: ${d.sleepDuration}h`)
@@ -2955,14 +3187,37 @@ Promise.all([
             const movementType = d3.select("#movement-select").property("value");
             const movementKey = `movement${movementType.charAt(0).toUpperCase() + movementType.slice(1)}`;
             
+            // Color scale for temperature gradient based on latency
+            const colorScale = d3.scaleLinear()
+            .domain([0, 2, 5]) // 0-2 = excellent, 2-5 = poor
+            .range(["#10b981", "#f59e0b", "#ef4444"]);
+
             const xScale = d3.scaleLinear()
                 .domain([0, d3.max(filteredData, d => d[movementKey]) || 200])
                 .range([0, chartWidth]);
             
             const yScale = d3.scaleLinear()
-                .domain([0, d3.max(filteredData, d => d.latency) + 5])
+                .domain([0, d3.max(filteredData, d => d.latency) + 1])
                 .range([chartHeight, 0]);
+
+            g.append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", chartWidth)
+                .attr("height", chartHeight)
+                .attr("fill", "#1a1d29");
+
             
+       
+            // Target zone for good sleep latency (0-3 minutes)
+            g.append("rect")
+            .attr("x", 0)
+            .attr("y", yScale(3))
+            .attr("width", chartWidth)
+            .attr("height", yScale(0) - yScale(3))
+            .attr("fill", "#22c55e")
+            .attr("opacity", 0.1);
+    
             // Axes
             g.append("g")
                 .attr("class", "axis")
@@ -2972,6 +3227,31 @@ Promise.all([
             g.append("g")
                 .attr("class", "axis")
                 .call(d3.axisLeft(yScale));
+
+            // Add grid lines
+            g.selectAll(".grid-line-x")
+            .data(xScale.ticks(5))
+            .enter()
+            .append("line")
+            .attr("class", "grid-line-x")
+            .attr("x1", d => xScale(d))
+            .attr("x2", d => xScale(d))
+            .attr("y1", 0)
+            .attr("y2", chartHeight)
+            .attr("stroke", "#2a2d3a")
+            .attr("stroke-width", 1);
+
+            g.selectAll(".grid-line-y")
+            .data(yScale.ticks(5))
+            .enter()
+            .append("line")
+            .attr("class", "grid-line-y")
+            .attr("x1", 0)
+            .attr("x2", chartWidth)
+            .attr("y1", d => yScale(d))
+            .attr("y2", d => yScale(d))
+            .attr("stroke", "#2a2d3a")
+            .attr("stroke-width", 1);
             
             // Axis labels
             g.append("text")
@@ -2997,8 +3277,10 @@ Promise.all([
                 .attr("class", "dot")
                 .attr("cx", d => xScale(d[movementKey]))
                 .attr("cy", d => yScale(d.latency))
-                .attr("r", 4)
-                .attr("fill", "#3498db")
+                .attr("r", 5)
+                .attr("fill", d => colorScale(d.latency))
+                .attr("stroke", "white")
+                .attr("stroke-width", 1)
                 .on("mouseover", (event, d) => {
                     tooltip.style("opacity", 1)
                         .html(`${movementType} Movement: ${d[movementKey]} min<br/>Latency: ${d.latency} min<br/>ID: ${d.id}`)
@@ -3008,6 +3290,7 @@ Promise.all([
                 .on("mouseout", () => {
                     tooltip.style("opacity", 0);
                 });
+
         }
         
         function createScreenChart() {
@@ -3027,6 +3310,9 @@ Promise.all([
             const yScale = d3.scaleLinear()
                 .domain([0, d3.max(filteredData, d => d.waso) + 10])
                 .range([chartHeight, 0]);
+
+            const colorScale = d3.scaleSequential(d3.interpolateViridis)
+                .domain([0, d3.max(filteredData, d => d.waso) || 120]);
             
             // Axes
             g.append("g")
@@ -3062,8 +3348,9 @@ Promise.all([
                 .attr("class", "dot")
                 .attr("cx", d => xScale(d[screenKey]))
                 .attr("cy", d => yScale(d.waso))
-                .attr("r", 4)
-                .attr("fill", "#9b59b6")
+                .attr("r", d => screenType === 'small' ? 4 : 6.5
+                )
+                .attr("fill", d => colorScale(d.waso))
                 .on("mouseover", (event, d) => {
                     tooltip.style("opacity", 1)
                         .html(`${screenType} Screen: ${d[screenKey]} min<br/>WASO: ${d.waso} min<br/>ID: ${d.id}`)
@@ -3073,6 +3360,7 @@ Promise.all([
                 .on("mouseout", () => {
                     tooltip.style("opacity", 0);
                 });
+                
         }
         
         function updateMetrics() {
@@ -3086,27 +3374,43 @@ Promise.all([
         }
         
         function filterData() {
-            const durationValue = +d3.select("#duration-slider").property("value");
-            const stressValue = +d3.select("#stress-slider").property("value");
-            const ageValue = +d3.select("#age-slider").property("value");
-            const activityValue = +d3.select("#activity-slider").property("value");
+            // const durationValue = +d3.select("#duration-slider").property("value");
+            // const stressValue = +d3.select("#stress-slider").property("value");
+            // const ageValue = +d3.select("#age-slider").property("value");
+            // const activityValue = +d3.select("#activity-slider").property("value");
 
             // Initial filtering with moderate thresholds
-            filteredData = sleepData.filter(d => {
-            return Math.abs(d.age - ageValue) <= 15 &&
-               Math.abs(d.activityLevel - activityValue) <= 500;
-             });
+            // filteredData = sleepData.filter(d => {
+            // return Math.abs(d.age - ageValue) <= 15 &&
+            //    Math.abs(d.activityLevel - activityValue) <= 500;
+            //  });
 
-            // If too few points, expand criteria
-            if (filteredData.length < 20) {
-                 filteredData = sleepData.filter(d => {
-            return Math.abs(d.sleepDuration - durationValue) <= 2 &&
-                   Math.abs(d.stress - stressValue) <= 20 &&
-                   Math.abs(d.age - ageValue) <= 15 &&
-                   Math.abs(d.activityLevel - activityValue) <= 1000; // based on your CSV
-             });
-            }
-        
+            // // If too few points, expand criteria
+            // if (filteredData.length < 20) {
+            //      filteredData = sleepData.filter(d => {
+            // return Math.abs(d.sleepDuration - durationValue) <= 2 &&
+            //        Math.abs(d.stress - stressValue) <= 20 &&
+            //        Math.abs(d.age - ageValue) <= 15 &&
+            //        Math.abs(d.activityLevel - activityValue) <= 1000; // based on your CSV
+            //  });
+            // }
+            // Initial filtering with moderate thresholds
+            // filteredData = sleepData.filter(d => {
+            //     return (
+            //         Math.abs(d.sleepDuration - durationValue) <= 2 &&
+            //         Math.abs(d.stress - stressValue) <= 20
+            //         );
+            //     });
+
+            //     // If too few points, expand criteria
+            // if (filteredData.length < 20) {
+            //     filteredData = sleepData.filter(d => {
+            //         return (
+            //             Math.abs(d.sleepDuration - durationValue) <= 4 && // relaxed threshold
+            //             Math.abs(d.stress - stressValue) <= 40
+            //         );
+            //     });
+            // }
             
             // Update metrics
             updateMetrics();
@@ -3132,27 +3436,6 @@ Promise.all([
             const yScale = d3.scaleLinear().domain([50, 100]).range([chartHeight, 0]);
             updateEfficiencyChart(g, xScale, yScale);
         }
-        
-        // Event listeners
-        d3.select("#duration-slider").on("input", function() {
-            d3.select("#duration-value").text(this.value + "h");
-            filterData();
-        });
-        
-        d3.select("#stress-slider").on("input", function() {
-            d3.select("#stress-value").text(this.value);
-            filterData();
-        });
-        
-        d3.select("#age-slider").on("input", function() {
-            d3.select("#age-value").text(this.value);
-            filterData();
-        });
-        
-        d3.select("#activity-slider").on("input", function() {
-            d3.select("#activity-value").text(this.value);
-            filterData();
-        });
 
         // Activity section event listeners
         d3.select("#caffeine-slider").on("input", function() {
@@ -3170,6 +3453,8 @@ Promise.all([
         
         // Initialize
         initCharts();
+
+ // Dashboard fin
 
 const infoSections = [
     {
@@ -3268,12 +3553,9 @@ class InfoController {
     }
 
     init() {
-        console.log('🔧 InfoController init called');
-        console.log('🔧 infoSections length:', infoSections.length);
         this.renderCurrentSection();
         this.setupEventListeners();
         // Don't start auto-advance immediately - wait for user to be on quiz page
-        console.log('🔧 InfoController init completed');
     }
 
     setupEventListeners() {
@@ -3464,20 +3746,14 @@ class InfoController {
     }
 
     startAutoAdvance() {
-        console.log('🔧 startAutoAdvance called, autoAdvanceEnabled:', this.autoAdvanceEnabled);
         if (!this.autoAdvanceEnabled) {
-            console.log('🔧 Auto-advance disabled, returning');
             return;
         }
 
-        console.log('🔧 Setting auto-advance timer for 8 seconds...');
         this.autoAdvanceTimer = setTimeout(() => {
-            console.log('🔧 Auto-advance timer fired!');
             if (this.currentSection < infoSections.length - 1) {
-                console.log('🔧 Going to next section...');
                 this.goToNext();
             } else {
-                console.log('🔧 Already at last section');
             }
         }, 8000);
     }
@@ -3496,13 +3772,39 @@ class InfoController {
 
     // Method to start auto-advance when quiz page becomes active
     activateAutoAdvance() {
-        console.log('🔧 activateAutoAdvance called, autoAdvanceEnabled:', this.autoAdvanceEnabled);
         if (this.autoAdvanceEnabled) {
-            console.log('🔧 Starting auto-advance...');
             this.startAutoAdvance();
         } else {
             console.log('🔧 Auto-advance is disabled');
         }
+    }
+}
+
+// Helper function to trigger Luna message
+function showLunaMessage(message) {
+    const lunaSpeech = document.getElementById('luna-speech');
+    const lunaMouth = document.getElementById('luna-mouth');
+    const lunaEyes = document.querySelectorAll('.luna-eye');
+    
+    if (lunaSpeech) {
+        // Make Luna happy
+        lunaEyes.forEach(eye => {
+            eye.classList.remove('sleepy');
+        });
+        lunaMouth.classList.add('happy');
+        
+        // Show custom message
+        lunaSpeech.textContent = message;
+        lunaSpeech.classList.add('show');
+        
+        // Hide speech bubble after 4 seconds (longer for this important message)
+        setTimeout(() => {
+            lunaSpeech.classList.remove('show');
+            lunaMouth.classList.remove('happy');
+        }, 4000);
+        
+        // Add sparkle effect
+        createLunaSparkles();
     }
 }
 
@@ -3524,12 +3826,10 @@ class QuizController {
     setupEventListeners() {
         // Navigation buttons
         document.getElementById('nextQuestion').addEventListener('click', () => {
-            console.log('Next clicked on question', this.currentQuestion);
             this.nextQuestion();
         });
         
         document.getElementById('prevQuestion').addEventListener('click', () => {
-            console.log('Prev clicked on question', this.currentQuestion);
             this.prevQuestion();
         });
 
@@ -3611,7 +3911,6 @@ class QuizController {
     }
 
     saveCurrentAnswer() {
-        console.log('Saving answer for question', this.currentQuestion);
         
         switch (this.currentQuestion) {
             case 1:
@@ -3636,7 +3935,6 @@ class QuizController {
                 break;
         }
         
-        console.log('Current answers:', this.answers);
     }
 
     updateProgress() {
@@ -3673,19 +3971,22 @@ class QuizController {
         }
     }
 
+
     submitQuiz() {
         this.saveCurrentAnswer();
-        console.log('Final answers:', this.answers);
-
         document.getElementById('results').classList.add('show');
         document.getElementById('loading').style.display = 'block';
         document.getElementById('matchResults').style.display = 'none';
-
+        
+        // Make Luna say the scroll down message
+        showLunaMessage("Scroll down to meet your sleep twin! 🌟");
+        
         setTimeout(() => {
             const match = findBestMatch(this.answers);
             displayResults(this.answers, match);
         }, 2000);
     }
+    
 }
 
 function initializePredictions() {
@@ -4132,3 +4433,88 @@ function highlightSleepTwin(participantId) {
 window.navigateTo = navigateTo;
 window.interactWithLuna = interactWithLuna;
 window.viewSleepTwinClock = viewSleepTwinClock;
+
+
+// Conclusion Luna interaction messages
+const conclusionMessages = [
+    "I hope you enjoyed your sleep journey! Sweet dreams! 🌙✨",
+    "Remember, good sleep is the key to a happy life! 😴💤",
+    "Thanks for letting me guide you through your sleep discovery! 🌟",
+    "May your nights be restful and your dreams be sweet! 🌙💫",
+    "Sleep well, dream big, and wake up refreshed! ✨🌅"
+];
+
+let conclusionMessageIndex = 0;
+
+function interactWithConclusionLuna() {
+    const conclusionSpeech = document.getElementById('conclusion-luna-speech');
+    const leftEye = document.querySelector('.conclusion-left-eye');
+    const rightEye = document.querySelector('.conclusion-right-eye');
+    const lunaMouth = document.querySelector('.conclusion-luna-mouth');
+    
+    // Make Luna extra happy
+    if (leftEye && rightEye) {
+        leftEye.style.animation = 'conclusionEyeGlow 0.5s ease-in-out';
+        rightEye.style.animation = 'conclusionEyeGlow 0.5s ease-in-out';
+    }
+    
+    if (lunaMouth) {
+        lunaMouth.style.animation = 'conclusionMouthGlow 0.5s ease-in-out';
+    }
+    
+    // Cycle through conclusion messages
+    if (conclusionSpeech) {
+        conclusionSpeech.textContent = conclusionMessages[conclusionMessageIndex];
+        conclusionSpeech.style.animation = 'conclusionSpeechPulse 1s ease-in-out';
+        
+        // Reset animation after it completes
+        setTimeout(() => {
+            conclusionSpeech.style.animation = 'conclusionSpeechPulse 6s ease-in-out infinite';
+        }, 1000);
+    }
+    
+    // Cycle to next message
+    conclusionMessageIndex = (conclusionMessageIndex + 1) % conclusionMessages.length;
+    
+    // Animate all sparkles
+    const sparkles = document.querySelectorAll('.conclusion-luna .sparkle');
+    sparkles.forEach((sparkle, index) => {
+        setTimeout(() => {
+            sparkle.style.animation = 'conclusionSparkleFloat 2s ease-in-out';
+            setTimeout(() => {
+                sparkle.style.animation = 'conclusionSparkleFloat 4s ease-in-out infinite';
+            }, 2000);
+        }, index * 100);
+    });
+}
+
+// Initialize conclusion Luna when section comes into view
+function initializeConclusionLuna() {
+    const conclusionSection = document.querySelector('.luna-conclusion-section');
+    
+    if (!conclusionSection) return;
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Add a small delay for dramatic effect
+                setTimeout(() => {
+                    const conclusionSpeech = document.getElementById('conclusion-luna-speech');
+                    if (conclusionSpeech) {
+                        conclusionSpeech.style.opacity = '1';
+                        conclusionSpeech.style.visibility = 'visible';
+                    }
+                }, 500);
+            }
+        });
+    }, {
+        threshold: 0.3
+    });
+    
+    observer.observe(conclusionSection);
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    initializeConclusionLuna();
+});

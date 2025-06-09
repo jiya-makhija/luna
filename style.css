@@ -591,7 +591,7 @@ body::before {
 /* Enhanced Hero Section with Luna */
 .hero-section {
     position: relative;
-    min-height: 100vh;
+    min-height: auto;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -613,7 +613,8 @@ body::before {
     font-family: 'Playfair Display', serif;
     font-size: clamp(3.5rem, 8vw, 7rem);
     font-weight: 700;
-    margin-bottom: 1rem;
+    padding-bottom: 10px; /* Adds spacing inside */
+    margin-bottom: 20px;
     background: linear-gradient(45deg, var(--accent-primary), var(--accent-primary-light), #a5b4fc, #c7d2fe);
     background-size: 300% 300%;
     -webkit-background-clip: text;
@@ -1359,64 +1360,6 @@ h4 { font-size: 1.25rem; }
     font-weight: 500;
 }
 
-/* Tooltip Styling */
-#tooltip_mel {
-    position: fixed;
-    background: rgba(15, 23, 42, 0.95);
-    color: #f1f5f9;
-    border-radius: 8px;
-    padding: 15px;
-    font-size: 0.9rem;
-    z-index: 1000;
-    pointer-events: none;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    max-width: 300px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(139, 92, 246, 0.3);
-    /* Ensure proper positioning */
-    left: 0;
-    top: 0;
-}
-
-#tooltip_mel::after {
-    content: '';
-    position: absolute;
-    bottom: 100%;  /* Changed from top: 100% to position above */
-    left: 50%;
-    margin-left: -8px;
-    border-width: 8px;
-    border-style: solid;
-    border-color: transparent transparent rgba(15, 23, 42, 0.95) transparent; /* Adjusted colors */
-    pointer-events: none;
-}
-
-.tooltip_mel-title {
-    font-weight: 600;
-    margin-bottom: 8px;
-    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
-    padding-bottom: 8px;
-    color: #f1f5f9;
-}
-
-.tooltip_mel-metric {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 5px;
-    color: #cbd5e1;
-}
-
-.tooltip_mel-label {
-    margin-right: 15px;
-    opacity: 0.8;
-}
-
-.tooltip_mel-value {
-    font-weight: 600;
-    color: #f1f5f9;
-}
-
 .unit-note {
     background: rgba(30, 41, 59, 0.8);
     border: 1px solid rgba(59, 130, 246, 0.3);
@@ -1878,6 +1821,7 @@ h4 { font-size: 1.25rem; }
 /* Chart Specific Styles */
 .chart-title-HR {
     font-size: 1.5rem;
+    font-family: 'Playfair Display', serif;
     font-weight: 600;
     fill: #ffffff; /* Changed to light color */
     text-anchor: middle;
@@ -2477,10 +2421,12 @@ h4 { font-size: 1.25rem; }
     margin-bottom: 30px;
     box-shadow: 0 15px 40px rgba(0,0,0,0.3);
     position: relative;
-    min-height: 400px;
     display: flex;
     flex-direction: column;
     backdrop-filter: blur(20px);
+    max-width: 800px;
+    margin: 50px auto;
+    margin-top: 50px;
     border: 1px solid rgba(251, 191, 36, 0.2);
 }
 
@@ -2587,6 +2533,7 @@ h4 { font-size: 1.25rem; }
     border-radius: 20px;
     padding: 30px;
     margin-bottom: 30px;
+    margin-top: 50px;
     box-shadow: 0 15px 40px rgba(0,0,0,0.3);
     display: none;
     backdrop-filter: blur(20px);
@@ -2974,7 +2921,7 @@ h4 { font-size: 1.25rem; }
 /* Transition Section */
 .transition-section {
     max-width: 900px;
-    margin: 60px auto;
+    margin: 30px auto;
     padding: 40px 20px;
     text-align: center;
     font-size: 18px;
@@ -2995,9 +2942,9 @@ h4 { font-size: 1.25rem; }
 
 /* new styles for the dashboard */
 .activity-section {
-    margin-top: 70px;
-    margin-bottom: 20px;
-    padding: 80px 20px;
+    margin-top: 50px;
+    margin-bottom: 10px;
+    padding: 30px 20px;
 }
 
 .section-title {
@@ -3024,4 +2971,256 @@ h4 { font-size: 1.25rem; }
 
 ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(45deg, #f59e0b, #d97706);
+}
+
+ .chart-container {
+     position: relative;
+ }
+ 
+ .moon-icon {
+     position: absolute;
+     top: 10px;
+     right: 10px;
+     width: 24px;
+     height: 24px;
+     background: linear-gradient(135deg, #f39c12, #e67e22);
+     border-radius: 50%;
+     cursor: pointer;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+     transition: all 0.3s ease;
+     z-index: 10;
+     animation: pulseZoom 2s infinite ease-in-out;
+ }
+
+ @keyframes pulseZoom {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 2px 8px rgba(243, 156, 18, 0.3);
+    }
+    25% {
+      transform: scale(1.15);
+      box-shadow: 0 4px 16px rgba(243, 156, 18, 0.5);
+    }
+    50% {
+      transform: scale(1.3);
+      box-shadow: 0 6px 20px rgba(243, 156, 18, 0.7);
+    }
+    75% {
+      transform: scale(1.15);
+      box-shadow: 0 4px 16px rgba(243, 156, 18, 0.5);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 2px 8px rgba(243, 156, 18, 0.3);
+    }
+  }
+  
+ 
+ .moon-icon:hover {
+     transform: scale(1.1);
+     box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
+ }
+ 
+ .moon-icon::before {
+     content: '🌙';
+     font-size: 14px;
+ }
+ 
+ .insight-popup {
+     position: absolute;
+     background: #2c3e50;
+     padding: 20px;
+     border-radius: 12px;
+     max-width: 300px;
+     min-width: 250px;
+     color: white;
+     box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+     z-index: 100;
+     opacity: 0;
+     transform: scale(0.8) translateY(-10px);
+     transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+     pointer-events: none;
+ }
+ 
+ .insight-popup.show {
+     opacity: 1;
+     transform: scale(1) translateY(0);
+     pointer-events: auto;
+ }
+ 
+ .insight-popup::before {
+     content: '';
+     position: absolute;
+     top: -8px;
+     right: 20px;
+     width: 0;
+     height: 0;
+     border-left: 8px solid transparent;
+     border-right: 8px solid transparent;
+     border-bottom: 8px solid #2c3e50;
+ }
+ 
+ .insight-title {
+     font-size: 1.2em;
+     margin-bottom: 12px;
+     color: #f39c12;
+     font-weight: 600;
+ }
+ 
+ .insight-text {
+     font-size: 0.95em;
+     line-height: 1.4;
+     color: #ecf0f1;
+ }
+ 
+ .close-insight {
+     position: absolute;
+     top: 8px;
+     right: 12px;
+     background: none;
+     border: none;
+     color: #bdc3c7;
+     font-size: 18px;
+     cursor: pointer;
+     width: 20px;
+     height: 20px;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     border-radius: 50%;
+     transition: all 0.2s ease;
+ }
+ 
+ .close-insight:hover {
+     color: white;
+     background: rgba(255,255,255,0.1);
+ }
+ 
+ .chart-title {
+     position: relative;
+     display: inline-block;
+     cursor: help;
+ }
+
+ 
+ .title-tooltip {
+     position: absolute;
+     background: #34495e;
+     color: white;
+     padding: 8px 12px;
+     border-radius: 6px;
+     font-size: 0.9em;
+     white-space: nowrap;
+     z-index: 100;
+     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+     pointer-events: none;
+     opacity: 0;
+     transition: opacity 0.3s ease;
+ }
+ 
+ .title-tooltip.show {
+     opacity: 1;
+ }
+
+ .chart-title {
+    position: relative;
+    display: inline-block;
+}
+
+.chart-title .help-icon {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    background: #3498db;
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 8px;
+    cursor: help;
+    vertical-align: middle;
+    position: relative;
+}
+
+.chart-title .help-icon:hover::after {
+    content: attr(data-tooltip);
+    position: fixed;
+    background: #2c3e50;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: normal;
+    white-space: nowrap;
+    z-index: 10000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    pointer-events: none;
+    transform: translateX(-50%);
+    margin-top: 25px;
+}
+
+
+/* Global Luna positioning */
+.global-luna {
+    position: absolute;
+    bottom: 20px;
+    right: 70px;
+    z-index: 1000;
+    pointer-events: all;
+}
+
+/* Ensure parent section allows relative positioning */
+.luna-conclusion-section {
+    position: relative;
+    padding: 2rem 0;
+}
+
+/* Expand the Conclusion Container */
+.conclusion-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Align everything to the left */
+    gap: 3rem; /* Adjust space between elements */
+    max-width: 1100px; /* Make it larger */
+    min-height: 450px; /* Increase height */
+    margin: 30px auto;
+    padding: 10px 30px; /* More padding for spacious layout */
+    text-align: center;
+    font-size: 18px;
+    color: #e2e8f0;
+    line-height: 1.6;
+    background: transparent;
+    position: relative; /* Enables absolute positioning inside */
+}
+
+/* Position Luna Down and to the Left */
+.conclusion-luna {
+    position: absolute; /* Allows free movement */
+    left: 550px; /* Moves Luna left */
+    bottom: 100px; /* Moves Luna downward */
+    transform: translateX(-40px); /* Extra left shift */
+    margin-top: 150px;
+}
+
+/* If Luna needs more spacing */
+.page-title {
+    text-align: center; /* Ensures the title is centered */
+    width: 100%; /* Makes sure it spans the container */
+    margin-bottom: 50px; /* Space between title and Luna */
+}
+
+/* Fine-tune Luna's character positioning */
+.conclusion-luna .luna-character {
+    position: relative;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+/* Adjust Luna's visibility within the section */
+.luna-character {
+    transform: translateX(-60px); /* Push Luna left */
 }

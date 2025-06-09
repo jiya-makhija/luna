@@ -17,6 +17,32 @@
         <div class="nav-item" onclick="navigateTo('dashboard')">Dashboard</div>
     </nav>
 
+    <!-- Global Luna Character - appears on all pages -->
+    <div class="luna-container global-luna">
+        <div class="luna-character" onclick="interactWithLuna()">
+            <div class="luna-body">
+                <div class="luna-face">
+                    <div class="luna-eyes">
+                        <div class="luna-eye" id="left-eye"></div>
+                        <div class="luna-eye" id="right-eye"></div>
+                    </div>
+                    <div class="luna-mouth" id="luna-mouth"></div>
+                    <div class="luna-cheek left"></div>
+                    <div class="luna-cheek right"></div>
+                </div>
+            </div>
+            <div class="luna-sparkles">
+                <div class="sparkle sparkle-1">✨</div>
+                <div class="sparkle sparkle-2">⭐</div>
+                <div class="sparkle sparkle-3">💫</div>
+                <div class="sparkle sparkle-4">🌟</div>
+            </div>
+            <div class="luna-speech" id="luna-speech">
+                Welcome to your sleep journey! Click me to learn more! 🌙
+            </div>
+        </div>
+    </div>
+
     <!-- Main Page -->
     <div id="mainPage" class="page active-page">
         <!-- Hero Section -->
@@ -25,39 +51,15 @@
                 <h1 class="hero-title">What's Your Sleep Story?</h1>
                 <p class="hero-subtitle">Journey through the mysteries of sleep with Luna, your celestial guide to understanding rest and recovery</p>
                 <div class="hero-divider"></div>
-                <button class="cta-button" onclick="navigateTo('quiz')">
-                    Start Your Sleep Journey
-                    <div class="button-glow"></div>
-                </button>
-            </div>
-            <!-- Enhanced Luna Character -->
-            <div class="luna-container main-page-element">
-                <div class="luna-character" onclick="interactWithLuna()">
-                    <div class="luna-body">
-                        <div class="luna-face">
-                            <div class="luna-eyes">
-                                <div class="luna-eye" id="left-eye"></div>
-                                <div class="luna-eye" id="right-eye"></div>
-                            </div>
-                            <div class="luna-mouth" id="luna-mouth"></div>
-                            <div class="luna-cheek left"></div>
-                            <div class="luna-cheek right"></div>
-                        </div>
-                    </div>
-                    <div class="luna-sparkles">
-                        <div class="sparkle sparkle-1">✨</div>
-                        <div class="sparkle sparkle-2">⭐</div>
-                        <div class="sparkle sparkle-3">💫</div>
-                        <div class="sparkle sparkle-4">🌟</div>
-                    </div>
-                    <div class="luna-speech" id="luna-speech">
-                        Welcome to your sleep journey! Click me to learn more! 🌙
-                    </div>
-                </div>
             </div>
         </header>
 
-
+        <div class="transition-section">
+            <h1>Unlock the Science Behind Your Sleep</h1>
+            <p>
+                Your sleep journey doesn’t end when you close your eyes—it transforms. As you rest, heart rate patterns shift, hormones regulate, and your body recalibrates for the next day. Scroll down to explore how these vital trends evolve <strong>during and after sleep</strong>, shaping your well-being.
+            </p>
+        </div>
 
         <!-- Main Container - Unified Background -->
         <div class="main-container main-page-element">
@@ -159,9 +161,29 @@
 
                     <div class="chart-container" id="cortisolMelatoninChart">
                     </div>
-                    <div id="tooltip_mel" class="tooltip"></div>
                 </div>
             </section>
+
+            <div class="transition-section">
+                <h1>Connecting Sleep Physiology to Personalized Insights</h1>
+                <p>
+                    We've explored how <strong>heart rate changes between sleep and wakefulness</strong>, providing insights into your body's recovery process.
+                    But sleep quality isn't just about heart rate, it's also driven by <strong>hormonal fluctuations like cortisol and melatonin</strong>. 
+                    Cortisol helps you wake up and stay alert, while melatonin signals when it's time to sleep. 
+                    The delicate balance between these hormones can impact how restful your night truly is.
+                </p>
+                <p>
+                    To take sleep analysis a step further, we introduce the <strong>Sleep Quiz</strong> which is a science-backed tool that predicts 
+                    <strong>stress hormone levels and sleep quality</strong> based on your individual patterns. 
+                    This predictor also <strong>matches you with a sleeper most similar to you</strong>, helping you compare habits and uncover 
+                    personalized insights to optimize your rest.
+                </p>
+                <button class="cta-button" onclick="navigateTo('quiz')">
+                    Start Your Sleep Journey
+                    <div class="button-glow"></div>
+                </button>
+            </div>
+            
 
 
         </div>
@@ -407,33 +429,6 @@
             <p class="page-subtitle">Explore relationships between lifestyle factors and sleep quality metrics</p>
         </div>
 
-        <!-- Dashboard Section -->
-        <section class="dashboard">
-            <div class="controls">
-                <div class="control-group">
-                    <label>Sleep Duration (hours)</label>
-                    <input type="range" id="duration-slider" class="slider" min="3.3" max="8.2" step="0.1" value="7.0">
-                    <span id="duration-value">8.0h</span>
-                </div>
-
-                <div class="control-group">
-                    <label>Stress Level</label>
-                    <input type="range" id="stress-slider" class="slider" min="10" max="74" step="1" value="30">
-                    <span id="stress-value">25</span>
-                </div>
-
-                <div class="control-group">
-                    <label>Age Range</label>
-                    <input type="range" id="age-slider" class="slider" min="20" max="40" step="1" value="30">
-                    <span id="age-value">35</span>
-                </div>
-
-                <div class="control-group">
-                    <label>Activity Level</label>
-                    <input type="range" id="activity-slider" class="slider" min="600" max="4010" step="100" value="1000">
-                    <span id="activity-value">5</span>
-                </div>
-            </div>
 
             <div class="charts-grid">
                 <div class="chart-container">
@@ -510,9 +505,47 @@
                 </div>
             </div>
         </section>
+        <section class="luna-conclusion-section">
+            <div class="conclusion-container">
+                <div class="conclusion-content">
+                    <h1 class="page-title">Your Sleep Journey Continues</h1>
+        
+                    <!-- Luna Character appears here -->
+                    <div class="luna-container conclusion-luna">
+                        <div class="luna-character" onclick="interactWithConclusionLuna()">
+                            <div class="luna-body">
+                                <div class="luna-face">
+                                    <div class="luna-eyes">
+                                        <div class="luna-eye conclusion-left-eye"></div>
+                                        <div class="luna-eye conclusion-right-eye"></div>
+                                    </div>
+                                    <div class="luna-mouth conclusion-luna-mouth"></div>
+                                    <div class="luna-cheek left"></div>
+                                    <div class="luna-cheek right"></div>
+                                </div>
+                            </div>
+                            <div class="luna-sparkles">
+                                <div class="sparkle sparkle-1">✨</div>
+                                <div class="sparkle sparkle-2">⭐</div>
+                                <div class="sparkle sparkle-3">💫</div>
+                                <div class="sparkle sparkle-4">🌟</div>
+                                <div class="sparkle sparkle-5">🌙</div>
+                            </div>
+                        </div>
+        
+                        <!-- Luna's speech bubble -->
+                        <div class="luna-speech conclusion-speech show" id="conclusion-luna-speech">
+                            I hope you enjoyed your sleep journey! Sweet dreams! 🌙✨
+                        </div>
+                    </div>
+                        </div>
+            </div>
+        </section>
+        
     </div>
 
     <div class="tooltip" id="tooltip"></div>
+    
 
     <!-- Include JavaScript -->
     <script src="script.js"></script>
